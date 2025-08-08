@@ -1,5 +1,5 @@
 # 📎 꽃 보러 갈래?(팀명: 아름답조)
-![image](https://user-images.githubusercontent.com/25995055/178401309-2a2ffc86-ef45-439b-bfd8-6978312100bc.png)
+![image](https://www.notion.so/sdtunit032526/1-22aae0eec95580e1ad02f3f32cfa0a6e?source=copy_link#22dae0eec955809d8befc89dc5a15f55)
 
 
 ## 👀 서비스 소개
