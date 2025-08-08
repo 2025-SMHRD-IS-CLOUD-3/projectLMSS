@@ -8,5 +8,8 @@ public class TestController {
 		System.out.println("정처기 공부 언제 함??");
 		// 배준호
 		System.out.println("망한거 같습니당.");
+		// 김효진
+		System.out.println("ᓚᘏᗢ");
+		
 	}
 }
