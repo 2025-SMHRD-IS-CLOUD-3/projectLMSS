@@ -43,6 +43,39 @@
       <version>4.13.1</version>
       <scope>test</scope>
     </dependency>
+    
+    <!-- Servlet/JSP (톰캣 런타임 제공 시 scope provided) -->
+  <dependency>
+    <groupId>javax.servlet</groupId>
+    <artifactId>javax.servlet-api</artifactId>
+    <version>4.0.1</version>
+    <scope>provided</scope>
+  </dependency>
+  <dependency>
+    <groupId>javax.servlet.jsp</groupId>
+    <artifactId>javax.servlet.jsp-api</artifactId>
+    <version>2.3.3</version>
+    <scope>provided</scope>
+  </dependency>
+  <dependency>
+    <groupId>javax.servlet</groupId>
+    <artifactId>jstl</artifactId>
+    <version>1.2</version>
+  </dependency>
+
+  <!-- MyBatis -->
+  <dependency>
+    <groupId>org.mybatis</groupId>
+    <artifactId>mybatis</artifactId>
+    <version>3.5.15</version>
+  </dependency>
+
+  <!-- Oracle JDBC -->
+  <dependency>
+    <groupId>com.oracle.database.jdbc</groupId>
+    <artifactId>ojdbc8</artifactId>
+    <version>19.20.0.0</version>
+  </dependency>
   </dependencies>
   
   <build>
