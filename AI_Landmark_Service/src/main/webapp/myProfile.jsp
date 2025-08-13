@@ -40,7 +40,6 @@
             <p><strong>이메일:</strong> <%= memberInfo.getEmail() %></p>
             <br>
 
-            <h2>회원 탈퇴</h2>
             <form action="deleteMember" method="post" id="deleteForm">
                 <div class="form-group">
                     <label for="passwordConfirm">비밀번호 확인:</label>
