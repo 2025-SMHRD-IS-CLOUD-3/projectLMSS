@@ -29,7 +29,8 @@ public class DeleteMemberServlet extends HttpServlet {
             if (session != null) {
                 session.invalidate(); // 세션 무효화
             }
-            response.getWriter().write("<script>alert('회원 탈퇴가 완료되었습니다.'); window.location.href='index.jsp';</script>");
+            // 회원 탈퇴 완료 메시지 출력 후 로그인 페이지로 이동
+            response.getWriter().write("<script>alert('회원 탈퇴가 완료되었습니다.'); window.location.href='login.jsp';</script>");
         } else {
             // 탈퇴 실패 시 메시지 출력 후 이전 페이지(myProfile.jsp)로 돌아감
             response.getWriter().write("<script>alert('아이디 또는 비밀번호가 일치하지 않아 탈퇴에 실패했습니다.'); history.back();</script>");
