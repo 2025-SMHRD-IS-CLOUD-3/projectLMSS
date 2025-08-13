@@ -88,4 +88,42 @@ public class LandmarkDAO {
         }
         return landmark;
     }
+    
+    public Landmark getLandmarkByNameEn(String landmarkNameEn) {
+        String sql = "SELECT * FROM LANDMARK WHERE LANDMARK_NAME_EN = ?";
+        Landmark landmark = null;
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try {
+            Class.forName("oracle.jdbc.driver.OracleDriver");
+            conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, landmarkNameEn);
+            rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                landmark = new Landmark();
+                landmark.setLandmarkId(rs.getInt("LANDMARK_ID"));
+                landmark.setLandmarkName(rs.getString("LANDMARK_NAME")); // 한글 이름
+                landmark.setLocation(rs.getString("LANDMARK_LOCATION"));
+                landmark.setDescription(rs.getString("LANDMARK_DESC"));
+                // TODO: Landmark.java에 LANDMARK 테이블의 모든 컬럼에 대한
+                //       필드와 getter/setter를 추가하고 여기서 값을 채워주세요.
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            // 자원 해제
+            try {
+                if (rs != null) rs.close();
+                if (pstmt != null) pstmt.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return landmark;
+    }
 }
