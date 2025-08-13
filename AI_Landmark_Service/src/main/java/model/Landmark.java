@@ -12,11 +12,11 @@ public class Landmark {
     }
 
     // 모든 필드를 포함하는 생성자
-    public Landmark(int landmarkId, String landmarkName, String location, String description) {
-        this.landmarkId = landmarkId;
+    public Landmark(int Landmark_ID, String landmarkName, String Landmark_location, String Landamark_desc) {
+        this.landmarkId = Landmark_ID;
         this.landmarkName = landmarkName;
-        this.location = location;
-        this.description = description;
+        this.location = Landmark_location;
+        this.description = Landamark_desc;
     }
 
     // Getter와 Setter
