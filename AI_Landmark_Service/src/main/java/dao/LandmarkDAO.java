@@ -28,8 +28,8 @@ public class LandmarkDAO {
                 Landmark landmark = new Landmark();
                 landmark.setLandmarkId(rs.getInt("LANDMARK_ID"));
                 landmark.setLandmarkName(rs.getString("LANDMARK_NAME"));
-                landmark.setLocation(rs.getString("LOCATION"));
-                landmark.setDescription(rs.getString("DESCRIPTION"));
+                landmark.setLocation(rs.getString("LANDMARK_LOCATION"));
+                landmark.setDescription(rs.getString("LANDMARK_DESC"));
                 landmarkList.add(landmark);
             }
         } catch (SQLException | ClassNotFoundException e) {
