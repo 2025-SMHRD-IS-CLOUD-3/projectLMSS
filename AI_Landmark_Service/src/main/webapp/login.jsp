@@ -57,9 +57,9 @@
           <li><a href="${pageContext.request.contextPath}/howLandmark.jsp">Landmark Search란?</a></li>
           <li><a href="${pageContext.request.contextPath}/main.jsp">사진으로 랜드마크 찾기</a></li>
           <li><a href="${pageContext.request.contextPath}/mapSearch.jsp">지도로 랜드마크 찾기</a></li>
-          <li><a href="${pageContext.request.contextPath}/post.jsp">게시판</a></li>
+          <li><a href="${pageContext.request.contextPath}/postList.jsp">게시판</a></li>
           <li><a href="${pageContext.request.contextPath}/login.jsp">로그인</a></li>
-          <li><a href="${pageContext.request.contextPath}/join.jsp">회원가입</a></li>
+          <li><a href="${pageContext.request.contextPath}/register.jsp">회원가입</a></li>
       </ul>
   </div>
 
@@ -72,20 +72,23 @@
       <form action="${pageContext.request.contextPath}/login" method="post">
         <div class="row">
           <label for="uid">계정 입력</label>
-          <input id="uid" name="id" class="input" autocomplete="username" placeholder="이메일 또는 아이디" required/>
+          <!-- DB 컬럼명(ID)에 맞춰 name 변경 -->
+          <input id="uid" name="ID" class="input" autocomplete="username" placeholder="이메일 또는 아이디" required/>
         </div>
 
         <div class="row">
           <label for="pwd">비밀번호 입력</label>
           <div class="pwd-wrap">
-            <input id="pwd" name="password" class="input" type="password" autocomplete="current-password" placeholder="••••••••" required/>
+            <!-- DB 컬럼명(PWD)에 맞춰 name 변경 -->
+            <input id="pwd" name="PWD" class="input" type="password" autocomplete="current-password" placeholder="••••••••" required/>
             <button type="button" id="togglePwd" class="toggle">표시</button>
           </div>
         </div>
 
         <div class="row-inline">
           <label class="muted"><input type="checkbox" id="remember"/> 로그인 상태 유지</label>
-          <a class="link" href="${pageContext.request.contextPath}/join.jsp">회원가입</a>
+          <!-- 회원가입 링크 통일 -->
+          <a class="link" href="${pageContext.request.contextPath}/register.jsp">회원가입</a>
         </div>
 
         <div class="row-inline" style="justify-content:flex-end">

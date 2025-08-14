@@ -1,58 +1,70 @@
 package controller;
 
-import dao.MemberDAO; // MemberDAO 임포트
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 
-@WebServlet("/register") // register.jsp의 form action과 동일하게 설정
+@WebServlet("/register")
 public class RegisterServlet extends HttpServlet {
+    private static final long serialVersionUID = 1L;
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        request.setCharacterEncoding("UTF-8"); // JSP에서 넘어온 한글 데이터가 깨지지 않도록 인코딩 설정
+        request.setCharacterEncoding("UTF-8");
+        response.setContentType("text/html;charset=UTF-8");
+        PrintWriter out = response.getWriter();
 
+        // JSP에서 넘어온 값
         String id = request.getParameter("id");
-        String password = request.getParameter("password");
+        String pwd = request.getParameter("pwd");
         String email = request.getParameter("email");
         String name = request.getParameter("name");
         String nickname = request.getParameter("nickname");
 
-        MemberDAO memberDAO = new MemberDAO(); // MemberDAO 객체 생성
+        Connection conn = null;
+        PreparedStatement pstmt = null;
 
-        // 1. 아이디 중복 확인
-        if (memberDAO.isIdDuplicate(id)) {
-            response.setContentType("text/html;charset=UTF-8");
-            response.getWriter().write("<script>alert('이미 사용 중인 아이디입니다.'); history.back();</script>");
-            return;
-        }
+        try {
+            Class.forName("oracle.jdbc.driver.OracleDriver");
+            conn = DriverManager.getConnection(
+                "jdbc:oracle:thin:@project-db-campus.smhrd.com:1524:xe", 
+                "campus_24IS_CLOUD3_p2_2", 
+                "smhrd2"
+            );
 
-        // 2. 닉네임 중복 확인
-        if (memberDAO.isNicknameDuplicate(nickname)) {
-            response.setContentType("text/html;charset=UTF-8");
-            response.getWriter().write("<script>alert('이미 사용 중인 닉네임입니다.'); history.back();</script>");
-            return;
-        }
+            String sql = "INSERT INTO MEMBER (MEMBER_ID, ID, PWD, EMAIL, NAME, NICKNAME) " +
+                         "VALUES (MEMBER_SEQ.NEXTVAL, ?, ?, ?, ?, ?)";
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, id);
+            pstmt.setString(2, pwd);
+            pstmt.setString(3, email);
+            pstmt.setString(4, name);
+            pstmt.setString(5, nickname);
 
-        // 3. 이메일 중복 확인
-        if (memberDAO.isEmailDuplicate(email)) {
-            response.setContentType("text/html;charset=UTF-8");
-            response.getWriter().write("<script>alert('이미 사용 중인 이메일입니다.'); history.back();</script>");
-            return;
-        }
+            int rows = pstmt.executeUpdate();
+            if (rows > 0) {
+                out.println("<script>alert('회원가입 성공!');location.href='login.jsp';</script>");
+            } else {
+                out.println("<script>alert('회원가입 실패');history.back();</script>");
+            }
 
-        // 중복이 없을 경우, 회원 등록 진행
-        boolean registrationSuccess = memberDAO.registerMember(id, password, email, name, nickname);
-
-        if (registrationSuccess) {
-            // 회원가입 성공 시 메시지 출력 후 로그인 페이지로 이동
-            response.setContentType("text/html;charset=UTF-8"); // 한글 메시지를 위해 Content-Type 설정
-            response.getWriter().write("<script>alert('회원가입성공했습니다.'); window.location.href='login.jsp';</script>");
-        } else {
-            // 회원가입 실패 시 error.jsp로 이동
-            response.sendRedirect("error.jsp");
+        } catch (SQLException e) {
+            e.printStackTrace();
+            out.println("<script>alert('회원가입 실패: " + e.getMessage().replace("'", "\\'") + "');history.back();</script>");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+            out.println("<script>alert('JDBC 드라이버 로드 실패');history.back();</script>");
+        } finally {
+            try { if (pstmt != null) pstmt.close(); } catch (SQLException e) {}
+            try { if (conn != null) conn.close(); } catch (SQLException e) {}
         }
     }
 }

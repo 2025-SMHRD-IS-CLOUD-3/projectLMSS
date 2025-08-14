@@ -1,4 +1,8 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%> 
+<%
+    // 현재 로그인 상태 확인
+    String loginUser = (String) session.getAttribute("loginUser");
+%>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -115,11 +119,19 @@
     <div class="side-menu" id="sideMenu">
         <ul>
             <li><a href="<%=request.getContextPath()%>/howLandmark.jsp">Landmark Search란?</a></li>
-            <li><a href="<%=request.getContextPath()%>/main.jsp">사진으로  랜드마크 찾기</a></li>
-            <li><a href="<%=request.getContextPath()%>/mapSearch.jsp">지도로  랜드마크 찾기</a></li>
-            <li><a href="<%=request.getContextPath()%>/post.jsp">게시판</a></li>
-            <li><a href="<%=request.getContextPath()%>/login.jsp">로그인</a></li>
-            <li><a href="<%=request.getContextPath()%>/join.jsp">회원가입</a></li>
+            <li><a href="<%=request.getContextPath()%>/main.jsp">사진으로 랜드마크 찾기</a></li>
+            <li><a href="<%=request.getContextPath()%>/mapSearch.jsp">지도로 랜드마크 찾기</a></li>
+            <li><a href="<%=request.getContextPath()%>/postList.jsp">게시판</a></li>
+            <% if (loginUser != null) { %>
+                <li>
+                    <a href="<%=request.getContextPath()%>/logout?redirect=<%=request.getRequestURI() + (request.getQueryString() != null ? "?" + request.getQueryString() : "")%>">
+                        로그아웃
+                    </a>
+                </li>
+            <% } else { %>
+                <li><a href="<%=request.getContextPath()%>/login.jsp">로그인</a></li>
+                <li><a href="<%=request.getContextPath()%>/register.jsp">회원가입</a></li>
+            <% } %>
         </ul>
     </div>
 
@@ -261,4 +273,3 @@
     </script>
 </body>
 </html>
-
