@@ -23,10 +23,7 @@
             <% if (landmarkList != null) { %>
                 <% for (Landmark landmark : landmarkList) { %>
                     <tr>
-                        <td><%= landmark.getLandmarkId() %></td>
-                        <td><%= landmark.getLandmarkName() %></td>
-                        <td><%= landmark.getLocation() %></td>
-                        <td><%= landmark.getDescription() %></td>
+                        
                     </tr>
                 <% } %>
             <% } %>
