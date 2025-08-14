@@ -13,7 +13,8 @@ public class CorsFilter implements Filter {
 
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
             throws IOException, ServletException {
-
+    	
+    	System.out.println("====== CORS 필터 실행됨! ======"); 
         HttpServletResponse response = (HttpServletResponse) res;
 
         // 여기에 프론트엔드 서버의 주소를 정확히 적어주세요.
