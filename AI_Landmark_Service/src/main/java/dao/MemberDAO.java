@@ -45,4 +45,9 @@ public class MemberDAO {
         }
         return success;
     }
+
+	public Member getMemberById(String memberId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }
