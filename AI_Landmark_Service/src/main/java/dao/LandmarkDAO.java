@@ -26,10 +26,23 @@ public class LandmarkDAO {
 
             while (rs.next()) {
                 Landmark landmark = new Landmark();
-                landmark.setLandmarkId(rs.getInt("LANDMARK_ID"));
-                landmark.setLandmarkName(rs.getString("LANDMARK_NAME"));
-                landmark.setLocation(rs.getString("LANDMARK_LOCATION"));
-                landmark.setDescription(rs.getString("LANDMARK_DESC"));
+                landmark.setLandmark_id(rs.getInt("LANDMARK_ID"));
+                landmark.setLandmark_name(rs.getString("LANDMARK_NAME"));
+                landmark.setLandmark_location(rs.getString("LANDMARK_LOCATION"));
+                landmark.setLandmark_desc(rs.getString("LANDMARK_DESC"));
+                landmark.setArch_style(rs.getString("ARCH_STYLE"));
+                landmark.setFee(rs.getString("FEE"));
+                landmark.setArchitect(rs.getString("ARCHITECT"));
+                landmark.setTmi(rs.getString("TMI"));
+                landmark.setWebsite(rs.getString("WEBSITE"));
+                landmark.setLandmark_usage(rs.getString("LANDMARK_USAGE"));
+                landmark.setLandmark_hours(rs.getString("LANDMARK_HOURS"));
+                landmark.setTraffic_info(rs.getString("TRAFFIC_INFO"));
+                landmark.setCompletion_time(rs.getString("COMPLETION_TIME"));
+                landmark.setLongitude(rs.getString("LONGITUDE"));
+                landmark.setLatitude(rs.getString("LATITUDE"));
+                landmark.setLandmark_name_en(rs.getString("LANDMARK_NAME_EN"));
+                
                 landmarkList.add(landmark);
             }
         } catch (SQLException | ClassNotFoundException e) {
@@ -67,12 +80,22 @@ public class LandmarkDAO {
 
             if (rs.next()) {
                 landmark = new Landmark();
-                landmark.setLandmarkId(rs.getInt("LANDMARK_ID"));
-                landmark.setLandmarkName(rs.getString("LANDMARK_NAME")); // 한글 이름
-                // ... LANDMARK 테이블의 모든 컬럼에 대해 set 메소드를 호출해줍니다 ...
-                landmark.setLocation(rs.getString("LANDMARK_LOCATION"));
-                landmark.setDescription(rs.getString("LANDMARK_DESC"));
-                // (Landmark.java에 모든 컬럼에 대한 필드와 getter/setter가 있다고 가정)
+                landmark.setLandmark_id(rs.getInt("LANDMARK_ID"));
+                landmark.setLandmark_name(rs.getString("LANDMARK_NAME"));
+                landmark.setLandmark_location(rs.getString("LANDMARK_LOCATION"));
+                landmark.setLandmark_desc(rs.getString("LANDMARK_DESC"));
+                landmark.setArch_style(rs.getString("ARCH_STYLE"));
+                landmark.setFee(rs.getString("FEE"));
+                landmark.setArchitect(rs.getString("ARCHITECT"));
+                landmark.setTmi(rs.getString("TMI"));
+                landmark.setWebsite(rs.getString("WEBSITE"));
+                landmark.setLandmark_usage(rs.getString("LANDMARK_USAGE"));
+                landmark.setLandmark_hours(rs.getString("LANDMARK_HOURS"));
+                landmark.setTraffic_info(rs.getString("TRAFFIC_INFO"));
+                landmark.setCompletion_time(rs.getString("COMPLETION_TIME"));
+                landmark.setLongitude(rs.getString("LONGITUDE"));
+                landmark.setLatitude(rs.getString("LATITUDE"));
+                landmark.setLandmark_name_en(rs.getString("LANDMARK_NAME_EN"));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -105,12 +128,22 @@ public class LandmarkDAO {
 
             if (rs.next()) {
                 landmark = new Landmark();
-                landmark.setLandmarkId(rs.getInt("LANDMARK_ID"));
-                landmark.setLandmarkName(rs.getString("LANDMARK_NAME")); // 한글 이름
-                landmark.setLocation(rs.getString("LANDMARK_LOCATION"));
-                landmark.setDescription(rs.getString("LANDMARK_DESC"));
-                // TODO: Landmark.java에 LANDMARK 테이블의 모든 컬럼에 대한
-                //       필드와 getter/setter를 추가하고 여기서 값을 채워주세요.
+                landmark.setLandmark_id(rs.getInt("LANDMARK_ID"));
+                landmark.setLandmark_name(rs.getString("LANDMARK_NAME"));
+                landmark.setLandmark_location(rs.getString("LANDMARK_LOCATION"));
+                landmark.setLandmark_desc(rs.getString("LANDMARK_DESC"));
+                landmark.setArch_style(rs.getString("ARCH_STYLE"));
+                landmark.setFee(rs.getString("FEE"));
+                landmark.setArchitect(rs.getString("ARCHITECT"));
+                landmark.setTmi(rs.getString("TMI"));
+                landmark.setWebsite(rs.getString("WEBSITE"));
+                landmark.setLandmark_usage(rs.getString("LANDMARK_USAGE"));
+                landmark.setLandmark_hours(rs.getString("LANDMARK_HOURS"));
+                landmark.setTraffic_info(rs.getString("TRAFFIC_INFO"));
+                landmark.setCompletion_time(rs.getString("COMPLETION_TIME"));
+                landmark.setLongitude(rs.getString("LONGITUDE"));
+                landmark.setLatitude(rs.getString("LATITUDE"));
+                landmark.setLandmark_name_en(rs.getString("LANDMARK_NAME_EN"));
             }
         } catch (Exception e) {
             e.printStackTrace();
