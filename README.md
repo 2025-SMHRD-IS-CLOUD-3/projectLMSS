@@ -67,7 +67,7 @@ python app.py
 ### 2. 메인 서버 실행 (Java)
 1) Eclipse에서 Maven 프로젝트 Import  
 2) `pom.xml` 의존성(Oracle JDBC, Gson 등) 설치  
-3) `LandmarkDAO.java` (또는 `DBManager.java`)의 DB 접속 정보를 환경에 맞게 수정  
+3) `LandmarkDAO.java`의 DB 접속 정보를 환경에 맞게 수정  
 4) Tomcat 서버에 배포 후 실행  
 5) 접속: `http://localhost:8081/{ContextPath}`  
 
