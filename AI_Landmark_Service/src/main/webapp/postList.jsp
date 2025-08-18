@@ -58,9 +58,17 @@
           <li><a href="${pageContext.request.contextPath}/howLandmark.jsp">Landmark Search란?</a></li>
           <li><a href="${pageContext.request.contextPath}/main.jsp">사진으로  랜드마크 찾기</a></li>
           <li><a href="${pageContext.request.contextPath}/mapSearch.jsp">지도로  랜드마크 찾기</a></li>
-          <li><a href="${pageContext.request.contextPath}/postlist.jsp">게시판</a></li>
-          <li><a href="${pageContext.request.contextPath}/login.jsp">로그인</a></li>
-          <li><a href="${pageContext.request.contextPath}/register.jsp">회원가입</a></li>
+		  <li><a href="${pageContext.request.contextPath}/postList">게시판</a></li>
+          <!-- ✅ 로그인 상태에 따라 다르게 표시 -->
+          <c:choose>
+            <c:when test="${not empty sessionScope.loginUser}">
+                <li><a href="${pageContext.request.contextPath}/logout">로그아웃</a></li>
+            </c:when>
+            <c:otherwise>
+                <li><a href="${pageContext.request.contextPath}/login.jsp?redirect=postList">로그인</a></li>
+                <li><a href="${pageContext.request.contextPath}/register.jsp">회원가입</a></li>
+            </c:otherwise>
+          </c:choose>
       </ul>
   </div>
 
@@ -82,16 +90,20 @@
             </tr>
           </thead>
           <tbody id="postTbody">
-            <c:forEach var="post" items="${postList}">
-              <tr>
-                <td>${post.no}</td>
-                <td>${post.category}</td>
-                <td><a class="title-link" href="${pageContext.request.contextPath}/postView.jsp?id=${post.no}">${post.title}</a></td>
-                <td>${post.views}</td>
-                <td>${post.date}</td>
-                <td>${post.writer}</td>
-              </tr>
-            </c:forEach>
+			<c:forEach var="post" items="${postList}">
+			  <tr>
+			    <td>${post.postId}</td>
+			    <td>${post.categories}</td>
+			    <td>
+			      <a class="title-link" href="${pageContext.request.contextPath}/postView.jsp?id=${post.postId}">
+			        ${post.title}
+			      </a>
+			    </td>
+			    <td>${post.views}</td>
+			    <td>${post.postDate}</td>
+			    <td>${post.memberId}</td>
+			  </tr>
+			</c:forEach>
           </tbody>
         </table>
       </div>
@@ -122,7 +134,7 @@
   });
 
   document.getElementById('goWrite').addEventListener('click', ()=>{
-    location.href = '${pageContext.request.contextPath}/postWrite.jsp';
+    location.href = '${pageContext.request.contextPath}/postWrite';
   });
 </script>
 </body>

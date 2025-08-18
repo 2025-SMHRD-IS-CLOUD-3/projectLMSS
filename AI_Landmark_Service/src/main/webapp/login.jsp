@@ -85,9 +85,11 @@
           </div>
         </div>
 
+        <!-- ✅ redirect 파라미터 전달 -->
+        <input type="hidden" name="redirect" value="${param.redirect}" />
+
         <div class="row-inline">
           <label class="muted"><input type="checkbox" id="remember"/> 로그인 상태 유지</label>
-          <!-- 회원가입 링크 통일 -->
           <a class="link" href="${pageContext.request.contextPath}/register.jsp">회원가입</a>
         </div>
 

@@ -121,7 +121,7 @@
             <li><a href="<%=request.getContextPath()%>/howLandmark.jsp">Landmark Search란?</a></li>
             <li><a href="<%=request.getContextPath()%>/main.jsp">사진으로 랜드마크 찾기</a></li>
             <li><a href="<%=request.getContextPath()%>/mapSearch.jsp">지도로 랜드마크 찾기</a></li>
-            <li><a href="<%=request.getContextPath()%>/postList.jsp">게시판</a></li>
+            <li><a href="<%=request.getContextPath()%>/postList">게시판</a></li>
             <% if (loginUser != null) { %>
                 <li>
                     <a href="<%=request.getContextPath()%>/logout?redirect=<%=request.getRequestURI() + (request.getQueryString() != null ? "?" + request.getQueryString() : "")%>">

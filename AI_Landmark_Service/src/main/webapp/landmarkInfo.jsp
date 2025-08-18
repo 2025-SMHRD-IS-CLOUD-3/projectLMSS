@@ -77,7 +77,7 @@ header h2 { margin: 0; font-size: 18px; font-weight: 700; }
     <li><a href="<%= request.getContextPath() %>/howLandmark.jsp">Landmark Search란?</a></li>
     <li><a href="<%= request.getContextPath() %>/main.jsp">사진으로 랜드마크 찾기</a></li>
     <li><a href="<%= request.getContextPath() %>/mapSearch.jsp">지도로 랜드마크 찾기</a></li>
-    <li><a href="<%= request.getContextPath() %>/post.jsp">게시판</a></li>
+    <li><a href="<%= request.getContextPath() %>/postList">게시판</a></li>
     <li><a href="<%= request.getContextPath() %>/login.jsp">로그인</a></li>
     <li><a href="<%= request.getContextPath() %>/join.jsp">회원가입</a></li>
   </ul>

@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>GeoJSON Countries with Info Panel</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    
+    <style>
+        body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
+        html, body, #container { height: 100%; }
+
+        #container { display: flex; width: 100%; }
+        #map { flex: 2; height: 100%; }
+
+        #info-panel {
+            flex: 1; padding: 20px; background-color: #f4f4f4;
+            border-left: 1px solid #ccc; overflow-y: auto;
+            box-sizing: border-box; position: relative;
+        }
+        #info-panel-close {
+            position: absolute; top: 10px; right: 10px;
+            font-size: 20px; font-weight: bold; cursor: pointer;
+            color: #888; border: none; background: none; line-height: 1;
+        }
+        #info-panel-close:hover { color: #333; }
+
+        .panel-content { margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #ddd; }
+        .landmark-list { list-style-type: none; padding: 0; }
+        .landmark-list li {
+            padding: 10px; margin-bottom: 5px; background-color: #fff;
+            border-radius: 5px; cursor: pointer; border: 1px solid #ddd;
+            transition: background-color 0.2s ease;
+        }
+        .landmark-list li:hover { background-color: #e9e9e9; }
+        #info-panel.hidden { display: none; }
+        
+        .action-button {
+            display: block; width: 100%; padding: 10px; margin-top: 10px;
+            background-color: #007bff; color: #fff; border: none;
+            border-radius: 5px; cursor: pointer; text-align: center;
+            font-size: 16px;
+        }
+        .action-button:hover { background-color: #0056b3; }
+        
+        /* 주변 명소 버튼 스타일 */
+        .attraction-button { background-color: #28a745; }
+        .attraction-button:hover { background-color: #218838; }
+
+        /* 포토스팟 버튼 스타일 */
+        .photospot-button { background-color: #ffc107; color: #333; }
+        .photospot-button:hover { background-color: #e0a800; }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="map"></div>
+        <div id="info-panel" class="hidden"></div>
+    </div>
+    
+    <script src="landmarks.js"></script>
+    <script src="restaurants.js"></script>
+    <script src="attractions.js"></script>
+    <script src="photospots.js"></script>
+
+    <script>
+        const map = L.map('map').setView([0, 0], 2);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            noWrap: true
+        }).addTo(map);
+
+        const geojsonDataUrl = 'https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json';
+        const clickableCountries = ['South Korea', 'United States of America', 'Japan', 'China', 'France', 'United Kingdom', 'Brazil', 'Australia', 'Egypt', 'Italy', 'Spain', 'India', 'Peru'];
+        
+        let currentLandmarkMarkers = [];
+        let currentAttractionMarkers = [];
+        let currentRestaurantMarkers = [];
+        let currentPhotospotMarkers = [];
+
+        function closeInfoPanel() {
+            document.getElementById('info-panel').classList.add('hidden');
+        }
+
+        function clearAllMarkers() {
+            currentLandmarkMarkers.forEach(marker => map.removeLayer(marker));
+            currentLandmarkMarkers = [];
+            currentAttractionMarkers.forEach(marker => map.removeLayer(marker));
+            currentAttractionMarkers = [];
+            currentRestaurantMarkers.forEach(marker => map.removeLayer(marker));
+            currentRestaurantMarkers = [];
+            currentPhotospotMarkers.forEach(marker => map.removeLayer(marker));
+            currentPhotospotMarkers = [];
+        }
+
+        function updateLandmarkPanel(countryName) {
+            const infoPanel = document.getElementById('info-panel');
+            const landmarks = landmarksByCountry[countryName];
+            
+            if (landmarks && landmarks.length > 0) {
+                infoPanel.classList.remove('hidden');
+                
+                let landmarkListHtml = landmarks.map(landmark => 
+                    `<li onclick="showLandmarkOnMap('${landmark.name}')">${landmark.name}</li>`
+                ).join('');
+                
+                infoPanel.innerHTML = `
+                    <button id="info-panel-close" onclick="closeInfoPanel()">&times;</button>
+                    <div class="panel-content">
+                        <h2>${countryName}의 랜드마크</h2>
+                        <ul class="landmark-list">${landmarkListHtml}</ul>
+                    </div>
+                `;
+            } else {
+                infoPanel.classList.remove('hidden');
+                infoPanel.innerHTML = `
+                    <button id="info-panel-close" onclick="closeInfoPanel()">&times;</button>
+                    <div class="panel-content">
+                        <h2>${countryName}의 랜드마크</h2>
+                        <p>등록된 랜드마크가 없습니다.</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function showLandmarkOnMap(landmarkName) {
+            clearAllMarkers();
+            const info = landmarkInfo[landmarkName];
+            if (info) {
+                const marker = L.marker([info.lat, info.lng]).addTo(map);
+                marker.on('click', function(e) {
+                    updateLandmarkInfo(landmarkName);
+                });
+                currentLandmarkMarkers.push(marker);
+                map.setView([info.lat, info.lng], 10);
+                updateLandmarkInfo(landmarkName);
+            }
+        }
+        
+        function updateLandmarkInfo(landmarkName) {
+            const infoPanel = document.getElementById('info-panel');
+            const info = landmarkInfo[landmarkName];
+            
+            if (info) {
+                infoPanel.classList.remove('hidden');
+                
+                const hasRestaurants = restaurantInfo[landmarkName] && restaurantInfo[landmarkName].length > 0;
+                const hasAttractions = attractionInfo[landmarkName] && attractionInfo[landmarkName].length > 0;
+                const hasPhotospots = photospotInfo[landmarkName] && photospotInfo[landmarkName].length > 0;
+
+                const restaurantButton = hasRestaurants
+                    ? `<button class="action-button" onclick="showRestaurants('${landmarkName}')">주변 맛집 보기</button>`
+                    : `<p style="text-align: center; margin-top: 10px; color:#666; font-size:14px;">등록된 맛집 정보가 없습니다.</p>`;
+
+                const attractionButton = hasAttractions
+                    ? `<button class="action-button attraction-button" onclick="showAttractions('${landmarkName}')">주변 명소 보기</button>`
+                    : `<p style="text-align: center; margin-top: 10px; color:#666; font-size:14px;">등록된 명소 정보가 없습니다.</p>`;
+
+                const photospotButton = hasPhotospots
+                    ? `<button class="action-button photospot-button" onclick="showPhotospots('${landmarkName}')">포토스팟 보기</button>`
+                    : `<p style="text-align: center; margin-top: 10px; color:#666; font-size:14px;">등록된 포토스팟 정보가 없습니다.</p>`;
+
+                infoPanel.innerHTML = `
+                    <button id="info-panel-close" onclick="closeInfoPanel()">&times;</button>
+                    <div class="panel-content">
+                        <h2>${landmarkName}</h2>
+                        <p><b>국가:</b> ${info.country}</p>
+                        <p><b>설명:</b> ${info.description}</p>
+                        ${restaurantButton}
+                        ${attractionButton}
+                        ${photospotButton}
+                    </div>
+                `;
+            }
+        }
+
+        function showRestaurants(landmarkName) {
+            clearAllMarkers();
+            const restaurants = restaurantInfo[landmarkName];
+            if (restaurants) {
+                const restaurantListHtml = restaurants.map(restaurant => 
+                    `<li onclick="showSingleRestaurant('${restaurant.name}', ${restaurant.lat}, ${restaurant.lng}, '${restaurant.description.replace(/'/g, "\\'")}')">${restaurant.name}</li>`
+                ).join('');
+                
+                const infoPanel = document.getElementById('info-panel');
+                infoPanel.innerHTML = `
+                    <button id="info-panel-close" onclick="closeInfoPanel()">&times;</button>
+                    <div class="panel-content">
+                        <h2>${landmarkName} 주변 맛집</h2>
+                        <ul class="landmark-list">${restaurantListHtml}</ul>
+                    </div>
+                `;
+                infoPanel.classList.remove('hidden');
+                
+                restaurants.forEach(restaurant => {
+                    const marker = L.marker([restaurant.lat, restaurant.lng]).addTo(map);
+                    marker.bindPopup(`<b>${restaurant.name}</b><br>${restaurant.category} (평점: ${restaurant.rating})`);
+                    currentRestaurantMarkers.push(marker);
+                });
+                const group = new L.featureGroup(currentRestaurantMarkers);
+                map.fitBounds(group.getBounds());
+            } else {
+                 const infoPanel = document.getElementById('info-panel');
+                 infoPanel.classList.remove('hidden');
+                 infoPanel.innerHTML = `<button id="info-panel-close" onclick="closeInfoPanel()">&times;</button><div class="panel-content"><h2>${landmarkName} 주변 맛집</h2><p>등록된 맛집 정보가 없습니다.</p></div>`;
+            }
+        }
+        
+        function showAttractions(landmarkName) {
+            clearAllMarkers();
+            const attractions = attractionInfo[landmarkName];
+            if (attractions) {
+                const attractionListHtml = attractions.map(attraction => 
+                    `<li onclick="showSingleAttraction('${attraction.name}', ${attraction.lat}, ${attraction.lng}, '${attraction.description.replace(/'/g, "\\'")}')">${attraction.name}</li>`
+                ).join('');
+                const infoPanel = document.getElementById('info-panel');
+                infoPanel.innerHTML = `
+                    <button id="info-panel-close" onclick="closeInfoPanel()">&times;</button>
+                    <div class="panel-content">
+                        <h2>${landmarkName} 주변 명소</h2>
+                        <ul class="landmark-list">${attractionListHtml}</ul>
+                    </div>
+                `;
+                infoPanel.classList.remove('hidden');
+                attractions.forEach(attraction => {
+                    const marker = L.marker([attraction.lat, attraction.lng]).addTo(map);
+                    marker.bindPopup(`<b>${attraction.name}</b><br>${attraction.description}`);
+                    currentAttractionMarkers.push(marker);
+                });
+                const group = new L.featureGroup(currentAttractionMarkers);
+                map.fitBounds(group.getBounds());
+            } else {
+                 const infoPanel = document.getElementById('info-panel');
+                 infoPanel.classList.remove('hidden');
+                 infoPanel.innerHTML = `<button id="info-panel-close" onclick="closeInfoPanel()">&times;</button><div class="panel-content"><h2>${landmarkName} 주변 명소</h2><p>등록된 명소 정보가 없습니다.</p></div>`;
+            }
+        }
+
+        function showPhotospots(landmarkName) {
+            clearAllMarkers();
+            const photospots = photospotInfo[landmarkName];
+
+            if (photospots) {
+                const photospotListHtml = photospots.map(photospot =>
+                    `<li onclick="showSinglePhotospot('${photospot.name}', ${photospot.lat}, ${photospot.lng}, '${photospot.description.replace(/'/g, "\\'")}')">${photospot.name}</li>`
+                ).join('');
+
+                const infoPanel = document.getElementById('info-panel');
+                infoPanel.innerHTML = `
+                    <button id="info-panel-close" onclick="closeInfoPanel()">&times;</button>
+                    <div class="panel-content">
+                        <h2>${landmarkName} 포토스팟</h2>
+                        <ul class="landmark-list">${photospotListHtml}</ul>
+                    </div>
+                `;
+                infoPanel.classList.remove('hidden');
+
+                photospots.forEach(photospot => {
+                    const marker = L.marker([photospot.lat, photospot.lng]).addTo(map);
+                    marker.bindPopup(`<b>${photospot.name}</b><br>${photospot.description}`);
+                    currentPhotospotMarkers.push(marker);
+                });
+
+                const group = new L.featureGroup(currentPhotospotMarkers);
+                map.fitBounds(group.getBounds());
+            } else {
+                const infoPanel = document.getElementById('info-panel');
+                infoPanel.classList.remove('hidden');
+                infoPanel.innerHTML = `<button id="info-panel-close" onclick="closeInfoPanel()">&times;</button><div class="panel-content"><h2>${landmarkName} 포토스팟</h2><p>등록된 포토스팟 정보가 없습니다.</p></div>`;
+            }
+        }
+
+        function showSingleRestaurant(name, lat, lng, description) {
+            clearAllMarkers();
+            const marker = L.marker([lat, lng]).addTo(map);
+            marker.bindPopup(`<b>${name}</b><br>${description}`).openPopup();
+            currentRestaurantMarkers.push(marker);
+            map.setView([lat, lng], 13);
+            const infoPanel = document.getElementById('info-panel');
+            infoPanel.innerHTML = `
+                <button id="info-panel-close" onclick="closeInfoPanel()">&times;</button>
+                <div class="panel-content"><h2>${name}</h2><p><b>설명:</b> ${description}</p></div>`;
+            infoPanel.classList.remove('hidden');
+        }
+
+        function showSingleAttraction(name, lat, lng, description) {
+            clearAllMarkers();
+            const marker = L.marker([lat, lng]).addTo(map);
+            marker.bindPopup(`<b>${name}</b><br>${description}`).openPopup();
+            currentAttractionMarkers.push(marker);
+            map.setView([lat, lng], 13);
+            const infoPanel = document.getElementById('info-panel');
+            infoPanel.innerHTML = `
+                <button id="info-panel-close" onclick="closeInfoPanel()">&times;</button>
+                <div class="panel-content"><h2>${name}</h2><p><b>설명:</b> ${description}</p></div>`;
+            infoPanel.classList.remove('hidden');
+        }
+        
+        function showSinglePhotospot(name, lat, lng, description) {
+            clearAllMarkers();
+            const marker = L.marker([lat, lng]).addTo(map);
+            marker.bindPopup(`<b>${name}</b><br>${description}`).openPopup();
+            currentPhotospotMarkers.push(marker);
+            map.setView([lat, lng], 13);
+            const infoPanel = document.getElementById('info-panel');
+            infoPanel.innerHTML = `
+                <button id="info-panel-close" onclick="closeInfoPanel()">&times;</button>
+                <div class="panel-content"><h2>${name}</h2><p><b>설명:</b> ${description}</p></div>`;
+            infoPanel.classList.remove('hidden');
+        }
+
+        fetch(geojsonDataUrl)
+            .then(response => response.json())
+            .then(data => {
+                L.geoJSON(data, {
+                    style: function(feature) {
+                        const countryName = feature.properties.name;
+                        if (clickableCountries.includes(countryName)) {
+                            return { color: 'red', weight: 1, fillColor: '#f0f0f0', fillOpacity: 0.5 };
+                        } else {
+                            return { opacity: 0, fillOpacity: 0, weight: 0 };
+                        }
+                    },
+                    onEachFeature: function(feature, layer) {
+                        const countryName = feature.properties.name;
+                        if (clickableCountries.includes(countryName)) {
+                            layer.on({
+                                mouseover: function(e) { layer.setStyle({ weight: 3, fillColor: '#00f' }); },
+                                mouseout: function(e) { layer.setStyle({ weight: 1, fillColor: '#f0f0f0' }); },
+                                click: function(e) {
+                                    updateLandmarkPanel(countryName); 
+                                    map.fitBounds(e.target.getBounds());
+                                }
+                            });
+                        }
+                    }
+                }).addTo(map);
+            });
+    </script>
+</body>
+</html>

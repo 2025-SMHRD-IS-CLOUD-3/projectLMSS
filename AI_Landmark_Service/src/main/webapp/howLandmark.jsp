@@ -80,7 +80,7 @@
             <li><a href="<%= request.getContextPath() %>/howLandmark.jsp">Landmark Search란?</a></li>
             <li><a href="main.jsp">사진으로 랜드마크 찾기</a></li>
             <li><a href="mapSearch.jsp">지도로 랜드마크 찾기</a></li>
-            <li><a href="postList.jsp">게시판</a></li>
+            <li><a href="postList">게시판</a></li>
             <% if (loginUser == null) { %>
                 <li><a href="login.jsp">로그인</a></li>
                 <li><a href="register.jsp">회원가입</a></li>
