@@ -35,11 +35,11 @@
 
 | 구분        | 기술 |
 |-------------|--------------------------------|
-| **Frontend** | HTML5, CSS3, JavaScript (ES6+) |
-| **Backend (Main)** | Java 11, JSP & Servlet, Apache Tomcat 9.0 |
-| **Backend (AI)** | Python 3.9, Flask, Pillow |
-| **AI Model** | PyTorch, YOLOv8 (Classification) |
-| **Database** | Oracle Database 21c |
+| **Frontend** | HTML, CSS, JavaScript |
+| **Backend (Main)** | Java, JSP & Servlet, Apache Tomcat 9.0 |
+| **Backend (AI)** | Python, Flask|
+| **AI Model** | YOLOv8 |
+| **Database** | Oracle Database |
 | **IDE & Tools** | Eclipse, Jupyter Notebook, VSCode, Git, GitHub |
 
 ---
