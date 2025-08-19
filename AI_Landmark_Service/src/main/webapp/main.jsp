@@ -6,21 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Landmark Search</title>
     <style>
-<<<<<<< HEAD
         body { margin: 0; font-family: Arial, sans-serif; height: 100vh; display: flex; justify-content: center; align-items: center; background-color: #ffffff; overflow: hidden; }
-=======
-        /* ====== CSS 원본 그대로 유지 ====== */
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: #ffffff;
-            overflow: hidden;
-        }
->>>>>>> branch 'main' of https://github.com/2025-SMHRD-IS-CLOUD-3/projectLMSS.git
         img { width: 80%; }
         .center-container { position: relative; text-align: center; }
         h1 { font-size: 50px; margin-bottom: 20px; }
@@ -65,24 +51,9 @@
             <li><a href="<%=request.getContextPath()%>/howLandmark.jsp">Landmark Search란?</a></li>
             <li><a href="<%=request.getContextPath()%>/main.jsp">사진으로 랜드마크 찾기</a></li>
             <li><a href="<%=request.getContextPath()%>/mapSearch.jsp">지도로 랜드마크 찾기</a></li>
-<<<<<<< HEAD
             <li><a href="<%=request.getContextPath()%>/post.jsp">게시판</a></li>
             <li><a href="<%=request.getContextPath()%>/login.jsp">로그인</a></li>
             <li><a href="<%=request.getContextPath()%>/join.jsp">회원가입</a></li>
-=======
-            <li><a href="<%=request.getContextPath()%>/postList">게시판</a></li>
-            <% if (loginUser != null) { %>
-                <li>
-                    <a href="<%=request.getContextPath()%>/logout?redirect=<%=request.getRequestURI() + (request.getQueryString() != null ? "?" + request.getQueryString() : "")%>">
-                        로그아웃
-                    </a>
-                </li>
-                <li><a href="<%=request.getContextPath()%>/myProfile.jsp">마이페이지</a></li>
-            <% } else { %>
-                <li><a href="<%=request.getContextPath()%>/login.jsp">로그인</a></li>
-                <li><a href="<%=request.getContextPath()%>/register.jsp">회원가입</a></li>
-            <% } %>
->>>>>>> branch 'main' of https://github.com/2025-SMHRD-IS-CLOUD-3/projectLMSS.git
         </ul>
     </div>
 
@@ -102,11 +73,7 @@
                     여기로 이미지를 드래그하거나 <br/>
                     <label for="fileUpload" class="file-label">파일을 업로드 하세요</label>
                 </div>
-<<<<<<< HEAD
                 <input type="file" id="fileUpload" hidden accept="image/*"/>
-=======
-                <input type="file" id="fileUpload" hidden accept="image/*">
->>>>>>> branch 'main' of https://github.com/2025-SMHRD-IS-CLOUD-3/projectLMSS.git
             </div>
 
             <div class="divider"><span>또는</span></div>
@@ -154,39 +121,14 @@
         searchBtn.addEventListener('click', () => uploadModal.style.display = 'flex');
         uploadModal.addEventListener('click', (e) => { if (e.target === uploadModal) uploadModal.style.display = 'none'; });
 
-<<<<<<< HEAD
         function handleFile(file) {
             if (!file) return;
             if (!file.type || !file.type.startsWith('image/')) { friendlyAlert('이미지 파일만 업로드 할 수 있습니다.'); return; }
-=======
-        uploadModal.addEventListener('click', (e) => {
-            if (e.target === uploadModal) {
-                uploadModal.style.display = 'none';
-            }
-        });
-
-        // 파일 업로드 처리 (Flask 연동 추가)
-        function handleFile(file){
-            if(!file) return;
-            if(!file.type || !file.type.startsWith('image/')){
-                alert('이미지 파일만 업로드 할 수 있습니다.');
-                return;
-            }
->>>>>>> branch 'main' of https://github.com/2025-SMHRD-IS-CLOUD-3/projectLMSS.git
             const reader = new FileReader();
-<<<<<<< HEAD
             reader.onload = () => { showPreview(reader.result, file.name); sendImageToAI(file); };
-=======
-            reader.onload = () => {
-                showPreview(reader.result, file.name);
-                // ✅ Flask AI 서버 전송
-                sendImageToAI(file);
-            };
->>>>>>> branch 'main' of https://github.com/2025-SMHRD-IS-CLOUD-3/projectLMSS.git
             reader.readAsDataURL(file);
         }
 
-<<<<<<< HEAD
         async function sendImageToAI(file) {
             const formData = new FormData();
             formData.append('image', file);
@@ -206,48 +148,6 @@
                 window.location.href = "landmarkInfo.jsp?name=" + encodeURIComponent(name);
 
             } catch (err) {
-=======
-        // Flask AI 서버 전송 함수
-        async function sendImageToAI(file) {
-            const formData = new FormData();
-            formData.append('image', file);
-
-            alert('AI가 이미지를 분석 중입니다... 잠시만 기다려주세요.');
-
-            try {
-                const response = await fetch('http://127.0.0.1:5000/predict', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                if (!response.ok) {
-                    throw new Error(`서버 에러: ${response.status}`);
-                }
-
-                const result = await response.json();
-                const landmarkName = result.predicted_landmark;
-                const confidence = (result.confidence * 100).toFixed(2);
-
-                alert(`분석 결과: ${landmarkName}\n신뢰도: ${confidence}%`);
-
-                // ✅ JSP 상세 페이지로 이동
-                window.location.href = "<%=request.getContextPath()%>/landmarkInfo.jsp?name=" + encodeURIComponent(landmarkName);
-
-            } catch (error) {
-                console.error('AI 서버 통신 오류:', error);
-                alert('이미지 분석에 실패했습니다. AI 서버가 실행 중인지 확인해주세요.');
-            }
-        }
-
-        async function handleUrl(url){
-            try{
-                const clean = url.trim();
-                if(!clean) return;
-                await loadImage(clean);
-                showPreview(clean, clean);
-            }catch(err){
-                alert('이미지 URL을 불러오지 못했습니다. 주소를 확인해 주세요.');
->>>>>>> branch 'main' of https://github.com/2025-SMHRD-IS-CLOUD-3/projectLMSS.git
                 console.error(err);
                 friendlyAlert('이미지 분석에 실패했습니다.', err.message);
             } finally { setLoading(false); }
