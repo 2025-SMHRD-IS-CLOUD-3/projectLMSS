@@ -123,4 +123,45 @@ public class PostDAO {
         }
         return post;
     }
+
+    // ✅ 특정 사용자가 작성한 게시글만 조회
+    public List<Post> getPostsByMember(int memberId) {
+        List<Post> postList = new ArrayList<>();
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try {
+            Class.forName("oracle.jdbc.driver.OracleDriver");
+            conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+
+            String sql = "SELECT * FROM POST WHERE MEMBER_ID = ? ORDER BY POST_DATE DESC";
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setInt(1, memberId);
+            rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                Post post = new Post();
+                post.setPostId(rs.getInt("POST_ID"));
+                post.setCategories(rs.getString("CATEGORIES"));
+                post.setTitle(rs.getString("TITLE"));
+                post.setViews(rs.getInt("VIEWS"));
+                post.setPostDate(rs.getDate("POST_DATE"));
+                post.setPostContent(rs.getString("POST_CONTENT"));
+                post.setMemberId(rs.getInt("MEMBER_ID"));
+                postList.add(post);
+            }
+        } catch (SQLException | ClassNotFoundException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (pstmt != null) pstmt.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return postList;
+    }
 }

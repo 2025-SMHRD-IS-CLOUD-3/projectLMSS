@@ -1,6 +1,5 @@
 // 모든 랜드마크 정보
-// 모든 랜드마크 정보 (배열 형식으로 수정)
-const landmarks = [
+const landmarkData = [
     { name: '경복궁', lat: 37.5796, lng: 126.9770, country: 'South Korea', description: '조선 왕조의 법궁으로, 아름다운 건축미를 자랑합니다.' },
     { name: '남산 서울타워', lat: 37.5512, lng: 126.9882, country: 'South Korea', description: '서울의 대표적인 랜드마크이자 관광 명소입니다.' },
     { name: '만리장성', lat: 40.4319, lng: 116.5704, country: 'China', description: '고대 중국의 성벽으로, 인류 역사상 가장 큰 건축물 중 하나입니다.' },
