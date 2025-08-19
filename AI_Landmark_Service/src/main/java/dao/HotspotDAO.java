@@ -25,7 +25,7 @@ public class HotspotDAO {
 	            Class.forName("oracle.jdbc.driver.OracleDriver");
 	            conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
 
-	            String sql = "SELECT * FROM LANDMARK_IMAGE";
+	            String sql = "SELECT * FROM HOTSPOT";
 	            pstmt = conn.prepareStatement(sql);
 	            rs = pstmt.executeQuery();
 
@@ -37,6 +37,8 @@ public class HotspotDAO {
 	                hotspot.setHotspot_long(rs.getDouble("HOTSPOT_LONG"));
 	                hotspot.setHotspot_lati(rs.getDouble("HOTSPOT_LATI"));
 	                hotspot.setHotspot_type(rs.getString("HOTSPOT_TYPE"));
+	                
+	                hotspotList.add(hotspot);
 	            }
 	        } catch (SQLException | ClassNotFoundException e) {
 	            e.printStackTrace();
