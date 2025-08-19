@@ -37,6 +37,7 @@ public class HotspotDAO {
 	                hotspot.setHotspot_long(rs.getDouble("HOTSPOT_LONG"));
 	                hotspot.setHotspot_lati(rs.getDouble("HOTSPOT_LATI"));
 	                hotspot.setHotspot_type(rs.getString("HOTSPOT_TYPE"));
+	                hotspot.setHotspot_name(rs.getString("HOTSPOT_NAME"));
 	                
 	                hotspotList.add(hotspot);
 	            }
