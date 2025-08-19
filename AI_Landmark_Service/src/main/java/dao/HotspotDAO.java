@@ -33,7 +33,6 @@ public class HotspotDAO {
 	            	Hotspot hotspot = new Hotspot();
 	                hotspot.setHotspot_id(rs.getInt("HOTSPOT_ID"));
 	                hotspot.setHotspot_info(rs.getString("HOTSPOT_INFO"));
-	                hotspot.setHotspot_type(rs.getString("HOTSPOT_INFO"));
 	                hotspot.setHotspot_long(rs.getDouble("HOTSPOT_LONG"));
 	                hotspot.setHotspot_lati(rs.getDouble("HOTSPOT_LATI"));
 	                hotspot.setHotspot_type(rs.getString("HOTSPOT_TYPE"));
