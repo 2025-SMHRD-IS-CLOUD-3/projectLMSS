@@ -90,6 +90,9 @@
                         로그아웃
                     </a>
                 </li>
+                <li>
+                	<a href="<%=request.getContextPath()%>/myProfile.jsp">마이페이지</a></li>
+                </li>
             <% } %>
         </ul>
     </div>

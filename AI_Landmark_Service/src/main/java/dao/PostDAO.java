@@ -83,4 +83,44 @@ public class PostDAO {
         }
         return result; // 1이면 성공, 0이면 실패
     }
+
+    // ✅ 게시글 단일 조회
+    public Post getPostById(int postId) {
+        Post post = null;
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try {
+            Class.forName("oracle.jdbc.driver.OracleDriver");
+            conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+
+            String sql = "SELECT * FROM POST WHERE POST_ID = ?";
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setInt(1, postId);
+            rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                post = new Post();
+                post.setPostId(rs.getInt("POST_ID"));
+                post.setCategories(rs.getString("CATEGORIES"));
+                post.setTitle(rs.getString("TITLE"));
+                post.setViews(rs.getInt("VIEWS"));
+                post.setPostDate(rs.getDate("POST_DATE"));
+                post.setPostContent(rs.getString("POST_CONTENT"));
+                post.setMemberId(rs.getInt("MEMBER_ID"));
+            }
+        } catch (SQLException | ClassNotFoundException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (pstmt != null) pstmt.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return post;
+    }
 }
