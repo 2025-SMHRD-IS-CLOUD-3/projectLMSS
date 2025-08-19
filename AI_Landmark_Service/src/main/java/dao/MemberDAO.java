@@ -21,33 +21,57 @@ public class MemberDAO {
         } catch (SQLException e) { e.printStackTrace(); }
     }
 
-    public boolean registerMember(String id, String pwd, String email, String name, String nickname) {
+    // 회원 조회
+    public Member getMemberById(String id) {
         Connection conn = null;
         PreparedStatement pstmt = null;
-        boolean success = false;
+        ResultSet rs = null;
+        Member member = null;
+
         try {
             conn = getConnection();
-            String sql = "INSERT INTO MEMBER (MEMBER_ID, ID, PWD, EMAIL, NAME, NICKNAME) " +
-                         "VALUES (MEMBER_SEQ.NEXTVAL, ?, ?, ?, ?, ?)";
+            String sql = "SELECT ID, PWD, EMAIL, NAME, NICKNAME FROM MEMBER WHERE ID = ?";
             pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, id);
-            pstmt.setString(2, pwd);
-            pstmt.setString(3, email);
-            pstmt.setString(4, name);
-            pstmt.setString(5, nickname);
+            rs = pstmt.executeQuery();
 
-            int result = pstmt.executeUpdate();
-            if (result > 0) success = true;
+            if (rs.next()) {
+                member = new Member();
+                member.setId(rs.getString("ID"));
+                member.setPwd(rs.getString("PWD"));
+                member.setEmail(rs.getString("EMAIL"));
+                member.setName(rs.getString("NAME"));
+                member.setNickname(rs.getString("NICKNAME"));
+            }
+        } catch (SQLException | ClassNotFoundException e) {
+            e.printStackTrace();
+        } finally {
+            closeResources(conn, pstmt, rs);
+        }
+
+        return member;
+    }
+
+    // 비밀번호 + 이메일 수정
+    public int updateMemberPasswordAndEmail(String id, String newPassword, String newEmail) {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        int result = 0;
+
+        try {
+            conn = getConnection();
+            String sql = "UPDATE MEMBER SET PWD=?, EMAIL=? WHERE ID=?";
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, newPassword);
+            pstmt.setString(2, newEmail);
+            pstmt.setString(3, id);
+
+            result = pstmt.executeUpdate();
         } catch (SQLException | ClassNotFoundException e) {
             e.printStackTrace();
         } finally {
             closeResources(conn, pstmt, null);
         }
-        return success;
+        return result;
     }
-
-	public Member getMemberById(String memberId) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 }

@@ -117,7 +117,7 @@
       <li><a href="./main.jsp">사진으로 랜드마크 찾기</a></li>
       <li><a href="./mapSearch.jsp">지도로 랜드마크 찾기</a></li>
       <li><a href="./postList">게시판</a></li>
-      <li><a href="logout.jsp">로그아웃</a></li>
+      <li><a href="logout">로그아웃</a></li>
     </ul>
   </div>
 
@@ -185,28 +185,29 @@
       <p class="hint">카드를 클릭하면 해당 랜드마크 상세로 이동합니다.</p>
     </section>
 
-    <!-- 회원 정보 수정 -->
-    <section id="panel-profile" role="tabpanel" aria-labelledby="tab-profile" class="blk" hidden>
-      <form class="form" action="updateProfile.jsp" method="post">
-        <div class="form-row">
-          <label class="label" for="newPw">새 비밀번호 입력</label>
-          <input id="newPw" name="newPw" type="password" class="input" autocomplete="new-password" />
-        </div>
-        <div class="form-row">
-          <label class="label" for="newPw2">새 비밀번호 확인</label>
-          <input id="newPw2" name="newPw2" type="password" class="input" autocomplete="new-password" />
-        </div>
-        <div class="form-row">
-          <label class="label" for="email">이메일</label>
-          <input id="email" name="email" type="email" class="input" value="<%= userEmail %>" />
-        </div>
-        <div class="actions">
-          <a class="link-danger" href="deleteAccount.jsp">회원탈퇴</a>
-          <button class="btn" type="submit">정보 저장</button>
-        </div>
-        <p class="hint">※ 저장 버튼 클릭 시 서버로 변경 사항을 전송합니다.</p>
-      </form>
-    </section>
+	<!-- 회원 정보 수정 -->
+	<section id="panel-profile" role="tabpanel" aria-labelledby="tab-profile" class="blk" hidden>
+	  <form class="form" action="editProfile" method="post">
+	    <div class="form-row">
+	      <label class="label" for="pwd">새 비밀번호 입력</label>
+	      <input id="pwd" name="pwd" type="password" class="input" autocomplete="new-password" />
+	    </div>
+	    <div class="form-row">
+	      <label class="label" for="pwd2">새 비밀번호 확인</label>
+	      <input id="pwd2" name="pwd2" type="password" class="input" autocomplete="new-password" />
+	    </div>
+	    <div class="form-row">
+	      <label class="label" for="email">이메일</label>
+	      <input id="email" name="email" type="email" class="input" value="<%= userEmail %>" />
+	    </div>
+	    <div class="actions">
+	      <a class="link-danger" href="deleteAccount.jsp">회원탈퇴</a>
+	      <button class="btn" type="submit">정보 저장</button>
+	    </div>
+	    <p class="hint">※ 저장 버튼 클릭 시 서버로 변경 사항을 전송합니다.</p>
+	  </form>
+	</section>
+
   </main>
 
   <script>
