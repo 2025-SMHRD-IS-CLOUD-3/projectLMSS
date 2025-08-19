@@ -1,4 +1,8 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%
+    // 현재 로그인 상태 확인
+    String loginUser = (String) session.getAttribute("loginUser");
+%>
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -51,9 +55,16 @@
             <li><a href="<%=request.getContextPath()%>/howLandmark.jsp">Landmark Search란?</a></li>
             <li><a href="<%=request.getContextPath()%>/main.jsp">사진으로 랜드마크 찾기</a></li>
             <li><a href="<%=request.getContextPath()%>/mapSearch.jsp">지도로 랜드마크 찾기</a></li>
-            <li><a href="<%=request.getContextPath()%>/post.jsp">게시판</a></li>
-            <li><a href="<%=request.getContextPath()%>/login.jsp">로그인</a></li>
-            <li><a href="<%=request.getContextPath()%>/join.jsp">회원가입</a></li>
+            <li><a href="<%=request.getContextPath()%>/postList">게시판</a></li>
+            <% if (loginUser != null) { %>
+                <li>
+                    <a href="<%=request.getContextPath()%>/logout">로그아웃</a>
+                </li>
+                <li><a href="<%=request.getContextPath()%>/myProfile.jsp">마이페이지</a></li>
+            <% } else { %>
+                <li><a href="<%=request.getContextPath()%>/login.jsp">로그인</a></li>
+                <li><a href="<%=request.getContextPath()%>/join.jsp">회원가입</a></li>
+            <% } %>
         </ul>
     </div>
 
@@ -66,7 +77,6 @@
     <div class="modal" id="uploadModal" role="dialog" aria-modal="true" aria-label="이미지 검색">
         <div class="modal-content">
             <h2>이미지 검색</h2>
-
             <div class="drop-zone" id="dropZone">
                 <img src="<%=request.getContextPath()%>/data/img-upload.png" class="drop-icon" alt="upload icon"/>
                 <div class="drop-text">
@@ -107,14 +117,6 @@
 
         const setLoading = (b)=> loadingText.style.display = b ? 'block' : 'none';
         const showPreview = (src, name)=>{ previewImg.src = src; previewName.textContent = name || ''; previewWrap.style.display = 'block'; };
-        
-        const friendlyAlert = (title, detail) => {
-            let message = title;
-            if (detail) {
-                message += "\n\n상세: " + detail;
-            }
-            alert(message);
-        };
 
         menuBtn.addEventListener('click', (e) => { e.stopPropagation(); sideMenu.classList.toggle('open'); });
         document.addEventListener('click', (e) => { if (!sideMenu.contains(e.target) && !menuBtn.contains(e.target)) sideMenu.classList.remove('open'); });
@@ -123,7 +125,7 @@
 
         function handleFile(file) {
             if (!file) return;
-            if (!file.type || !file.type.startsWith('image/')) { friendlyAlert('이미지 파일만 업로드 할 수 있습니다.'); return; }
+            if (!file.type || !file.type.startsWith('image/')) { alert('이미지 파일만 업로드 할 수 있습니다.'); return; }
             const reader = new FileReader();
             reader.onload = () => { showPreview(reader.result, file.name); sendImageToAI(file); };
             reader.readAsDataURL(file);
@@ -135,74 +137,44 @@
             setLoading(true);
             try {
                 const response = await fetch('http://127.0.0.1:5000/predict', { method: 'POST', body: formData });
-                const text = await response.text();
-                let result;
-                try { result = JSON.parse(text); } catch(e) { throw new Error("서버가 JSON이 아닌 응답을 반환했습니다: " + text.slice(0,200) + "..."); }
+                const result = await response.json();
                 if (!response.ok) throw new Error(result.error || "서버 오류(" + response.status + ")");
-                
                 const name = result.predicted_landmark;
                 const conf = (result.confidence * 100).toFixed(2);
-                
-                // ❗ [수정] JSP와 충돌하지 않도록 문자열 합치기 방식으로 변경
                 alert("분석 결과: " + name + "\n신뢰도: " + conf + "%");
-                window.location.href = "landmarkInfo.jsp?name=" + encodeURIComponent(name);
-
+                window.location.href = "<%=request.getContextPath()%>/landmarkInfo.jsp?name=" + encodeURIComponent(name);
             } catch (err) {
                 console.error(err);
-                friendlyAlert('이미지 분석에 실패했습니다.', err.message);
+                alert('이미지 분석에 실패했습니다.\n' + err.message);
             } finally { setLoading(false); }
         }
 
         async function handleUrl(rawUrl) {
             const url = (rawUrl || '').trim();
-            if (!url) { friendlyAlert('이미지 링크를 입력하세요.'); return; }
+            if (!url) { alert('이미지 링크를 입력하세요.'); return; }
             showPreview(url, 'URL 이미지');
-            try {
-                const resp = await fetch(url, { mode: 'cors' });
-                if (!resp.ok) throw new Error("원격 서버 응답 오류: " + resp.status);
-                const blob = await resp.blob();
-                const guessedName = url.split('/').pop()?.split('?')[0] || 'image_from_url';
-                const file = new File([blob], guessedName, { type: blob.type || 'application/octet-stream' });
-                await sendImageToAI(file);
-                return;
-            } catch (e) {
-                console.warn('브라우저 직접 다운로드 실패(CORS 가능성):', e);
-            }
-
             setLoading(true);
             try {
-                const resp2 = await fetch('http://127.0.0.1:5000/predict_url', {
+                const resp = await fetch('http://127.0.0.1:5000/predict_url', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ image_url: url })
                 });
-                const text = await resp2.text();
-                let data;
-                try { data = JSON.parse(text); } catch(e) { throw new Error("서버가 JSON이 아닌 응답을 반환했습니다: " + text.slice(0,200) + "..."); }
-                if (!resp2.ok) {
-                    throw new Error(data.error ? (resp2.status + " " + data.error) : "서버 오류(" + resp2.status + ")");
-                }
+                const data = await resp.json();
+                if (!resp.ok) throw new Error(data.error || "서버 오류(" + resp.status + ")");
                 const name = data.predicted_landmark, conf = (data.confidence * 100).toFixed(2);
-
-                // ❗ [수정] JSP와 충돌하지 않도록 문자열 합치기 방식으로 변경
                 alert("분석 결과: " + name + "\n신뢰도: " + conf + "%");
-                window.location.href = "landmarkInfo.jsp?name=" + encodeURIComponent(name);
-
+                window.location.href = "<%=request.getContextPath()%>/landmarkInfo.jsp?name=" + encodeURIComponent(name);
             } catch (err) {
                 console.error('URL 분석 실패:', err);
-                friendlyAlert('이미지 링크 분석에 실패했습니다.', err.message);
+                alert('이미지 링크 분석에 실패했습니다.\n' + err.message);
             } finally { setLoading(false); }
         }
 
-        ;['dragenter','dragover'].forEach(evt => {
-            dropZone.addEventListener(evt, (e) => { e.preventDefault(); e.stopPropagation(); dropZone.classList.add('dragover'); });
-        });
-        ;['dragleave','drop'].forEach(evt => {
-            dropZone.addEventListener(evt, (e) => { e.preventDefault(); e.stopPropagation(); dropZone.classList.remove('dragover'); });
-        });
+        ;['dragenter','dragover'].forEach(evt => dropZone.addEventListener(evt, (e) => { e.preventDefault(); e.stopPropagation(); dropZone.classList.add('dragover'); }));
+        ;['dragleave','drop'].forEach(evt => dropZone.addEventListener(evt, (e) => { e.preventDefault(); e.stopPropagation(); dropZone.classList.remove('dragover'); }));
         dropZone.addEventListener('drop', (e) => { const files = e.dataTransfer?.files; if (files && files.length) handleFile(files[0]); });
         fileInput.addEventListener('change', () => { if (fileInput.files && fileInput.files.length) handleFile(fileInput.files[0]); });
-
         urlSearchBtn.addEventListener('click', () => handleUrl(imageUrlInput.value));
         imageUrlInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleUrl(imageUrlInput.value); });
     </script>
