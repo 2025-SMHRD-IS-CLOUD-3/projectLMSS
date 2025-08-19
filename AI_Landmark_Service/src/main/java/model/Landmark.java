@@ -1,5 +1,7 @@
 package model;
 
+import java.util.List;
+
 public class Landmark {
 
     private int landmark_id;
@@ -19,6 +21,14 @@ public class Landmark {
     private String latitude;
     private String landmark_name_en;
     private String history;
+    private String tags;
+    
+    public String getTags() {
+        return tags;
+    }
+    public void setTags(String tags) {
+        this.tags = tags;
+    }
     
 	public Landmark(int landmark_id, String landmark_name, String landmark_location, String landmark_desc,
 			String architect, String landmark_hours, String fee, String traffic_info, String tmi, String arch_style,

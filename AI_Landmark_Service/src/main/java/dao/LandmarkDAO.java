@@ -1,6 +1,7 @@
 package dao;
 
 import model.Landmark; // Landmark.java 클래스를 사용하기 위해 import
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +21,10 @@ public class LandmarkDAO {
             Class.forName("oracle.jdbc.driver.OracleDriver");
             conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
 
-            String sql = "SELECT * FROM LANDMARK";
+            String sql = "SELECT L.*, " +
+                    " (SELECT LISTAGG(T.TAG_CONTENT, ',') WITHIN GROUP (ORDER BY T.TAG_ID) " +
+                    "  FROM LANDMARK_TAG T WHERE T.LANDMARK_ID = L.LANDMARK_ID) AS TAGS " +
+                    "FROM LANDMARK L";
             pstmt = conn.prepareStatement(sql);
             rs = pstmt.executeQuery();
 
@@ -43,6 +47,7 @@ public class LandmarkDAO {
                 landmark.setLatitude(rs.getString("LATITUDE"));
                 landmark.setHistory(rs.getString("HISTORY"));
                 landmark.setLandmark_name_en(rs.getString("LANDMARK_NAME_EN"));
+                landmark.setTags(rs.getString("TAGS"));
                 
                 landmarkList.add(landmark);
             }
