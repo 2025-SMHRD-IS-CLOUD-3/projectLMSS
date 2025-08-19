@@ -21,9 +21,7 @@
             background-color: #ffffff;
             overflow: hidden;
         }
-        img {
-            width: 80%;
-        }
+        img { width: 80%; }
         .center-container { position: relative; text-align: center; }
         h1 { font-size: 50px; margin-bottom: 20px; }
         .search-btn {
@@ -128,10 +126,7 @@
                         로그아웃
                     </a>
                 </li>
-                <li>
-                	<a href="<%=request.getContextPath()%>/myProfile.jsp">마이페이지</a></li>
-                </li>
-                
+                <li><a href="<%=request.getContextPath()%>/myProfile.jsp">마이페이지</a></li>
             <% } else { %>
                 <li><a href="<%=request.getContextPath()%>/login.jsp">로그인</a></li>
                 <li><a href="<%=request.getContextPath()%>/register.jsp">회원가입</a></li>
@@ -155,12 +150,10 @@
                     여기로 이미지를 드래그하거나 <br>
                     <label for="fileUpload" class="file-label">파일을 업로드 하세요</label>
                 </div>
-                <input type="file" id="fileUpload" hidden>
+                <input type="file" id="fileUpload" hidden accept="image/*">
             </div>
 
-            <div class="divider">
-                <span>또는</span>
-            </div>
+            <div class="divider"><span>또는</span></div>
 
             <div class="url-search">
                 <input type="text" id="imageUrl" placeholder="이미지 링크 붙여넣기">
@@ -209,6 +202,7 @@
             }
         });
 
+        // 파일 업로드 처리 (Flask 연동 추가)
         function handleFile(file){
             if(!file) return;
             if(!file.type || !file.type.startsWith('image/')){
@@ -218,8 +212,42 @@
             const reader = new FileReader();
             reader.onload = () => {
                 showPreview(reader.result, file.name);
+                // ✅ Flask AI 서버 전송
+                sendImageToAI(file);
             };
             reader.readAsDataURL(file);
+        }
+
+        // Flask AI 서버 전송 함수
+        async function sendImageToAI(file) {
+            const formData = new FormData();
+            formData.append('image', file);
+
+            alert('AI가 이미지를 분석 중입니다... 잠시만 기다려주세요.');
+
+            try {
+                const response = await fetch('http://127.0.0.1:5000/predict', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`서버 에러: ${response.status}`);
+                }
+
+                const result = await response.json();
+                const landmarkName = result.predicted_landmark;
+                const confidence = (result.confidence * 100).toFixed(2);
+
+                alert(`분석 결과: ${landmarkName}\n신뢰도: ${confidence}%`);
+
+                // ✅ JSP 상세 페이지로 이동
+                window.location.href = "<%=request.getContextPath()%>/landmarkInfo.jsp?name=" + encodeURIComponent(landmarkName);
+
+            } catch (error) {
+                console.error('AI 서버 통신 오류:', error);
+                alert('이미지 분석에 실패했습니다. AI 서버가 실행 중인지 확인해주세요.');
+            }
         }
 
         async function handleUrl(url){
