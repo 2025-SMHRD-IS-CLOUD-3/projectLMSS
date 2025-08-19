@@ -45,7 +45,143 @@
 ---
 
 ## 🗂️ 데이터베이스 스키마 (ERD)
-프로젝트는 **회원, 랜드마크, 게시글, 댓글, 즐겨찾기** 등을 포함한 총 8개 테이블로 구성되어 있습니다.  
+# 📊 Database Schema
+
+## 📌 테이블 개요
+
+| 테이블명        | ID              | 설명                        |
+|-----------------|-----------------|-----------------------------|
+| **회원**        | MEMBER          | 서비스 사용자 정보           |
+| **게시글**      | POST            | 회원이 작성한 게시물         |
+| **랜드마크**    | LANDMARK        | 지역 명소 정보               |
+| **이미지**      | LANDMARK_IMAGE  | 랜드마크별 이미지 정보       |
+| **댓글**        | REPLY           | 회원이 작성한 댓글           |
+| **즐겨찾기**    | FAVORITES       | 회원 즐겨찾기 랜드마크       |
+| **태그**        | LANDMARK_TAG    | 랜드마크 태그 정보           |
+| **핫스팟**      | HOTSPOT         | 랜드마크 주변 핫플 정보      |
+
+---
+
+## 🏷️ 테이블 정의
+
+### 1. 회원 (MEMBER)
+```sql
+CREATE TABLE MEMBER(
+    MEMBER_ID NUMBER(10) PRIMARY KEY NOT NULL,
+    ID VARCHAR2(20) UNIQUE NOT NULL,
+    PWD VARCHAR2(100) NOT NULL,
+    EMAIL VARCHAR2(50) UNIQUE NOT NULL,
+    NAME VARCHAR2(50) NOT NULL,
+    NICKNAME VARCHAR2(30) UNIQUE NOT NULL
+);
+```
+
+---
+
+### 2. 게시글 (POST)
+```sql
+CREATE TABLE POST(
+    POST_ID NUMBER(10) PRIMARY KEY NOT NULL,
+    CATEGORIES VARCHAR2(50) NOT NULL,
+    TITLE VARCHAR2(50) NOT NULL,
+    VIEWS NUMBER(10),
+    POST_DATE DATE,
+    POST_CONTENT CLOB NOT NULL,
+    MEMBER_ID NUMBER(10),
+    FOREIGN KEY (MEMBER_ID) REFERENCES MEMBER(MEMBER_ID)
+);
+```
+
+---
+
+### 3. 랜드마크 (LANDMARK)
+```sql
+CREATE TABLE LANDMARK(
+    LANDMARK_ID NUMBER(10) PRIMARY KEY NOT NULL,
+    ARCHITECT VARCHAR2(100),
+    LANDMARK_NAME VARCHAR2(100) NOT NULL UNIQUE,
+    LANDMARK_LOCATION VARCHAR2(100) NOT NULL,
+    LANDMARK_DESC VARCHAR2(4000),
+    LANDMARK_HOURS VARCHAR2(100),
+    FEE VARCHAR2(50),
+    TRAFFIC_INFO VARCHAR2(4000),
+    TMI VARCHAR2(4000),
+    ARCH_STYLE VARCHAR2(100),
+    WEBSITE VARCHAR2(100),
+    LANDMARK_USAGE VARCHAR2(4000),
+    COMPLETION_TIME VARCHAR2(100),
+    LONGITUDE FLOAT,
+    LATITUDE FLOAT,
+    LANDMARK_NAME_EN VARCHAR2(100),
+    HISTORY VARCHAR2(4000)
+);
+```
+
+---
+
+### 4. 랜드마크 이미지 (LANDMARK_IMAGE)
+```sql
+CREATE TABLE LANDMARK_IMAGE(
+    IMAGE_ID NUMBER(10) PRIMARY KEY NOT NULL,
+    LANDMARK_ID NUMBER(10),
+    FOREIGN KEY (LANDMARK_ID) REFERENCES LANDMARK(LANDMARK_ID),
+    IMAGE_URL VARCHAR2(4000),
+    IMAGE_TYPE NUMBER(10)
+);
+```
+
+---
+
+### 5. 댓글 (REPLY)
+```sql
+CREATE TABLE REPLY(
+    REPLY_ID NUMBER(10) PRIMARY KEY NOT NULL,
+    MEMBER_ID NUMBER(10),
+    FOREIGN KEY (MEMBER_ID) REFERENCES MEMBER(MEMBER_ID),
+    REPLY_DATE DATE,
+    REPLY_CONTENT CLOB,
+    REFERENCE_ID NUMBER(10)
+);
+```
+
+---
+
+### 6. 즐겨찾기 (FAVORITES)
+```sql
+CREATE TABLE FAVORITES(
+    FAVORITES_ID NUMBER(10) PRIMARY KEY NOT NULL,
+    MEMBER_ID NUMBER(10),
+    FOREIGN KEY (MEMBER_ID) REFERENCES MEMBER(MEMBER_ID),
+    LANDMARK_ID NUMBER(10),
+    FOREIGN KEY (LANDMARK_ID) REFERENCES LANDMARK(LANDMARK_ID)
+);
+```
+
+---
+
+### 7. 랜드마크 태그 (LANDMARK_TAG)
+```sql
+CREATE TABLE LANDMARK_TAG(
+    TAG_ID NUMBER(10) PRIMARY KEY NOT NULL,
+    LANDMARK_ID NUMBER(10),
+    FOREIGN KEY (LANDMARK_ID) REFERENCES LANDMARK(LANDMARK_ID),
+    TAG_CONTENT VARCHAR2(100)
+);
+```
+
+---
+
+### 8. 핫스팟 (HOTSPOT)
+```sql
+CREATE TABLE HOTSPOT(
+    HOTSPOT_ID NUMBER(10) PRIMARY KEY NOT NULL,
+    HOTSPOT_NAME VARCHAR2(100),
+    HOTSPOT_LONG FLOAT,
+    HOTSPOT_LATI FLOAT,
+    HOTSPOT_TYPE VARCHAR2(100),
+    HOTSPOT_INFO VARCHAR2(4000)
+);
+```
 
 ---
 
