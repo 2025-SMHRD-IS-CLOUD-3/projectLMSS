@@ -1,6 +1,6 @@
 package dao;
 
-import model.Landmark; // Landmark.java 클래스를 사용하기 위해 import
+import model.Landmark;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -9,7 +9,7 @@ import java.util.List;
 public class LandmarkDAO {
     private static final String DB_URL = "jdbc:oracle:thin:@project-db-campus.smhrd.com:1524:xe";
     private static final String DB_USER = "campus_24IS_CLOUD3_p2_2";
-    private static final String DB_PASSWORD = "smhrd2"; // 본인의 비밀번호로 수정
+    private static final String DB_PASSWORD = "smhrd2";
 
     public List<Landmark> getAllLandmarks() {
         List<Landmark> landmarkList = new ArrayList<>();
@@ -23,7 +23,7 @@ public class LandmarkDAO {
 
             String sql = "SELECT L.*, " +
                     " (SELECT LISTAGG(T.TAG_CONTENT, ',') WITHIN GROUP (ORDER BY T.TAG_ID) " +
-                    "  FROM LANDMARK_TAG T WHERE T.LANDMARK_ID = L.LANDMARK_ID) AS TAGS " +
+                    "  FROM LANDMARK_TAG T WHERE T.LANDMARK_ID = L.LANDMARK_ID) AS LANDMARK_TAGS " +
                     "FROM LANDMARK L";
             pstmt = conn.prepareStatement(sql);
             rs = pstmt.executeQuery();
@@ -47,7 +47,7 @@ public class LandmarkDAO {
                 landmark.setLatitude(rs.getString("LATITUDE"));
                 landmark.setHistory(rs.getString("HISTORY"));
                 landmark.setLandmark_name_en(rs.getString("LANDMARK_NAME_EN"));
-                landmark.setTags(rs.getString("TAGS"));
+                landmark.setTags(rs.getString("LANDMARK_TAGS"));
                 
                 landmarkList.add(landmark);
             }

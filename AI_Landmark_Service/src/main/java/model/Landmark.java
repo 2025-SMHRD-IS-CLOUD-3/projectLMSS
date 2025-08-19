@@ -1,7 +1,5 @@
 package model;
 
-import java.util.List;
-
 public class Landmark {
 
     private int landmark_id;
@@ -30,10 +28,11 @@ public class Landmark {
         this.tags = tags;
     }
     
+	
 	public Landmark(int landmark_id, String landmark_name, String landmark_location, String landmark_desc,
 			String architect, String landmark_hours, String fee, String traffic_info, String tmi, String arch_style,
 			String website, String landmark_usage, String completion_time, String longitude, String latitude,
-			String landmark_name_en, String history) {
+			String landmark_name_en, String history, String tags) {
 		super();
 		this.landmark_id = landmark_id;
 		this.landmark_name = landmark_name;
@@ -52,6 +51,7 @@ public class Landmark {
 		this.latitude = latitude;
 		this.landmark_name_en = landmark_name_en;
 		this.history = history;
+		this.tags = tags;
 	}
 	public String getHistory() {
 		return history;
