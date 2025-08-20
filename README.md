@@ -136,11 +136,14 @@ CREATE TABLE LANDMARK_IMAGE(
 ```sql
 CREATE TABLE REPLY(
     REPLY_ID NUMBER(10) PRIMARY KEY NOT NULL,
-    MEMBER_ID NUMBER(10),
-    FOREIGN KEY (MEMBER_ID) REFERENCES MEMBER(MEMBER_ID),
     REPLY_DATE DATE,
     REPLY_CONTENT CLOB,
-    REFERENCE_ID NUMBER(10)
+    MEMBER_ID NUMBER(10),
+    FOREIGN KEY (MEMBER_ID) REFERENCES MEMBER(MEMBER_ID),
+    LANDMARK_ID NUMBER(10),
+    FOREIGN KEY (LANDMARK_ID) REFERENCES LANDMARK(LANDMARK_ID),
+    POST_ID NUMBER(10),
+    FOREIGN KEY (POST_ID) REFERENCES POST(POST_ID)
 );
 ```
 
@@ -201,16 +204,12 @@ python app.py
 5) `http://127.0.0.1:5000` 에서 서버 실행 확인  
 
 ### 2. 메인 서버 실행 (Java)
-1) Eclipse에서 Maven 프로젝트 Import  
+사용자가 접속할 메인 웹사이트를 구동합니다.
+1) Eclipse에서 Maven 프로젝트 Import
 2) `pom.xml` 의존성(Oracle JDBC, Gson 등) 설치  
-3) `LandmarkDAO.java`의 DB 접속 정보를 환경에 맞게 수정  
+3) `src/main/java` 경로에 있는 `LandmarkDAO.java` 파일의 DB 접속 정보를 본인의 Oracle DB 환경에 맞게 수정합니다. 
 4) Tomcat 서버에 배포 후 실행  
-5) 접속: `http://localhost:8081/{ContextPath}`  
-
-### 3. 프론트엔드 실행
-1) VSCode의 Live Server 확장 프로그램 실행  
-2) `main.html` 열기  
-3) `main.js`, `landmarkInfo.js` 등 JS 파일의 `fetch` 주소가 실행 중인 Tomcat 서버 주소와 일치하는지 확인  
+5) 접속: `[http://localhost:8081/{ContextPath}](http://localhost:8081/{프로젝트 컨텍스트 경로}/main.jsp)` 
 
 ---
 
@@ -219,7 +218,7 @@ python app.py
 | 이름 | 역할 |
 |------|-------------------------------|
 | 김명보 | 팀장, AI 모델 개발 및 학습 |
-| 배준호 | 백엔드 개발, DB 설계 및 연동 |
+| 김효진 | 백엔드 개발, DB 설계 및 연동 |
 | 진승준 | 프론트엔드 개발, UI/UX 설계 |
-| 김효진 | QA, 데이터 수집 및 전처리 |
-| 배종민 | QA, 데이터 수집 및 전처리 |
+| 배준호 | QA, 데이터 수집 및 전처리, 문서 작성 |
+| 배종민 | QA, 데이터 수집 및 전처리, 문서 작성 |
