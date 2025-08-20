@@ -10,6 +10,7 @@ public class Post {
     private Date postDate;
     private String postContent;
     private int memberId;
+    private String nickname; // 작성자 닉네임 추가
 
     public int getPostId() {
         return postId;
@@ -65,5 +66,13 @@ public class Post {
 
     public void setMemberId(int memberId) {
         this.memberId = memberId;
+    }
+
+    public String getNickname() {
+        return nickname;
+    }
+
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
     }
 }

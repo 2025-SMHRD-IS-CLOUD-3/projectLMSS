@@ -5,75 +5,96 @@ import model.Post;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.*;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
 @WebServlet("/postWrite")
 public class PostWriteServlet extends HttpServlet {
 
-    // ✅ GET 요청: 글쓰기 폼 진입
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
-
+        
+        System.out.println("✅ PostWriteServlet GET 실행됨");
+        
+        // 로그인 체크
         HttpSession session = request.getSession();
-        String loginUser = (String) session.getAttribute("loginUser");
-
-        if (loginUser == null) {
-            // 로그인 안 된 경우 → 로그인 후 돌아올 URL 저장
-            session.setAttribute("redirectURL", request.getContextPath() + "/postWrite");
-            response.sendRedirect(request.getContextPath() + "/login.jsp");
+        if (session.getAttribute("loginUser") == null) {
+            // 로그인되지 않은 경우 로그인 페이지로 리다이렉트
+            response.sendRedirect(request.getContextPath() + "/login.jsp?redirect=postWrite");
             return;
         }
-
-        // 로그인 되어 있음 → 글쓰기 JSP 열기 (WEB-INF 경로)
+        
+        // 로그인된 경우 postWrite.jsp로 포워드
         request.getRequestDispatcher("/WEB-INF/postWrite.jsp").forward(request, response);
     }
 
-    // ✅ POST 요청: 글 작성 처리
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
-
+        
+        System.out.println("✅ PostWriteServlet POST 실행됨");
+        
         request.setCharacterEncoding("UTF-8");
-
-        // 🔹 기존 세션을 유지하도록 수정
+        
+        // 로그인 체크
         HttpSession session = request.getSession();
-        String loginUser = (String) session.getAttribute("loginUser");
-
-        if (loginUser == null) {
-            // 로그인 세션이 없으면 로그인 페이지로
-            session.setAttribute("redirectURL", request.getContextPath() + "/postWrite");
-            response.sendRedirect(request.getContextPath() + "/login.jsp");
+        if (session.getAttribute("loginUser") == null) {
+            response.sendRedirect(request.getContextPath() + "/login.jsp?redirect=postWrite");
             return;
         }
-
-        // ✅ 폼 데이터 받기
+        
+        // 폼 데이터 받기
         String title = request.getParameter("title");
         String category = request.getParameter("category");
         String content = request.getParameter("content");
-
-        // ✅ Post 객체 생성
+        
+        System.out.println("제목: " + title);
+        System.out.println("카테고리: " + category);
+        System.out.println("내용: " + content);
+        
+        // 유효성 검사
+        if (title == null || title.trim().isEmpty()) {
+            request.setAttribute("error", "제목을 입력해주세요.");
+            request.getRequestDispatcher("/WEB-INF/postWrite.jsp").forward(request, response);
+            return;
+        }
+        
+        if (content == null || content.trim().isEmpty()) {
+            request.setAttribute("error", "내용을 입력해주세요.");
+            request.getRequestDispatcher("/WEB-INF/postWrite.jsp").forward(request, response);
+            return;
+        }
+        
+        // Post 객체 생성
         Post post = new Post();
-        post.setTitle(title);
-        post.setCategories(category);
-        post.setPostContent(content);
-
-        // ✅ 로그인된 사용자 ID 가져오기
+        post.setTitle(title.trim());
+        post.setCategories(category != null ? category.trim() : "일반");
+        post.setPostContent(content.trim());
+        
+        // 로그인된 사용자 ID 가져오기
         Integer memberId = (Integer) session.getAttribute("memberId");
         if (memberId == null) {
-            memberId = 0; // 안전장치 (실제론 로그인 시 꼭 넣어줘야 함)
+            request.setAttribute("error", "로그인 정보가 올바르지 않습니다.");
+            request.getRequestDispatcher("/WEB-INF/postWrite.jsp").forward(request, response);
+            return;
         }
         post.setMemberId(memberId);
-
-        // ✅ DB 저장
+        
+        // DB 저장
         PostDAO postDAO = new PostDAO();
         int result = postDAO.insertPost(post);
-
+        
         if (result > 0) {
+            System.out.println("✅ 게시글 작성 성공");
             response.sendRedirect(request.getContextPath() + "/postList");
         } else {
-            response.sendRedirect(request.getContextPath() + "/postWrite?error=1");
+            System.out.println("❌ 게시글 작성 실패");
+            request.setAttribute("error", "게시글 작성에 실패했습니다. 다시 시도해주세요.");
+            request.getRequestDispatcher("/WEB-INF/postWrite.jsp").forward(request, response);
         }
     }
 }

@@ -78,7 +78,7 @@
         <a href="<%=request.getContextPath()%>/main.jsp">사진으로 찾기</a>
         <a href="<%=request.getContextPath()%>/mapSearch.jsp">지도로 찾기</a>
         <a href="<%=request.getContextPath()%>/howLandmark.jsp">Landmark Search란?</a>
-        <a href="<%=request.getContextPath()%>/postList.jsp">게시판</a>
+        <a href="<%=request.getContextPath()%>/postList">게시판</a>
         <% if (session.getAttribute("loginUser") != null) { %>
             <a href="<%=request.getContextPath()%>/logout">로그아웃</a>
             <a href="<%=request.getContextPath()%>/myProfile.jsp">마이페이지</a>
@@ -240,10 +240,32 @@
                 if (!allLandmarksRes.ok) throw new Error('랜드마크 목록 로딩 실패');
                 const allLandmarks = await allLandmarksRes.json();
 
-                const targetLandmark = allLandmarks.find(lm => 
-                    (lm.landmark_name_en || lm.LANDMARK_NAME_EN) === nameParam
-                );
-                if (!targetLandmark) throw new Error("'" + nameParam + "' 랜드마크를 찾을 수 없음");
+                console.log('검색할 랜드마크명:', nameParam);
+                console.log('전체 랜드마크 개수:', allLandmarks.length);
+                
+                // 랜드마크 검색 로직 개선
+                const targetLandmark = allLandmarks.find(lm => {
+                    const enName = lm.landmark_name_en || lm.LANDMARK_NAME_EN || '';
+                    const krName = lm.landmark_name || lm.LANDMARK_NAME || '';
+                    
+                    console.log('비교:', {
+                        search: nameParam,
+                        enName: enName,
+                        krName: krName,
+                        match: enName === nameParam || krName === nameParam
+                    });
+                    
+                    return enName === nameParam || krName === nameParam;
+                });
+                
+                if (!targetLandmark) {
+                    console.log('사용 가능한 랜드마크들:', allLandmarks.map(lm => ({
+                        id: lm.landmark_id || lm.LANDMARK_ID,
+                        name: lm.landmark_name || lm.LANDMARK_NAME,
+                        enName: lm.landmark_name_en || lm.LANDMARK_NAME_EN
+                    })));
+                    throw new Error("'" + nameParam + "' 랜드마크를 찾을 수 없음");
+                }
 
                 landmarkId = targetLandmark.landmark_id || targetLandmark.LANDMARK_ID;
                 

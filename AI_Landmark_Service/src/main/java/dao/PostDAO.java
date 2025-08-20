@@ -10,7 +10,7 @@ public class PostDAO {
     private static final String DB_USER = "campus_24IS_CLOUD3_p2_2";
     private static final String DB_PASSWORD = "smhrd2"; // 본인의 비밀번호로 수정
 
-    // ✅ 게시글 전체 조회
+    // ✅ 게시글 전체 조회 (작성자 닉네임 포함)
     public List<Post> getAllPosts() {
         List<Post> postList = new ArrayList<>();
         Connection conn = null;
@@ -21,7 +21,9 @@ public class PostDAO {
             Class.forName("oracle.jdbc.driver.OracleDriver");
             conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
 
-            String sql = "SELECT * FROM POST ORDER BY POST_DATE DESC"; // 최신글이 먼저 오도록 정렬
+            String sql = "SELECT P.*, M.NICKNAME FROM POST P " +
+                        "JOIN MEMBER M ON P.MEMBER_ID = M.MEMBER_ID " +
+                        "ORDER BY P.POST_DATE DESC"; // 최신글이 먼저 오도록 정렬
             pstmt = conn.prepareStatement(sql);
             rs = pstmt.executeQuery();
 
@@ -34,6 +36,7 @@ public class PostDAO {
                 post.setPostDate(rs.getDate("POST_DATE"));
                 post.setPostContent(rs.getString("POST_CONTENT"));
                 post.setMemberId(rs.getInt("MEMBER_ID"));
+                post.setNickname(rs.getString("NICKNAME")); // 작성자 닉네임 추가
                 postList.add(post);
             }
         } catch (SQLException | ClassNotFoundException e) {
@@ -60,8 +63,9 @@ public class PostDAO {
             Class.forName("oracle.jdbc.driver.OracleDriver");
             conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
 
+            // POST_SEQ 시퀀스가 없을 경우를 대비하여 MAX값 사용
             String sql = "INSERT INTO POST (POST_ID, CATEGORIES, TITLE, VIEWS, POST_DATE, POST_CONTENT, MEMBER_ID) " +
-                         "VALUES (POST_SEQ.NEXTVAL, ?, ?, 0, SYSDATE, ?, ?)";
+                         "VALUES ((SELECT NVL(MAX(POST_ID), 0) + 1 FROM POST), ?, ?, 0, SYSDATE, ?, ?)";
 
             pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, post.getCategories());
@@ -84,7 +88,7 @@ public class PostDAO {
         return result; // 1이면 성공, 0이면 실패
     }
 
-    // ✅ 게시글 단일 조회
+    // ✅ 게시글 단일 조회 (작성자 닉네임 포함)
     public Post getPostById(int postId) {
         Post post = null;
         Connection conn = null;
@@ -95,7 +99,9 @@ public class PostDAO {
             Class.forName("oracle.jdbc.driver.OracleDriver");
             conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
 
-            String sql = "SELECT * FROM POST WHERE POST_ID = ?";
+            String sql = "SELECT P.*, M.NICKNAME FROM POST P " +
+                        "JOIN MEMBER M ON P.MEMBER_ID = M.MEMBER_ID " +
+                        "WHERE P.POST_ID = ?";
             pstmt = conn.prepareStatement(sql);
             pstmt.setInt(1, postId);
             rs = pstmt.executeQuery();
@@ -109,6 +115,7 @@ public class PostDAO {
                 post.setPostDate(rs.getDate("POST_DATE"));
                 post.setPostContent(rs.getString("POST_CONTENT"));
                 post.setMemberId(rs.getInt("MEMBER_ID"));
+                post.setNickname(rs.getString("NICKNAME")); // 작성자 닉네임 추가
             }
         } catch (SQLException | ClassNotFoundException e) {
             e.printStackTrace();
@@ -124,7 +131,7 @@ public class PostDAO {
         return post;
     }
 
-    // ✅ 특정 사용자가 작성한 게시글만 조회
+    // ✅ 특정 사용자가 작성한 게시글만 조회 (작성자 닉네임 포함)
     public List<Post> getPostsByMember(int memberId) {
         List<Post> postList = new ArrayList<>();
         Connection conn = null;
@@ -135,7 +142,9 @@ public class PostDAO {
             Class.forName("oracle.jdbc.driver.OracleDriver");
             conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
 
-            String sql = "SELECT * FROM POST WHERE MEMBER_ID = ? ORDER BY POST_DATE DESC";
+            String sql = "SELECT P.*, M.NICKNAME FROM POST P " +
+                        "JOIN MEMBER M ON P.MEMBER_ID = M.MEMBER_ID " +
+                        "WHERE P.MEMBER_ID = ? ORDER BY P.POST_DATE DESC";
             pstmt = conn.prepareStatement(sql);
             pstmt.setInt(1, memberId);
             rs = pstmt.executeQuery();
@@ -149,6 +158,57 @@ public class PostDAO {
                 post.setPostDate(rs.getDate("POST_DATE"));
                 post.setPostContent(rs.getString("POST_CONTENT"));
                 post.setMemberId(rs.getInt("MEMBER_ID"));
+                post.setNickname(rs.getString("NICKNAME")); // 작성자 닉네임 추가
+                postList.add(post);
+            }
+        } catch (SQLException | ClassNotFoundException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (pstmt != null) pstmt.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return postList;
+    }
+
+    // ✅ 게시글 검색 (제목, 내용, 작성자 닉네임으로 검색)
+    public List<Post> searchPosts(String keyword) {
+        List<Post> postList = new ArrayList<>();
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try {
+            Class.forName("oracle.jdbc.driver.OracleDriver");
+            conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+
+            String sql = "SELECT P.*, M.NICKNAME FROM POST P " +
+                        "JOIN MEMBER M ON P.MEMBER_ID = M.MEMBER_ID " +
+                        "WHERE P.TITLE LIKE ? OR P.POST_CONTENT LIKE ? OR M.NICKNAME LIKE ? " +
+                        "ORDER BY P.POST_DATE DESC";
+            pstmt = conn.prepareStatement(sql);
+            
+            String searchPattern = "%" + keyword + "%";
+            pstmt.setString(1, searchPattern);
+            pstmt.setString(2, searchPattern);
+            pstmt.setString(3, searchPattern);
+            
+            rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                Post post = new Post();
+                post.setPostId(rs.getInt("POST_ID"));
+                post.setCategories(rs.getString("CATEGORIES"));
+                post.setTitle(rs.getString("TITLE"));
+                post.setViews(rs.getInt("VIEWS"));
+                post.setPostDate(rs.getDate("POST_DATE"));
+                post.setPostContent(rs.getString("POST_CONTENT"));
+                post.setMemberId(rs.getInt("MEMBER_ID"));
+                post.setNickname(rs.getString("NICKNAME")); // 작성자 닉네임 추가
                 postList.add(post);
             }
         } catch (SQLException | ClassNotFoundException e) {
