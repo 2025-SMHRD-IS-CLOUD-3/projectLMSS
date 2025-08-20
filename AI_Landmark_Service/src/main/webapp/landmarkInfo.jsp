@@ -1,19 +1,11 @@
-<<<<<<< HEAD
-<%@ page contentType="text/html; charset=UTF-8" language="java" %>
-=======
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%
     // 현재 로그인 상태 확인
     String loginUser = (String) session.getAttribute("loginUser");
 %>
->>>>>>> branch 'main' of https://github.com/2025-SMHRD-IS-CLOUD-3/projectLMSS.git
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<<<<<<< HEAD
-    <meta charset="UTF-8">
-    <title>랜드마크 정보</title>
-=======
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="referrer" content="no-referrer">
@@ -24,21 +16,7 @@
     <script src="<%=request.getContextPath()%>/mapmark/photospots.js" defer></script>
     <script src="<%=request.getContextPath()%>/mapmark/restaurants.js" defer></script>
     <script src="<%=request.getContextPath()%>/mapmark/attractions.js" defer></script>
->>>>>>> branch 'main' of https://github.com/2025-SMHRD-IS-CLOUD-3/projectLMSS.git
     <style>
-<<<<<<< HEAD
-        .landmark-card {
-            border: 1px solid #ddd;
-            padding: 16px;
-            margin-bottom: 16px;
-            border-radius: 8px;
-        }
-        .landmark-card img {
-            max-width: 300px;
-            display: block;
-            margin-top: 8px;
-        }
-=======
         :root{ --ink:#111; --muted:#f6f7f9; --line:#e6e6e8; --brand:#57ACCB; --shadow:0 10px 30px rgba(0,0,0,.08); }
         *{box-sizing:border-box}
         body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--ink);background:#fff}
@@ -90,14 +68,9 @@
         .comment-meta{font-size:12px;color:#777;margin-bottom:6px}
         .comment-text{white-space:pre-wrap;line-height:1.5}
         @media (max-width:980px){.info-grid{grid-template-columns:1fr}}
->>>>>>> branch 'main' of https://github.com/2025-SMHRD-IS-CLOUD-3/projectLMSS.git
     </style>
 </head>
 <body>
-<<<<<<< HEAD
-    <h1>랜드마크 정보</h1>
-    <div id="landmark-container"></div>
-=======
     <header>
         <h1>Landmark Search</h1>
         <button class="menu-btn" aria-label="메뉴">≡</button>
@@ -188,17 +161,8 @@
             </p>
         </section>
     </main>
->>>>>>> branch 'main' of https://github.com/2025-SMHRD-IS-CLOUD-3/projectLMSS.git
 
     <script>
-<<<<<<< HEAD
-        // JSON 불러오기
-        fetch("<%=request.getContextPath()%>/getLandmarks")
-            .then(response => response.json())
-            .then(data => {
-                const container = document.getElementById("landmark-container");
-                container.innerHTML = "";
-=======
         /* ===========================================================
          * 1. 전역 변수 및 설정
          * =========================================================== */
@@ -206,13 +170,7 @@
         const qs = new URLSearchParams(location.search);
         const nameParam = qs.get('name');
         let landmarkId = null;
->>>>>>> branch 'main' of https://github.com/2025-SMHRD-IS-CLOUD-3/projectLMSS.git
 
-<<<<<<< HEAD
-                data.forEach(landmark => {
-                    const card = document.createElement("div");
-                    card.className = "landmark-card";
-=======
         const CONTEXT_PATH = "<%=request.getContextPath()%>";
         const API = {
             getAllLandmarks: () => CONTEXT_PATH + '/getLandmarks',
@@ -227,16 +185,7 @@
         let currentHotspotMarkers = [];
         let map;
         let landmarkMarker; // 랜드마크 메인 마커
->>>>>>> branch 'main' of https://github.com/2025-SMHRD-IS-CLOUD-3/projectLMSS.git
 
-<<<<<<< HEAD
-                    card.innerHTML = `
-                        <h2>${landmark.name}</h2>
-                        <p>${landmark.description}</p>
-                        <img src="${landmark.imageUrl}" alt="랜드마크 이미지"/>
-                    `;
-                    container.appendChild(card);
-=======
         /* ===========================================================
          * 2. 페이지 초기화 로직
          * =========================================================== */
@@ -498,12 +447,7 @@
                     btn.classList.add('active');
                     currentTabType = btn.dataset.type;
                     updateHotspotsOnMap();
->>>>>>> branch 'main' of https://github.com/2025-SMHRD-IS-CLOUD-3/projectLMSS.git
                 });
-<<<<<<< HEAD
-            })
-            .catch(err => console.error("에러:", err));
-=======
             });
         }
         
@@ -658,7 +602,6 @@
             const pressed = e.currentTarget.getAttribute('aria-pressed') === 'true';
             e.currentTarget.setAttribute('aria-pressed', String(!pressed));
         });
->>>>>>> branch 'main' of https://github.com/2025-SMHRD-IS-CLOUD-3/projectLMSS.git
     </script>
 </body>
 </html>
