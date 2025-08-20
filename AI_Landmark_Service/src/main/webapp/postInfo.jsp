@@ -137,6 +137,13 @@
       
       <div id="commentsList"></div>
     </section>
+    <form id="deleteForm"
+      action="<%=request.getContextPath()%>/postEdit"
+      method="post"
+      style="display:none">
+  <input type="hidden" name="action" value="delete">
+  <input type="hidden" name="postId" value="<%= post.getPostId() %>">
+</form>
   </main>
 
 <!-- JSP에서 JavaScript 변수 설정 -->
