@@ -17,7 +17,7 @@ public class EditPostServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        String postIdStr = request.getParameter("id");
+        String postIdStr = request.getParameter("postId");
         if (postIdStr == null) {
             response.sendRedirect("postList");
             return;
@@ -77,7 +77,7 @@ public class EditPostServlet extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
 
         String action = request.getParameter("action"); // 수정 or 삭제 구분
-        String postIdStr = request.getParameter("id");
+        String postIdStr = request.getParameter("postId");
         int postId = (postIdStr != null && !postIdStr.isEmpty()) ? Integer.parseInt(postIdStr) : -1;
 
         Connection conn = null;

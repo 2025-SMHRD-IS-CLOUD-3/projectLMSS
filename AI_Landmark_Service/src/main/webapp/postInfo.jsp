@@ -278,16 +278,37 @@ if (commentForm) {
 
 // 게시글 삭제
 function deletePost() {
-  if (confirm('정말로 이 게시글을 삭제하시겠습니까?')) {
-    // 삭제 로직 구현 필요
-    alert('삭제 기능은 아직 구현되지 않았습니다.');
-  }
-}
+  if (!confirm('정말로 이 게시글을 삭제하시겠습니까?')) return;
 
-// 페이지 로드 시 댓글 로드
-document.addEventListener('DOMContentLoaded', () => {
-  loadComments();
-});
+  const params = new URLSearchParams();
+  params.append('action', 'delete');           // 삭제 플래그
+  params.append('postId', POST_ID);            // 글 ID
+
+  fetch(`${CONTEXT_PATH}/postEdit`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+    body: params
+  })
+  .then(async (res) => {
+    // 서버는 성공 시 /postList?msg=deleteSuccess 로 리다이렉트함
+    // fetch는 리다이렉트를 따라가도 최종 URL을 바로 바꾸지 않으므로, 수동으로 이동
+    if (res.redirected) {
+      location.href = res.url;
+      return;
+    }
+    if (res.ok) {
+      // 혹시 200으로 응답한다면 목록으로 이동 (서버 정책에 따라 다름)
+      location.href = `${CONTEXT_PATH}/postList?msg=deleteSuccess`;
+    } else {
+      const t = await res.text();
+      alert('삭제 요청 실패: ' + t);
+    }
+  })
+  .catch((err) => {
+    console.error(err);
+    alert('삭제 중 오류가 발생했습니다.');
+  });
+}
 </script>
 </body>
 </html>
