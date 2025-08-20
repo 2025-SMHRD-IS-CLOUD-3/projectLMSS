@@ -149,25 +149,35 @@
             </div>
             
             <div id="commentSection" class="comments">
-                <h3>댓글</h3>
-                
-                <% if (session.getAttribute("loginUser") != null) { %>
-                    <!-- 로그인한 사용자: 댓글 작성 폼 표시 -->
-                    <form id="commentForm" class="comment-form">
-                        <input type="hidden" name="referenceId" id="referenceId">
-                        <input type="hidden" name="replyType" value="landmark">
-                        <textarea name="commentText" id="commentText" rows="3" placeholder="댓글을 입력하세요" required></textarea>
-                        <button type="submit">댓글 작성</button>
-                    </form>
-                <% } else { %>
-                    <!-- 로그인하지 않은 사용자: 로그인 안내 -->
-                    <div class="login-required">
-                        댓글을 작성하려면 <a href="<%=request.getContextPath()%>/login.jsp?redirect=<%=request.getRequestURI()%>?<%=request.getQueryString()%>">로그인</a>이 필요합니다.
-                    </div>
-                <% } %>
-                
-                <div id="commentsList"></div>
-            </div>
+			    <h3>댓글</h3>
+			    
+			    <%-- 세션에 로그인 정보가 있는지 확인 --%>
+			    <% if (session.getAttribute("loginUser") != null) { %>
+			        <!-- 로그인한 사용자: 댓글 작성 폼 표시 -->
+			        <form id="commentForm" class="comment-form">
+			            <input type="hidden" name="referenceId" id="referenceId">
+			            <input type="hidden" name="replyType" value="landmark">
+			            <textarea name="commentText" id="commentText" rows="3" placeholder="댓글을 입력하세요" required></textarea>
+			            <button type="submit">댓글 작성</button>
+			        </form>
+			    <% } else { %>
+			        <!-- 로그인하지 않은 사용자: 로그인 안내 -->
+			        <div class="login-required">
+			            <%-- 👇 [수정] 돌아올 주소에서 프로젝트 이름(ContextPath)을 제거합니다. --%>
+			            <%
+			                // 1. 현재 페이지의 경로만 가져옵니다. (예: /landmarkInfo.jsp)
+			                String pagePath = request.getServletPath();
+			                // 2. 현재 페이지의 쿼리 스트링을 가져옵니다. (예: name=Eiffel_Tower)
+			                String queryString = request.getQueryString();
+			                // 3. 두 정보를 합쳐서 최종 돌아올 주소를 만듭니다.
+			                String redirectUrl = pagePath + (queryString != null ? "?" + queryString : "");
+			            %>
+			            댓글을 작성하려면 <a href="<%=request.getContextPath()%>/login.jsp?redirect=<%=redirectUrl%>">로그인</a>이 필요합니다.
+			        </div>
+			    <% } %>
+			    
+			    <div id="commentsList"></div>
+			</div>
             
             <p id="warn" class="warn" hidden>
                 현재 URL에 <code>?name=랜드마크이름</code> 이 없습니다. 
