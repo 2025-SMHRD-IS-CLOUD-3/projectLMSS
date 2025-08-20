@@ -19,7 +19,7 @@ public class EditPostServlet extends HttpServlet {
 
         String postIdStr = request.getParameter("postId");
         if (postIdStr == null) {
-            response.sendRedirect("postList");
+        	response.sendRedirect(request.getContextPath() + "/postList");
             return;
         }
 
