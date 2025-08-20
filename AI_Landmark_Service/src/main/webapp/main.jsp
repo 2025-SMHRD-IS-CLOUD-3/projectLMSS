@@ -11,7 +11,7 @@
     <title>Landmark Search</title>
     <style>
         body { margin: 0; font-family: Arial, sans-serif; height: 100vh; display: flex; justify-content: center; align-items: center; background-color: #ffffff; overflow: hidden; }
-        img { width: 60%; }
+        img { width: 70%; }
         .center-container { position: relative; text-align: center; }
         h1 { font-size: 50px; margin-bottom: 20px; }
         .search-btn { padding: 10px 20px; background-color: #ffffff; border: 7px solid black; color: black; font-size: 50px; cursor: pointer; border-radius: 24px; font-weight: bold; }
