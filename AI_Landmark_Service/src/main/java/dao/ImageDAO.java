@@ -11,9 +11,9 @@ import java.util.List;
 import model.Image;
 
 public class ImageDAO {
-	private static final String DB_URL = "jdbc:oracle:thin:@project-db-campus.smhrd.com:1524:xe";
+    private static final String DB_URL = "jdbc:oracle:thin:@project-db-campus.smhrd.com:1524:xe";
     private static final String DB_USER = "campus_24IS_CLOUD3_p2_2";
-    private static final String DB_PASSWORD = "smhrd2"; // 본인의 비밀번호로 수정
+    private static final String DB_PASSWORD = "smhrd2"; // 본인 비밀번호로 수정
 
     public List<Image> getLandmarkImages() {
         List<Image> imageList = new ArrayList<>();
@@ -30,12 +30,21 @@ public class ImageDAO {
             rs = pstmt.executeQuery();
 
             while (rs.next()) {
-            	Image image = new Image();
-            	image.setLandmark_id(rs.getInt("LANDMARK_ID"));
+                Image image = new Image();
+                image.setLandmark_id(rs.getInt("LANDMARK_ID"));
                 image.setImage_id(rs.getInt("IMAGE_ID"));
-                image.setImage_url(rs.getString("IMAGE_URL"));
+
+                // 👉 여기서 URL 변환
+                String url = rs.getString("IMAGE_URL");
+                if (url != null && url.contains("imgur.com/") && !url.contains("i.imgur.com")) {
+                    // https://imgur.com/abc123 → https://i.imgur.com/abc123.jpg
+                    String id = url.substring(url.lastIndexOf("/") + 1);
+                    url = "https://i.imgur.com/" + id + ".jpg";
+                }
+                image.setImage_url(url);
+
                 image.setImage_type(rs.getString("IMAGE_TYPE"));
-                
+
                 imageList.add(image);
             }
         } catch (SQLException | ClassNotFoundException e) {
