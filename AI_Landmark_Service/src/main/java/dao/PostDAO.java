@@ -224,4 +224,33 @@ public class PostDAO {
         }
         return postList;
     }
+
+    // ✅ 조회수 증가
+    public boolean increaseViews(int postId) {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        int result = 0;
+
+        try {
+            Class.forName("oracle.jdbc.driver.OracleDriver");
+            conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+
+            String sql = "UPDATE POST SET VIEWS = VIEWS + 1 WHERE POST_ID = ?";
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setInt(1, postId);
+
+            result = pstmt.executeUpdate();
+
+        } catch (SQLException | ClassNotFoundException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (pstmt != null) pstmt.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return result > 0;
+    }
 }

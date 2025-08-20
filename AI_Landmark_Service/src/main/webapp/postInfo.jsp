@@ -1,60 +1,27 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" language="java" %>
 <%@ page import="model.Post" %>
-<%@ page import="java.sql.*" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 <%
     Post post = (Post) request.getAttribute("post");
-    String postIdStr = request.getParameter("id");
-
-    if(post == null && postIdStr != null){
-        int postId = Integer.parseInt(postIdStr);
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-        ResultSet rs = null;
-
-        try {
-            Class.forName("oracle.jdbc.driver.OracleDriver");
-            conn = DriverManager.getConnection(
-                "jdbc:oracle:thin:@project-db-campus.smhrd.com:1524:xe",
-                "campus_24IS_CLOUD3_p2_2",
-                "smhrd2"
-            );
-
-            String sql = "SELECT POST_ID, TITLE, POST_CONTENT, VIEWS, MEMBER_ID, POST_DATE, CATEGORIES FROM POST WHERE POST_ID = ?";
-            pstmt = conn.prepareStatement(sql);
-            pstmt.setInt(1, postId);
-            rs = pstmt.executeQuery();
-
-            if(rs.next()){
-                post = new Post();
-                post.setPostId(rs.getInt("POST_ID"));
-                post.setTitle(rs.getString("TITLE"));
-                post.setPostContent(rs.getString("POST_CONTENT"));
-                post.setViews(rs.getInt("VIEWS"));
-                post.setMemberId(rs.getInt("MEMBER_ID"));
-                post.setPostDate(rs.getTimestamp("POST_DATE"));
-                post.setCategories(rs.getString("CATEGORIES"));
-            }
-
-        } catch(Exception e){
-            e.printStackTrace();
-        } finally {
-            if(rs != null) try{ rs.close(); } catch(Exception e){}
-            if(pstmt != null) try{ pstmt.close(); } catch(Exception e){}
-            if(conn != null) try{ conn.close(); } catch(Exception e){}
-        }
+    
+    // post가 null이면 리다이렉트
+    if (post == null) {
+        response.sendRedirect(request.getContextPath() + "/postList");
+        return;
     }
 
     // 로그인한 유저와 글 작성자 비교
     boolean isOwner = false;
-    if (post != null) {
-        Object loginMemberObj = session.getAttribute("memberId"); // 로그인 세션
-        if (loginMemberObj != null) {
-            String loginMemberId = loginMemberObj.toString();
-            String postMemberId = String.valueOf(post.getMemberId());
-            isOwner = loginMemberId.equals(postMemberId);
-        }
+    Object loginMemberObj = session.getAttribute("memberId");
+    if (loginMemberObj != null) {
+        String loginMemberId = loginMemberObj.toString();
+        String postMemberId = String.valueOf(post.getMemberId());
+        isOwner = loginMemberId.equals(postMemberId);
     }
+    
+    // 로그인 상태 확인
+    String loginUser = (String) session.getAttribute("loginUser");
 %>
 
 <!DOCTYPE html>
@@ -91,104 +58,96 @@
   .footer-bar{display:flex;justify-content:flex-end;align-items:center;margin-top:14px;gap:10px}
   .btn{background:#57ACCB;color:#fff;border:none;border-radius:12px;padding:12px 18px;font-weight:800;cursor:pointer}
 
-  /* 댓글 스타일 추가 */
+  /* 댓글 스타일 */
   .comments{margin-top:28px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px}
   .comments h3{margin:0 0 12px;font-size:18px}
   .comment-form{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
   .comment-form textarea{width:100%;border:1px solid var(--line);border-radius:8px;padding:10px;font-family:inherit;resize:vertical}
   .comment-form button{align-self:flex-end;padding:8px 14px;border:none;border-radius:8px;background:var(--brand);color:#fff;cursor:pointer;font-weight:700}
   .comment-item{border-top:1px dashed #d7d7da;padding:10px 0}
-  .comment-meta{font-size:12px;color:#777;margin-bottom:6px}
-  .comment-text{white-space:pre-wrap;line-height:1.5}
-  .login-required{text-align:center;padding:20px;color:#666;background:#f8f9fa;border-radius:8px;border:1px solid #e9ecef}
-  .login-required a{color:var(--brand);text-decoration:none;font-weight:600}
+  .comment-meta{font-size:12px;color:#666;margin-bottom:4px}
+  .comment-text{color:#222;line-height:1.5}
 </style>
 </head>
 <body>
-<header>
-    <h2 onclick="location.href='postList.jsp'">Landmark Search</h2>
-    <div><button class="menu-btn">≡</button></div>
-</header>
-
-<div class="side-menu" id="sideMenu">
-    <ul>
-        <li><a href="howLandmark.jsp">Landmark Search란?</a></li>
-        <li><a href="main.jsp">사진으로 랜드마크 찾기</a></li>
-        <li><a href="mapSearch.jsp">지도로 랜드마크 찾기</a></li>
-        <li><a href="postList">게시판</a></li>
-        <c:choose>
-          <c:when test="${not empty sessionScope.loginUser}">
-            <li><a href="logout.jsp">로그아웃</a></li>
-            <li><a href="myProfile.jsp">마이페이지</a></li>
-          </c:when>
-          <c:otherwise>
-            <li><a href="login.jsp?redirect=postList">로그인</a></li>
-            <li><a href="register.jsp">회원가입</a></li>
-          </c:otherwise>
-        </c:choose>
-    </ul>
-</div>
-
-<main class="board">
-  <section class="panel">
-    <h2 class="title"><%= (post != null ? post.getTitle() : "게시글") %></h2>
-
-    <% if(post != null){ %>
+  <!-- Header -->
+  <header>
+      <h2 onclick="location.href='<%=request.getContextPath()%>/postList'">Landmark Search</h2>
+      <div>
+          <button class="menu-btn">≡</button>
+      </div>    
+  </header>
+    
+  <!-- Side Menu -->
+  <div class="side-menu" id="sideMenu">
+      <ul>
+          <li><a href="<%=request.getContextPath()%>/howLandmark.jsp">Landmark Search란?</a></li>
+          <li><a href="<%=request.getContextPath()%>/main.jsp">사진으로 랜드마크 찾기</a></li>
+          <li><a href="<%=request.getContextPath()%>/mapSearch.jsp">지도로 랜드마크 찾기</a></li>
+          <li><a href="<%=request.getContextPath()%>/postList">게시판</a></li>
+          <% if (loginUser != null) { %>
+              <li><a href="<%=request.getContextPath()%>/logout">로그아웃</a></li>
+              <li><a href="<%=request.getContextPath()%>/myProfile.jsp">마이페이지</a></li>
+          <% } else { %>
+              <li><a href="<%=request.getContextPath()%>/login.jsp">로그인</a></li>
+              <li><a href="<%=request.getContextPath()%>/register.jsp">회원가입</a></li>
+          <% } %>
+      </ul>
+  </div>
+  
+  <!-- Body -->
+  <main class="board">
+    <section class="panel">
+      <h1 class="title"><%= post.getTitle() %></h1>
+      
       <div class="post-meta">
-        <div><strong>카테고리</strong> : <%= post.getCategories() %></div>
-        <div><strong>조회수</strong> : <%= post.getViews() %></div>
-        <div><strong>작성일자</strong> : <%= post.getPostDate() %></div>
-        <div><strong>작성자</strong> : <%= post.getMemberId() %></div>
+        <div>카테고리: <%= post.getCategories() %></div>
+        <div>작성자: <%= post.getNickname() != null ? post.getNickname() : "익명" %></div>
+        <div>조회수: <%= post.getViews() %></div>
+        <div>작성일: <fmt:formatDate value="<%= post.getPostDate() %>" pattern="yyyy/MM/dd HH:mm"/></div>
       </div>
+      
       <div class="post-content"><%= post.getPostContent() %></div>
-    <% } else { %>
-      <p>해당 게시글을 찾을 수 없습니다.</p>
-    <% } %>
+      
+      <div class="footer-bar">
+        <button class="btn" onclick="location.href='<%=request.getContextPath()%>/postList'">목록</button>
+        <% if (isOwner) { %>
+          <button class="btn" onclick="location.href='<%=request.getContextPath()%>/postEdit?postId=<%= post.getPostId() %>'">수정</button>
+          <button class="btn" onclick="deletePost()">삭제</button>
+        <% } %>
+      </div>
+    </section>
 
-    <div class="footer-bar">
-      <button class="btn" onclick="location.href='myProfile.jsp'">목록으로</button>
-      <% if (post != null && isOwner) { %>
-		<button class="btn" 
-        onclick="location.href='${pageContext.request.contextPath}/postEdit?id=<%= post.getPostId() %>'">
-    	수정
-		</button>
-        <form action="<%= request.getContextPath() %>/postEdit" method="post" style="display:inline;">
-    	<input type="hidden" name="id" value="<%= post.getPostId() %>">
-    	<input type="hidden" name="action" value="delete">
-    	<button type="submit" class="btn" onclick="return confirm('정말 삭제하시겠습니까?')">삭제</button>
-		</form>
-      <% } %>
-    </div>
-  </section>
-
-  <!-- 댓글 섹션 추가 -->
-  <% if (post != null) { %>
-  <section class="panel">
-    <div id="commentSection" class="comments">
+    <!-- 댓글 섹션 -->
+    <section class="comments">
       <h3>댓글</h3>
       
-      <% if (session.getAttribute("loginUser") != null) { %>
-        <!-- 로그인한 사용자: 댓글 작성 폼 표시 -->
-        <form id="commentForm" class="comment-form">
-          <input type="hidden" name="referenceId" value="<%= post.getPostId() %>">
-          <input type="hidden" name="replyType" value="post">
-          <textarea name="commentText" id="commentText" rows="3" placeholder="댓글을 입력하세요" required></textarea>
+      <% if (loginUser != null) { %>
+        <form class="comment-form" id="commentForm">
+          <textarea name="commentText" placeholder="댓글을 입력하세요..." rows="3" required></textarea>
+          <input type="hidden" name="replyType" value="post" />
+          <input type="hidden" name="referenceId" value="<%= post.getPostId() %>" />
           <button type="submit">댓글 작성</button>
         </form>
       <% } else { %>
-        <!-- 로그인하지 않은 사용자: 로그인 안내 -->
-        <div class="login-required">
-          댓글을 작성하려면 <a href="<%=request.getContextPath()%>/login.jsp?redirect=postInfo.jsp?id=<%=post.getPostId()%>">로그인</a>이 필요합니다.
-        </div>
+        <p style="text-align:center;color:#666;margin:20px 0;">
+          댓글을 작성하려면 <a href="<%=request.getContextPath()%>/login.jsp" style="color:var(--brand);">로그인</a>이 필요합니다.
+        </p>
       <% } %>
       
       <div id="commentsList"></div>
-    </div>
-  </section>
-  <% } %>
-</main>
+    </section>
+  </main>
+
+<!-- JSP에서 JavaScript 변수 설정 -->
+<script>
+const CONTEXT_PATH = "<%=request.getContextPath()%>";
+const POST_ID = <%= post.getPostId() %>;
+const IS_LOGGED_IN = <%= session.getAttribute("loginUser") != null ? "true" : "false" %>;
+</script>
 
 <script>
+// 사이드 메뉴
 const menuBtn=document.querySelector('.menu-btn');
 const sideMenu=document.getElementById('sideMenu');
 menuBtn.addEventListener('click',e=>{
@@ -201,14 +160,14 @@ document.addEventListener('click',e=>{
   }
 });
 
-// 댓글 기능 추가
-<% if (post != null) { %>
-const CONTEXT_PATH = "<%=request.getContextPath()%>";
-const postId = <%= post.getPostId() %>;
+// 댓글 기능
+const postId = POST_ID;
 
 // 댓글 로드
 async function loadComments() {
   const listEl = document.getElementById('commentsList');
+  if (!listEl) return;
+  
   listEl.innerHTML = '<div style="color:#777">불러오는 중...</div>';
   
   try {
@@ -225,6 +184,8 @@ async function loadComments() {
 // 댓글 렌더링
 function renderComments(replies) {
   const listEl = document.getElementById('commentsList');
+  if (!listEl) return;
+  
   if (!replies.length) {
     listEl.innerHTML = '<div style="color:#777">첫 댓글을 남겨보세요.</div>';
     return;
@@ -235,7 +196,7 @@ function renderComments(replies) {
     const get = (key) => r[key.toLowerCase()] || r[key.toUpperCase()] || '';
     const userName = get('MEMBER_NICKNAME') || '익명';
     const text = get('REPLY_CONTENT');
-    const createdAt = (get('REPLY_DATE') || '').split(' ')[0]; // 날짜 부분만 사용
+    const createdAt = (get('REPLY_DATE') || '').split(' ')[0];
     
     const item = document.createElement('div');
     item.className = 'comment-item';
@@ -254,12 +215,16 @@ function escapeHtml(str) {
 // 메시지 표시
 function showMessage(message, type) {
   const messageDiv = document.createElement('div');
-  messageDiv.style.cssText = `
-    position: fixed; top: 20px; right: 20px; padding: 15px 20px; 
-    border-radius: 8px; color: white; font-weight: 600; z-index: 10000;
-    background-color: ${type === 'success' ? '#4CAF50' : '#f44336'};
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  `;
+  let backgroundColor = '#4CAF50';
+  if (type === 'error') {
+    backgroundColor = '#f44336';
+  }
+  
+  messageDiv.style.cssText = 
+    'position: fixed; top: 20px; right: 20px; padding: 15px 20px; ' +
+    'border-radius: 8px; color: white; font-weight: 600; z-index: 10000; ' +
+    'background-color: ' + backgroundColor + '; ' +
+    'box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
   messageDiv.textContent = message;
   document.body.appendChild(messageDiv);
   
@@ -268,49 +233,61 @@ function showMessage(message, type) {
   }, 3000);
 }
 
-// 댓글 폼 이벤트 리스너
+// 댓글 폼 제출
 const commentForm = document.getElementById('commentForm');
 if (commentForm) {
   commentForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     
-    const formData = new URLSearchParams({
-      referenceId: postId,
-      replyType: 'post',
-      commentText: document.getElementById('commentText').value
-    }).toString();
-
+    const formData = new FormData(commentForm);
+    const commentText = formData.get('commentText').trim();
+    
+    if (!commentText) {
+      showMessage('댓글 내용을 입력해주세요.', 'error');
+      return;
+    }
+    
     try {
+      const params = new URLSearchParams();
+      params.append('commentText', commentText);
+      params.append('replyType', 'post');
+      params.append('referenceId', postId);
+      
       const res = await fetch(`${CONTEXT_PATH}/addReply`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
+          'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: formData
+        body: params
       });
       
-      if (!res.ok) {
+      if (res.ok) {
+        showMessage('댓글이 작성되었습니다.', 'success');
+        commentForm.reset();
+        loadComments();
+      } else {
         const errorText = await res.text();
-        throw new Error(errorText || '댓글 작성 실패');
+        showMessage('댓글 작성에 실패했습니다: ' + errorText, 'error');
       }
-      
-      commentForm.reset();
-      await loadComments();
-      
-      // 성공 메시지 표시
-      showMessage('댓글이 성공적으로 작성되었습니다.', 'success');
-      
     } catch (err) {
-      showMessage(err.message, 'error');
+      showMessage('댓글 작성 중 오류가 발생했습니다.', 'error');
+      console.error(err);
     }
   });
+}
+
+// 게시글 삭제
+function deletePost() {
+  if (confirm('정말로 이 게시글을 삭제하시겠습니까?')) {
+    // 삭제 로직 구현 필요
+    alert('삭제 기능은 아직 구현되지 않았습니다.');
+  }
 }
 
 // 페이지 로드 시 댓글 로드
 document.addEventListener('DOMContentLoaded', () => {
   loadComments();
 });
-<% } %>
 </script>
 </body>
 </html>
