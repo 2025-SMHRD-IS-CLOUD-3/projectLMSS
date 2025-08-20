@@ -18,6 +18,18 @@ public class LoginServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        System.out.println("=== LoginServlet doPost 호출됨 ===");
+        System.out.println("요청 URL: " + request.getRequestURL());
+        System.out.println("요청 URI: " + request.getRequestURI());
+        System.out.println("Context Path: " + request.getContextPath());
+        
+        // 테스트용 코드 (필요시 주석 해제)
+        /*
+        response.setContentType("text/html;charset=UTF-8");
+        response.getWriter().write("<h1>LoginServlet이 호출되었습니다!</h1>");
+        return;
+        */
+        
         request.setCharacterEncoding("UTF-8");
 
         String id = request.getParameter("ID");

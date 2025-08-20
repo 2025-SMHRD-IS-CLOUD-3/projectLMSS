@@ -90,6 +90,18 @@
 
   .footer-bar{display:flex;justify-content:flex-end;align-items:center;margin-top:14px;gap:10px}
   .btn{background:#57ACCB;color:#fff;border:none;border-radius:12px;padding:12px 18px;font-weight:800;cursor:pointer}
+
+  /* 댓글 스타일 추가 */
+  .comments{margin-top:28px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px}
+  .comments h3{margin:0 0 12px;font-size:18px}
+  .comment-form{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
+  .comment-form textarea{width:100%;border:1px solid var(--line);border-radius:8px;padding:10px;font-family:inherit;resize:vertical}
+  .comment-form button{align-self:flex-end;padding:8px 14px;border:none;border-radius:8px;background:var(--brand);color:#fff;cursor:pointer;font-weight:700}
+  .comment-item{border-top:1px dashed #d7d7da;padding:10px 0}
+  .comment-meta{font-size:12px;color:#777;margin-bottom:6px}
+  .comment-text{white-space:pre-wrap;line-height:1.5}
+  .login-required{text-align:center;padding:20px;color:#666;background:#f8f9fa;border-radius:8px;border:1px solid #e9ecef}
+  .login-required a{color:var(--brand);text-decoration:none;font-weight:600}
 </style>
 </head>
 <body>
@@ -135,7 +147,7 @@
 
     <div class="footer-bar">
       <button class="btn" onclick="location.href='myProfile.jsp'">목록으로</button>
-      <% if (isOwner) { %>
+      <% if (post != null && isOwner) { %>
 		<button class="btn" 
         onclick="location.href='${pageContext.request.contextPath}/postEdit?id=<%= post.getPostId() %>'">
     	수정
@@ -145,10 +157,35 @@
     	<input type="hidden" name="action" value="delete">
     	<button type="submit" class="btn" onclick="return confirm('정말 삭제하시겠습니까?')">삭제</button>
 		</form>
-        
       <% } %>
     </div>
   </section>
+
+  <!-- 댓글 섹션 추가 -->
+  <% if (post != null) { %>
+  <section class="panel">
+    <div id="commentSection" class="comments">
+      <h3>댓글</h3>
+      
+      <% if (session.getAttribute("loginUser") != null) { %>
+        <!-- 로그인한 사용자: 댓글 작성 폼 표시 -->
+        <form id="commentForm" class="comment-form">
+          <input type="hidden" name="referenceId" value="<%= post.getPostId() %>">
+          <input type="hidden" name="replyType" value="post">
+          <textarea name="commentText" id="commentText" rows="3" placeholder="댓글을 입력하세요" required></textarea>
+          <button type="submit">댓글 작성</button>
+        </form>
+      <% } else { %>
+        <!-- 로그인하지 않은 사용자: 로그인 안내 -->
+        <div class="login-required">
+          댓글을 작성하려면 <a href="<%=request.getContextPath()%>/login.jsp?redirect=postInfo.jsp?id=<%=post.getPostId()%>">로그인</a>이 필요합니다.
+        </div>
+      <% } %>
+      
+      <div id="commentsList"></div>
+    </div>
+  </section>
+  <% } %>
 </main>
 
 <script>
@@ -163,6 +200,117 @@ document.addEventListener('click',e=>{
     sideMenu.classList.remove('open');
   }
 });
+
+// 댓글 기능 추가
+<% if (post != null) { %>
+const CONTEXT_PATH = "<%=request.getContextPath()%>";
+const postId = <%= post.getPostId() %>;
+
+// 댓글 로드
+async function loadComments() {
+  const listEl = document.getElementById('commentsList');
+  listEl.innerHTML = '<div style="color:#777">불러오는 중...</div>';
+  
+  try {
+    const res = await fetch(`${CONTEXT_PATH}/getReply?postId=${postId}`);
+    if (!res.ok) throw new Error('댓글 로딩 실패');
+    const replies = await res.json();
+    renderComments(Array.isArray(replies) ? replies : []);
+  } catch (err) {
+    listEl.innerHTML = '<div style="color:#c00">댓글을 불러오지 못했습니다.</div>';
+    console.error(err);
+  }
+}
+
+// 댓글 렌더링
+function renderComments(replies) {
+  const listEl = document.getElementById('commentsList');
+  if (!replies.length) {
+    listEl.innerHTML = '<div style="color:#777">첫 댓글을 남겨보세요.</div>';
+    return;
+  }
+  
+  listEl.innerHTML = '';
+  replies.forEach(r => {
+    const get = (key) => r[key.toLowerCase()] || r[key.toUpperCase()] || '';
+    const userName = get('MEMBER_NICKNAME') || '익명';
+    const text = get('REPLY_CONTENT');
+    const createdAt = (get('REPLY_DATE') || '').split(' ')[0]; // 날짜 부분만 사용
+    
+    const item = document.createElement('div');
+    item.className = 'comment-item';
+    item.innerHTML = 
+      '<div class="comment-meta">' + userName + (createdAt ? ' · <span>' + createdAt + '</span>' : '') + '</div>' +
+      '<div class="comment-text">' + escapeHtml(text) + '</div>';
+    listEl.appendChild(item);
+  });
+}
+
+// HTML 이스케이프
+function escapeHtml(str) {
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+}
+
+// 메시지 표시
+function showMessage(message, type) {
+  const messageDiv = document.createElement('div');
+  messageDiv.style.cssText = `
+    position: fixed; top: 20px; right: 20px; padding: 15px 20px; 
+    border-radius: 8px; color: white; font-weight: 600; z-index: 10000;
+    background-color: ${type === 'success' ? '#4CAF50' : '#f44336'};
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  `;
+  messageDiv.textContent = message;
+  document.body.appendChild(messageDiv);
+  
+  setTimeout(() => {
+    messageDiv.remove();
+  }, 3000);
+}
+
+// 댓글 폼 이벤트 리스너
+const commentForm = document.getElementById('commentForm');
+if (commentForm) {
+  commentForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const formData = new URLSearchParams({
+      referenceId: postId,
+      replyType: 'post',
+      commentText: document.getElementById('commentText').value
+    }).toString();
+
+    try {
+      const res = await fetch(`${CONTEXT_PATH}/addReply`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: formData
+      });
+      
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(errorText || '댓글 작성 실패');
+      }
+      
+      commentForm.reset();
+      await loadComments();
+      
+      // 성공 메시지 표시
+      showMessage('댓글이 성공적으로 작성되었습니다.', 'success');
+      
+    } catch (err) {
+      showMessage(err.message, 'error');
+    }
+  });
+}
+
+// 페이지 로드 시 댓글 로드
+document.addEventListener('DOMContentLoaded', () => {
+  loadComments();
+});
+<% } %>
 </script>
 </body>
 </html>

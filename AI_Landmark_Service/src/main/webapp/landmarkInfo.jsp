@@ -1,8 +1,4 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%
-    // 현재 로그인 상태 확인
-    String loginUser = (String) session.getAttribute("loginUser");
-%>
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -67,6 +63,8 @@
         .comment-item{border-top:1px dashed #d7d7da;padding:10px 0}
         .comment-meta{font-size:12px;color:#777;margin-bottom:6px}
         .comment-text{white-space:pre-wrap;line-height:1.5}
+        .login-required{text-align:center;padding:20px;color:#666;background:#f8f9fa;border-radius:8px;border:1px solid #e9ecef}
+        .login-required a{color:var(--brand);text-decoration:none;font-weight:600}
         @media (max-width:980px){.info-grid{grid-template-columns:1fr}}
     </style>
 </head>
@@ -81,7 +79,12 @@
         <a href="<%=request.getContextPath()%>/mapSearch.jsp">지도로 찾기</a>
         <a href="<%=request.getContextPath()%>/howLandmark.jsp">Landmark Search란?</a>
         <a href="<%=request.getContextPath()%>/postList.jsp">게시판</a>
-        <a href="<%=request.getContextPath()%>/login.jsp">로그인</a>
+        <% if (session.getAttribute("loginUser") != null) { %>
+            <a href="<%=request.getContextPath()%>/logout">로그아웃</a>
+            <a href="<%=request.getContextPath()%>/myProfile.jsp">마이페이지</a>
+        <% } else { %>
+            <a href="<%=request.getContextPath()%>/login.jsp">로그인</a>
+        <% } %>
     </aside>
 
     <main class="board">
@@ -147,11 +150,22 @@
             
             <div id="commentSection" class="comments">
                 <h3>댓글</h3>
-                <form id="commentForm" class="comment-form">
-                    <input type="hidden" name="referenceId" id="referenceId">
-                    <textarea name="commentText" id="commentText" rows="3" placeholder="댓글을 입력하세요" required></textarea>
-                    <button type="submit">댓글 작성</button>
-                </form>
+                
+                <% if (session.getAttribute("loginUser") != null) { %>
+                    <!-- 로그인한 사용자: 댓글 작성 폼 표시 -->
+                    <form id="commentForm" class="comment-form">
+                        <input type="hidden" name="referenceId" id="referenceId">
+                        <input type="hidden" name="replyType" value="landmark">
+                        <textarea name="commentText" id="commentText" rows="3" placeholder="댓글을 입력하세요" required></textarea>
+                        <button type="submit">댓글 작성</button>
+                    </form>
+                <% } else { %>
+                    <!-- 로그인하지 않은 사용자: 로그인 안내 -->
+                    <div class="login-required">
+                        댓글을 작성하려면 <a href="<%=request.getContextPath()%>/login.jsp?redirect=<%=request.getRequestURI()%>?<%=request.getQueryString()%>">로그인</a>이 필요합니다.
+                    </div>
+                <% } %>
+                
                 <div id="commentsList"></div>
             </div>
             
@@ -176,7 +190,7 @@
             getAllLandmarks: () => CONTEXT_PATH + '/getLandmarks',
             getAllImages: () => CONTEXT_PATH + '/getImage',
             getHotspots: () => CONTEXT_PATH + '/getHotspots',
-            getReplies: (id) => CONTEXT_PATH + '/getReply?id=' + encodeURIComponent(id),
+            getReplies: (id) => CONTEXT_PATH + '/getReply?landmarkId=' + encodeURIComponent(id),
             addReply: () => CONTEXT_PATH + '/addReply'
         };
 
@@ -187,7 +201,31 @@
         let landmarkMarker; // 랜드마크 메인 마커
 
         /* ===========================================================
-         * 2. 페이지 초기화 로직
+         * 2. 유틸리티 함수들
+         * =========================================================== */
+        function showMessage(message, type) {
+            // 간단한 메시지 표시 (필요시 더 정교한 UI로 개선 가능)
+            const messageDiv = document.createElement('div');
+            let backgroundColor = '#4CAF50'; // 기본값
+            if (type === 'error') {
+                backgroundColor = '#f44336';
+            }
+            
+            messageDiv.style.cssText = 
+                'position: fixed; top: 20px; right: 20px; padding: 15px 20px; ' +
+                'border-radius: 8px; color: white; font-weight: 600; z-index: 10000; ' +
+                'background-color: ' + backgroundColor + '; ' +
+                'box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
+            messageDiv.textContent = message;
+            document.body.appendChild(messageDiv);
+            
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 3000);
+        }
+
+        /* ===========================================================
+         * 3. 페이지 초기화 로직
          * =========================================================== */
         document.addEventListener('DOMContentLoaded', async () => {
             initializeSideMenu();
@@ -208,7 +246,12 @@
                 if (!targetLandmark) throw new Error("'" + nameParam + "' 랜드마크를 찾을 수 없음");
 
                 landmarkId = targetLandmark.landmark_id || targetLandmark.LANDMARK_ID;
-                $('#referenceId').value = landmarkId;
+                
+                // referenceId 요소가 존재하는지 확인 후 값 설정
+                const referenceIdElement = $('#referenceId');
+                if (referenceIdElement) {
+                    referenceIdElement.value = landmarkId;
+                }
 
                 const allImagesRes = await fetch(API.getAllImages());
                 if (!allImagesRes.ok) throw new Error('이미지 목록 로딩 실패');
@@ -226,12 +269,12 @@
 
             } catch (err) {
                 console.error('데이터 로드 오류:', err);
-                alert("데이터를 불러오는데 실패했습니다: " + err.message);
+                showMessage("데이터를 불러오는데 실패했습니다: " + err.message, 'error');
             }
         });
         
         /* ===========================================================
-         * 3. 데이터 렌더링 함수
+         * 4. 데이터 렌더링 함수
          * =========================================================== */
         function renderPage(d, images) {
             const get = (key) => d[key.toLowerCase()] || d[key.toUpperCase()] || '';
@@ -265,7 +308,7 @@
         }
 
         /* ===========================================================
-         * 4. 갤러리 및 지도 기능
+         * 5. 갤러리 및 지도 기능
          * =========================================================== */
         let currentSlide = 0;
         let isMoving = false;
@@ -352,7 +395,7 @@
         }
 
         /* ===========================================================
-         * 5. 기타 유틸리티 및 부가 기능
+         * 6. 기타 유틸리티 및 부가 기능
          * =========================================================== */
         async function getValidImageUrl(imgData) {
             if (!imgData) return null;
@@ -436,7 +479,7 @@
         }
         
         /* ===========================================================
-         * 6. 탭 기능 및 핫스팟 표시 (수정된 버전)
+         * 7. 탭 기능 및 핫스팟 표시 (수정된 버전)
          * =========================================================== */
         function initializeTabEvents() {
             const tabBtns = document.querySelectorAll('.tab-btn');
@@ -526,41 +569,75 @@
         }
         
         /* ===========================================================
-         * 7. 댓글 기능
+         * 8. 댓글 기능 (개선된 버전)
          * =========================================================== */
         function initializeComments() {
             loadComments();
 
+            // 댓글 폼이 있는 경우에만 이벤트 리스너 추가
             const form = document.getElementById('commentForm');
-            form.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                // ❗ [수정] FormData 대신 URLSearchParams를 사용하여 서버가 쉽게 파싱하도록 변경
-                const formData = new URLSearchParams({
-                    referenceId: $('#referenceId').value,
-                    commentText: $('#commentText').value
-                }).toString();
+            if (form) {
+                form.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    
+                    // referenceId 요소가 존재하는지 확인
+                    const referenceIdElement = $('#referenceId');
+                    if (!referenceIdElement) {
+                        showMessage('댓글 작성에 필요한 정보를 찾을 수 없습니다.', 'error');
+                        return;
+                    }
+                    
+                    const formData = new URLSearchParams({
+                        referenceId: referenceIdElement.value,
+                        replyType: 'landmark',
+                        commentText: $('#commentText').value
+                    }).toString();
 
-                try {
-                    const res = await fetch(API.addReply(), {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded'
-                        },
-                        body: formData
-                    });
-                    if (!res.ok) throw new Error('댓글 작성 실패');
-                    form.reset();
-                    $('#referenceId').value = landmarkId; // 랜드마크 ID 재설정
-                    await loadComments();
-                } catch (err) {
-                    alert(err.message);
-                }
-            });
+                    try {
+                        const res = await fetch(API.addReply(), {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded'
+                            },
+                            body: formData
+                        });
+                        
+                        if (!res.ok) {
+                            const errorText = await res.text();
+                            throw new Error(errorText || '댓글 작성 실패');
+                        }
+                        
+                        form.reset();
+                        
+                        // referenceId 값 재설정
+                        if (referenceIdElement) {
+                            referenceIdElement.value = landmarkId;
+                        }
+                        
+                        await loadComments();
+                        
+                        // 성공 메시지 표시
+                        showMessage('댓글이 성공적으로 작성되었습니다.', 'success');
+                        
+                    } catch (err) {
+                        showMessage(err.message, 'error');
+                    }
+                });
+            }
         }
 
         async function loadComments() {
             const listEl = document.getElementById('commentsList');
+            if (!listEl) return;
+            
+            // landmarkId가 유효한지 확인
+            if (!landmarkId) {
+                listEl.innerHTML = '<div style="color:#777">댓글을 불러올 수 없습니다.</div>';
+                return;
+            }
+            
             listEl.innerHTML = '<div style="color:#777">불러오는 중...</div>';
+            
             try {
                 const res = await fetch(API.getReplies(landmarkId));
                 if (!res.ok) throw new Error('댓글 로딩 실패');
@@ -578,6 +655,7 @@
                 listEl.innerHTML = '<div style="color:#777">첫 댓글을 남겨보세요.</div>';
                 return;
             }
+            
             listEl.innerHTML = '';
             replies.forEach(r => {
                 const get = (key) => r[key.toLowerCase()] || r[key.toUpperCase()] || '';
