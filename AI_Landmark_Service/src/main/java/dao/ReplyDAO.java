@@ -235,4 +235,47 @@ public class ReplyDAO {
             return false;
         }
     }
+	// 회원이 작성한 댓글 가져오기
+	public List<Reply> getRepliesByMemberId(int memberId) {
+	    List<Reply> replyList = new ArrayList<>();
+	    Connection conn = null;
+	    PreparedStatement pstmt = null;
+	    ResultSet rs = null;
+
+	    try {
+	        Class.forName("oracle.jdbc.driver.OracleDriver");
+	        conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+
+	        String sql = "SELECT R.*, M.NICKNAME FROM REPLY R " +
+	                     "JOIN MEMBER M ON R.MEMBER_ID = M.MEMBER_ID " +
+	                     "WHERE R.MEMBER_ID = ? ORDER BY R.REPLY_DATE DESC";
+	        pstmt = conn.prepareStatement(sql);
+	        pstmt.setInt(1, memberId);
+	        rs = pstmt.executeQuery();
+
+	        while (rs.next()) {
+	            Reply reply = new Reply();
+	            reply.setReply_id(rs.getInt("REPLY_ID"));
+	            reply.setMember_id(rs.getInt("MEMBER_ID"));
+	            reply.setLandmark_id(rs.getInt("LANDMARK_ID"));
+	            reply.setPost_id(rs.getInt("POST_ID"));
+	            reply.setReply_content(rs.getString("REPLY_CONTENT"));
+	            reply.setReply_date(rs.getDate("REPLY_DATE"));
+	            reply.setMember_nickname(rs.getString("NICKNAME"));
+	            replyList.add(reply);
+	        }
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	    } finally {
+	        try {
+	            if (rs != null) rs.close();
+	            if (pstmt != null) pstmt.close();
+	            if (conn != null) conn.close();
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	        }
+	    }
+	    return replyList;
+	}
+
 }

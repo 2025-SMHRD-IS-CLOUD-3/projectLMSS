@@ -12,6 +12,7 @@
     Integer loginMemberId = null;
     String userEmail = "";
     List<Map<String, Object>> postList = new ArrayList<>();
+    List<Map<String, Object>> replyList = new ArrayList<>();
 
     Connection conn = null;
     PreparedStatement pstmt = null;
@@ -51,7 +52,34 @@
                 row.put("post_date", rs.getTimestamp("POST_DATE"));
                 postList.add(row);
             }
+            rs.close();
+            pstmt.close();
         }
+
+        // 회원이 작성한 댓글 가져오기
+        if (loginMemberId != null) {
+            String sqlReplies = "SELECT R.REPLY_ID, R.REPLY_CONTENT, R.REPLY_DATE, " +
+                                "       P.TITLE AS POST_TITLE, R.POST_ID " +
+                                "FROM REPLY R " +
+                                "LEFT JOIN POST P ON R.POST_ID = P.POST_ID " +
+                                "WHERE R.MEMBER_ID = ? " +
+                                "ORDER BY R.REPLY_DATE DESC";
+            pstmt = conn.prepareStatement(sqlReplies);
+            pstmt.setInt(1, loginMemberId);
+            rs = pstmt.executeQuery();
+            while (rs.next()) {
+                Map<String, Object> row = new HashMap<>();
+                row.put("reply_id", rs.getInt("REPLY_ID"));
+                row.put("reply_content", rs.getString("REPLY_CONTENT"));
+                row.put("reply_date", rs.getTimestamp("REPLY_DATE"));
+                row.put("post_title", rs.getString("POST_TITLE")); 
+                row.put("post_id", rs.getInt("POST_ID")); // 게시글 ID 추가
+                replyList.add(row);
+            }
+            rs.close();
+            pstmt.close();
+        }
+
     } catch(Exception e){ 
         e.printStackTrace(); 
     } finally {
@@ -147,7 +175,12 @@
           %>
           <tr>
             <td class="num"><%= idx++ %></td>
-            <td><a href="postInfo.jsp?id=<%= post.get("id") %>"><%= post.get("title") %></a></td>
+            <td>
+			  <a href="postInfo?postId=<%= post.get("id") %>&source=mypage">
+			    <%= post.get("title") %>
+			  </a>
+			</td>
+            
             <td class="num"><%= post.get("views") %></td>
             <td class="num"><%= post.get("post_date") %></td>
             <td class="num"><%= loginUser %></td>
@@ -173,9 +206,35 @@
             <th class="num">작성자</th>
           </tr>
         </thead>
-        <tbody>
-          <!-- DB 연동 후 댓글 목록 삽입 -->
-        </tbody>
+		<tbody>
+		<%
+		    int cidx = 1;
+		    for (Map<String, Object> reply : replyList) {
+		        Integer postId = (Integer) reply.get("post_id");
+		        String postTitle = reply.get("post_title") != null ? (String) reply.get("post_title") : null;
+		
+		        // 게시글이 삭제된 경우(postId가 null) 댓글 숨김
+		        if (postId == null || postTitle == null) continue;
+		%>
+		<tr>
+		    <td class="num"><%= cidx++ %></td>
+		    <td>
+		        <a href="postInfo?postId=<%= postId %>&source=mypage"><%= postTitle %></a> / 
+		        <%= reply.get("reply_content") %>
+		    </td>
+		    <td class="num"><%= reply.get("reply_date") %></td>
+		    <td class="num"><%= loginUser %></td>
+		</tr>
+		<%
+		    }
+		    if (cidx == 1) { // 출력된 댓글이 없으면
+		%>
+		<tr><td colspan="4" class="center">작성한 댓글이 없습니다.</td></tr>
+		<%
+		    }
+		%>
+		</tbody>
+
       </table>
 
       <h3 style="margin-top:28px;">즐겨찾기</h3>

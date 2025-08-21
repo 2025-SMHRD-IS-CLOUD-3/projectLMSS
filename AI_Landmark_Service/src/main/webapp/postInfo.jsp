@@ -5,13 +5,11 @@
 <%
     Post post = (Post) request.getAttribute("post");
     
-    // post가 null이면 리다이렉트
     if (post == null) {
         response.sendRedirect(request.getContextPath() + "/postList");
         return;
     }
 
-    // 로그인한 유저와 글 작성자 비교
     boolean isOwner = false;
     Object loginMemberObj = session.getAttribute("memberId");
     if (loginMemberObj != null) {
@@ -20,8 +18,16 @@
         isOwner = loginMemberId.equals(postMemberId);
     }
     
-    // 로그인 상태 확인
     String loginUser = (String) session.getAttribute("loginUser");
+
+    // --- source 파라미터에 따른 뒤로가기 URL 설정 ---
+    String source = request.getParameter("source");
+    String backUrl;
+    if ("mypage".equals(source)) {
+        backUrl = request.getContextPath() + "/myProfile.jsp";
+    } else {
+        backUrl = request.getContextPath() + "/postList";
+    }
 %>
 
 <!DOCTYPE html>
@@ -110,7 +116,7 @@
       <div class="post-content"><%= post.getPostContent() %></div>
       
       <div class="footer-bar">
-        <button class="btn" onclick="location.href='<%=request.getContextPath()%>/postList'">목록</button>
+        <button class="btn" onclick="location.href='<%= backUrl %>'">목록</button>
         <% if (isOwner) { %>
           <button class="btn" onclick="location.href='<%=request.getContextPath()%>/postEdit?postId=<%= post.getPostId() %>'">수정</button>
           <button class="btn" onclick="deletePost()">삭제</button>
