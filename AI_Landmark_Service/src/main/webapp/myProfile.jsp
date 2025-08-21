@@ -56,29 +56,47 @@
             pstmt.close();
         }
 
-        // 회원이 작성한 댓글 가져오기
+     // 회원이 작성한 댓글 가져오기 (게시판 + 정보페이지 둘 다)
         if (loginMemberId != null) {
-            String sqlReplies = "SELECT R.REPLY_ID, R.REPLY_CONTENT, R.REPLY_DATE, " +
-                                "       P.TITLE AS POST_TITLE, R.POST_ID " +
-                                "FROM REPLY R " +
-                                "LEFT JOIN POST P ON R.POST_ID = P.POST_ID " +
-                                "WHERE R.MEMBER_ID = ? " +
-                                "ORDER BY R.REPLY_DATE DESC";
+        	// 수정된 SQL 쿼리
+        	String sqlReplies =
+        	    "SELECT * FROM ( " +
+        	    "   SELECT R.REPLY_ID, R.REPLY_CONTENT, R.REPLY_DATE, " +
+        	    "          P.TITLE AS TARGET_TITLE, R.POST_ID AS TARGET_ID, " +
+        	    "          '게시판' AS TARGET_TYPE, " +
+        	    "          NULL AS LANDMARK_NAME " + // 랜드마크 이름이 없으므로 NULL 추가
+        	    "   FROM REPLY R " +
+        	    "   JOIN POST P ON R.POST_ID = P.POST_ID " +
+        	    "   WHERE R.MEMBER_ID = ? " +
+        	    "   UNION ALL " +
+        	    "   SELECT R.REPLY_ID, R.REPLY_CONTENT, R.REPLY_DATE, " +
+        	    "          L.LANDMARK_NAME AS TARGET_TITLE, R.LANDMARK_ID AS TARGET_ID, " +
+        	    "          '정보페이지' AS TARGET_TYPE, " +
+        	    "          L.LANDMARK_NAME AS LANDMARK_NAME " + // 랜드마크 이름 추가
+        	    "   FROM REPLY R " +
+        	    "   JOIN LANDMARK L ON R.LANDMARK_ID = L.LANDMARK_ID " +
+        	    "   WHERE R.MEMBER_ID = ? " +
+        	    ") ORDER BY REPLY_DATE DESC";
             pstmt = conn.prepareStatement(sqlReplies);
             pstmt.setInt(1, loginMemberId);
+            pstmt.setInt(2, loginMemberId);
             rs = pstmt.executeQuery();
             while (rs.next()) {
                 Map<String, Object> row = new HashMap<>();
                 row.put("reply_id", rs.getInt("REPLY_ID"));
                 row.put("reply_content", rs.getString("REPLY_CONTENT"));
                 row.put("reply_date", rs.getTimestamp("REPLY_DATE"));
-                row.put("post_title", rs.getString("POST_TITLE")); 
-                row.put("post_id", rs.getInt("POST_ID")); // 게시글 ID 추가
+                row.put("post_title", rs.getString("TARGET_TITLE"));
+                row.put("post_id", rs.getInt("TARGET_ID"));
+                row.put("post_type", rs.getString("TARGET_TYPE")); // 게시판/정보페이지 구분
+                row.put("landmark_name", rs.getString("LANDMARK_NAME")); // 랜드마크 이름 추가
                 replyList.add(row);
             }
             rs.close();
             pstmt.close();
         }
+
+        
 
     } catch(Exception e){ 
         e.printStackTrace(); 
@@ -218,42 +236,39 @@
           </tr>
         </thead>
         <tbody>
-        <%
-            int cidx = 1;
-            for (Map<String, Object> reply : replyList) {
-                Integer postId = (Integer) reply.get("post_id");
-                String postTitle = reply.get("post_title") != null ? (String) reply.get("post_title") : null;
-                String postType = (String) reply.get("post_type");
+<%
+    int cidx = 1;
+    for (Map<String, Object> reply : replyList) {
+        Integer postId = (Integer) reply.get("post_id");
+        String postTitle = (String) reply.get("post_title");
+        String postType = (String) reply.get("post_type");
+        String landmarkName = (String) reply.get("landmark_name"); // 저장된 랜드마크 이름 가져오기
 
-                if (postId == null || postTitle == null) continue;
-        %>
-        <tr>
-            <td class="num"><%= cidx++ %></td>
-            <td>
-                <a href="postInfo?postId=<%= postId %>&source=mypage"><%= postTitle %></a> / 
-                <%= reply.get("reply_content") %>
-            </td>
-            <td>
-                <%
-                    if ("정보페이지".equals(postType)) {
-                        out.print("정보페이지 댓글");
-                    } else {
-                        out.print("게시판 댓글");
-                    }
-                %>
-            </td>
-            <td class="num"><%= sdf.format(reply.get("reply_date")) %></td>
-            <td class="num"><%= loginUser %></td>
-        </tr>
-        <%
-            }
-            if (cidx == 1) {
-        %>
-        <tr><td colspan="5" class="center">작성한 댓글이 없습니다.</td></tr>
-        <%
-            }
-        %>
-        </tbody>
+        if (postId == null || postTitle == null) continue;
+%>
+<tr>
+    <td class="num"><%= cidx++ %></td>
+    <td>
+        <a href="<%= "정보페이지".equals(postType)
+                   ? "landmarkInfo.jsp?name=" + java.net.URLEncoder.encode(landmarkName, "UTF-8")
+                   : "postInfo?postId=" + postId + "&source=mypage" %>">
+            <%= postTitle %>
+        </a> / <%= reply.get("reply_content") %>
+    </td>
+    <td><%= postType %></td>
+    <td class="num"><%= sdf.format(reply.get("reply_date")) %></td>
+    <td class="num"><%= loginUser %></td>
+</tr>
+<%
+    }
+    if (cidx == 1) {
+%>
+<tr><td colspan="5" class="center">작성한 댓글이 없습니다.</td></tr>
+<%
+    }
+%>
+</tbody>
+        
       </table>
 
       <h3 style="margin-top:28px;">즐겨찾기</h3>

@@ -286,19 +286,18 @@
                 console.log('전체 랜드마크 개수:', allLandmarks.length);
                 
                 // 랜드마크 검색 로직 개선
-                const targetLandmark = allLandmarks.find(lm => {
-                    const enName = lm.landmark_name_en || lm.LANDMARK_NAME_EN || '';
-                    const krName = lm.landmark_name || lm.LANDMARK_NAME || '';
-                    
-                    console.log('비교:', {
-                        search: nameParam,
-                        enName: enName,
-                        krName: krName,
-                        match: enName === nameParam || krName === nameParam
-                    });
-                    
-                    return enName === nameParam || krName === nameParam;
-                });
+                // landmarkInfo.jsp의 find() 함수를 아래와 같이 수정하세요.
+					const targetLandmark = allLandmarks.find(lm => {
+					    // URL에서 받은 name 값을 정리 (공백, 괄호, 언더바 제거)
+					    const cleanParam = nameParam.replace(/[()_ ]/g, '').toLowerCase();
+					
+					    // 데이터베이스의 한글 이름과 영어 이름을 정리
+					    const dbNameKr = (lm.landmark_name || lm.LANDMARK_NAME || '').replace(/[()_ ]/g, '').toLowerCase();
+					    const dbNameEn = (lm.landmark_name_en || lm.LANDMARK_NAME_EN || '').replace(/[()_ ]/g, '').toLowerCase();
+					
+					    // 정리된 이름 중 하나라도 일치하면 true 반환
+					    return cleanParam === dbNameKr || cleanParam === dbNameEn;
+					});
                 
                 if (!targetLandmark) {
                     console.log('사용 가능한 랜드마크들:', allLandmarks.map(lm => ({
