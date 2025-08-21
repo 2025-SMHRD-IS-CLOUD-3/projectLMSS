@@ -83,6 +83,15 @@
         .login-required{text-align:center;padding:20px;color:#666;background:#f8f9fa;border-radius:8px;border:1px solid #e9ecef}
         .login-required a{color:var(--brand);text-decoration:none;font-weight:600}
         @media (max-width:980px){.info-grid{grid-template-columns:1fr}}
+        .tag-link { 
+		    color: var(--brand); 
+		    text-decoration: none; 
+		    font-weight: 600; 
+		    margin-right: 8px; /* 태그 사이 간격 */
+		}
+		.tag-link:hover {
+		    text-decoration: underline;
+		}
     </style>
 </head>
 <body>
@@ -335,7 +344,7 @@
         function renderPage(d, images) {
             const get = (key) => d[key.toLowerCase()] || d[key.toUpperCase()] || '';
 
-            const title = get('LANDMARK_NAME') + (get('LANDMARK_NAME_EN') ? ', ' + get('LANDMARK_NAME_EN') : '');
+            const title = get('LANDMARK_NAME');
             $('#title').textContent = title;
 
             $('#spec-name').textContent      = title;
@@ -353,9 +362,21 @@
             $('#info-fee').textContent   = get('FEE') || '—';
             $('#info-traffic').textContent = get('TRAFFIC_INFO') || '—';
             
+            const tagsContainer = $('#info-tags');
             const tagsString = get('TAGS');
+            tagsContainer.innerHTML = '';
+            
             if (tagsString) {
-                $('#info-tags').textContent = tagsString.split(',').map(tag => '#' + tag.trim()).join(' ');
+                tagsString.split(',')
+                          .map(tag => tag.trim())
+                          .filter(tag => tag) // 빈 태그 제거
+                          .forEach(tag => {
+                              const link = document.createElement('a');
+                              link.href = CONTEXT_PATH + '/tag.jsp?name=' + encodeURIComponent(tag);
+                              link.className = 'tag-link';
+                              link.textContent = '#' + tag;
+                              tagsContainer.appendChild(link);
+                          });
             } else {
                 $('#info-tags').textContent = '—';
             }
