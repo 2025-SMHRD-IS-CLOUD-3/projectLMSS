@@ -31,12 +31,12 @@
         .side-menu {
             position: fixed; top: 0; right: -500px; width: 500px; height: 100%;
             background-color: #57ACCB; color: white; padding: 20px; padding-top: 100px;
-            transition: right 0.3s ease; font-size: 30px; z-index: 1002;
+            transition: right 0.3s ease; font-size: 30px; z-index: 1001;
         }
         .side-menu li { list-style-type: none; margin-top: 20px; }
         .side-menu a { color: white; text-decoration: none; font-weight: bold; }
         .side-menu.open { right: 0; }
-        .menu-btn { position: fixed; top: 20px; right: 20px; font-size: 50px; background: none; border: none; color: black; cursor: pointer; z-index: 1001; }
+        .menu-btn { position: fixed; top: 20px; right: 20px; font-size: 50px; background: none; border: none; color: black; cursor: pointer; z-index: 1002; }
 
         .paper { max-width: 760px; margin: 120px auto 60px; background: var(--muted); border-radius: 28px; padding: 28px; }
         .paper h1 { text-align: center; margin: 0 0 18px; font-size: 28px; font-weight: 900; }
@@ -71,9 +71,9 @@
             <% if (loginUser != null) { %>
                 <span class="user-info"><%= loginUser %>님 환영합니다</span>
             <% } %>
-            <button class="menu-btn">≡</button>
         </div>
     </header>
+            <button class="menu-btn">≡</button>
 
     <div class="side-menu" id="sideMenu">
         <ul>

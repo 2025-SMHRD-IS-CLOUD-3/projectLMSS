@@ -22,11 +22,11 @@
             z-index:1000; box-shadow:0 1px 0 rgba(0,0,0,.04);
         }
         header h2 { font-size: 18px; margin: 0; font-weight: bold; }
-        .side-menu { position: fixed; top: 0; right: -500px; width: 500px; height: 100%; background-color: #57ACCB; color: white; padding: 20px; padding-top: 100px; box-sizing: border-box; transition: right 0.3s ease; font-size: 30px; z-index: 1002; }
+        .side-menu { position: fixed; top: 0; right: -500px; width: 500px; height: 100%; background-color: #57ACCB; color: white; padding: 20px; padding-top: 100px; box-sizing: border-box; transition: right 0.3s ease; font-size: 30px; z-index: 1001; }
         .side-menu li { list-style-type: none; margin-top: 20px; }
         .side-menu a { color: white; text-decoration: none; font-weight: bold; }
         .side-menu.open { right: 0; }
-        .menu-btn { position: fixed; top: 20px; right: 20px; font-size: 50px; background: none; border: none; color: black; cursor: pointer; z-index: 1008; }
+        .menu-btn { position: fixed; top: 20px; right: 20px; font-size: 50px; background: none; border: none; color: black; cursor: pointer; z-index: 1002; }
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 1004; }
         .modal-content { background: white; border-radius: 15px; padding: 20px; width: 500px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); text-align: center; }
         .drop-zone { display: flex; justify-content: center; text-align: center; border: 2px dashed #ccc; border-radius: 15px; padding: 30px; background: #f9f9f9; cursor: pointer; transition: border-color 0.3s; gap: 30px; align-items: center; margin: 0 auto; line-height: 2; }
