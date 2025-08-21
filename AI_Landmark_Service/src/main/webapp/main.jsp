@@ -33,6 +33,16 @@
         .side-menu a { color: white; text-decoration: none; font-weight: bold; }
         .side-menu.open { right: 0; }
         .menu-btn { position: fixed; top: 20px; right: 20px; font-size: 50px; background: none; border: none; color: black; cursor: pointer; z-index: 1002; }
+        #headerImage{
+			height: 100%;
+			width: 500px;
+			display: flex;
+		    justify-content: center;
+		    position: absolute;
+		    top: 50%;
+		    left: 50%;
+		    transform: translate(-50%, -50%);
+		}
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 1004; }
         .modal-content { background: white; border-radius: 15px; padding: 20px; width: 500px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); text-align: center; }
         .drop-zone { display: flex; justify-content: center; text-align: center; border: 2px dashed #ccc; border-radius: 15px; padding: 30px; background: #f9f9f9; cursor: pointer; transition: border-color 0.3s; gap: 30px; align-items: center; margin: 0 auto; line-height: 2; }
@@ -57,6 +67,7 @@
 <body>
     <header>
         <h2><a href="<%=request.getContextPath()%>/main.jsp">Landmark Search</a></h2>
+        <img src="./image/headerImage.png" alt="MySite Logo" id="headerImage">
     </header>
         <button class="menu-btn" aria-label="open side menu">≡</button>
 
