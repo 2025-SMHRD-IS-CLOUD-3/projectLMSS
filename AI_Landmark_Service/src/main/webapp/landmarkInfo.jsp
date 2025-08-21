@@ -223,7 +223,8 @@
             getAllImages: () => CONTEXT_PATH + '/getImage',
             getHotspots: () => CONTEXT_PATH + '/getHotspots',
             getReplies: (id) => CONTEXT_PATH + '/getReply?landmarkId=' + encodeURIComponent(id),
-            addReply: () => CONTEXT_PATH + '/addReply'
+            addReply: () => CONTEXT_PATH + '/addReply',
+            favorite: () => CONTEXT_PATH + '/favorite'
         };
 
         let allHotspots = [];
@@ -320,6 +321,7 @@
                 initMap(targetLandmark);
                 initializeTabEvents();
                 initializeComments();
+                initializeFavoriteButton();
 
             } catch (err) {
                 console.error('데이터 로드 오류:', err);
@@ -679,7 +681,71 @@
                 });
             }
         }
+        /* ===========================================================
+         * 9. 즐겨찾기 기능
+         * =========================================================== */
+        function initializeFavoriteButton() {
+            const favBtn = $('#fav');
+            
+            // 1. 페이지 로딩 시, 현재 즐겨찾기 상태를 서버에 확인합니다.
+            async function checkFavoriteStatus() {
+                if (!landmarkId) return; // 랜드마크 ID가 없으면 실행 안함
 
+                try {
+                    // GET 요청으로 현재 상태를 물어봅니다.
+                    const res = await fetch(API.favorite() + '?landmarkId=' + landmarkId);
+                    
+                    // 로그인이 필요 없는 경우 (서버가 isFavorited:false 응답)
+                    if (res.ok) {
+                        const data = await res.json();
+                        favBtn.setAttribute('aria-pressed', data.isFavorited);
+                    } else {
+                         // 로그인 안된 상태 등으로 서버가 에러를 보낸 경우 버튼 비활성화
+                         console.warn('즐겨찾기 상태 확인 불가 (로그인 필요 가능성)');
+                         favBtn.disabled = true;
+                    }
+                } catch (err) {
+                    console.error('즐겨찾기 상태 확인 오류:', err);
+                }
+            }
+
+            // 2. 버튼 클릭 시, 즐겨찾기 상태를 토글(추가/삭제)하도록 서버에 요청합니다.
+            favBtn.addEventListener('click', async () => {
+                if (!landmarkId) return;
+
+                try {
+                    // POST 요청으로 상태 변경을 요청합니다.
+                    const res = await fetch(API.favorite(), {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: 'landmarkId=' + landmarkId
+                    });
+
+                    if (res.status === 401) { // 401 Unauthorized (로그인 필요)
+                        alert('로그인이 필요한 기능입니다.');
+                        // 현재 페이지 주소를 포함하여 로그인 페이지로 이동
+                        const redirectUrl = location.pathname + location.search;
+                        location.href = CONTEXT_PATH + '/login.jsp?redirect=' + encodeURIComponent(redirectUrl);
+                        return;
+                    }
+                    if (!res.ok) throw new Error('즐겨찾기 변경 실패');
+
+                    const data = await res.json();
+                    if (data.success) {
+                        // 서버 응답에 따라 버튼 상태를 업데이트합니다.
+                        favBtn.setAttribute('aria-pressed', data.isFavorited);
+                    }
+                } catch (err) {
+                    console.error('즐겨찾기 토글 오류:', err);
+                    alert('즐겨찾기 상태를 변경하는 데 실패했습니다.');
+                }
+            });
+
+            // 페이지가 열리면 바로 상태 확인 실행
+            checkFavoriteStatus();
+        }
         async function loadComments() {
             const listEl = document.getElementById('commentsList');
             if (!listEl) return;
@@ -734,6 +800,7 @@
             const pressed = e.currentTarget.getAttribute('aria-pressed') === 'true';
             e.currentTarget.setAttribute('aria-pressed', String(!pressed));
         });
+        
     </script>
 </body>
 </html>
