@@ -1,5 +1,5 @@
 <%@ page contentType="text/html; charset=UTF-8" language="java" %>
-<%@ page import="java.sql.*, java.util.*" %>
+<%@ page import="java.sql.*, java.util.*, java.text.SimpleDateFormat" %>
 <%
     // 로그인 체크
     String loginUser = (String) session.getAttribute("loginUser");
@@ -87,6 +87,9 @@
         if (pstmt != null) try { pstmt.close(); } catch (Exception e) {}
         if (conn != null) try { conn.close(); } catch (Exception e) {}
     }
+
+    // 날짜 포맷 미리 선언
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 %>
 <!DOCTYPE html>
 <html lang="ko">
@@ -131,6 +134,14 @@
     .btn{border:0; background:var(--brand); color:#fff; padding:12px 18px; border-radius:999px; font-weight:900; cursor:pointer;}
     .hint{font-size:12px; color:#666;}
     [hidden]{display:none !important;}
+
+    /* 날짜 한 줄로 표시 */
+    #tbl-posts th:nth-child(4),
+    #tbl-posts td:nth-child(4),
+    #tbl-comments th:nth-child(4),
+    #tbl-comments td:nth-child(4) {
+        white-space: nowrap;
+    }
   </style>
 </head>
 <body>
@@ -176,13 +187,12 @@
           <tr>
             <td class="num"><%= idx++ %></td>
             <td>
-			  <a href="postInfo?postId=<%= post.get("id") %>&source=mypage">
-			    <%= post.get("title") %>
-			  </a>
-			</td>
-            
+              <a href="postInfo?postId=<%= post.get("id") %>&source=mypage">
+                <%= post.get("title") %>
+              </a>
+            </td>
             <td class="num"><%= post.get("views") %></td>
-            <td class="num"><%= post.get("post_date") %></td>
+            <td class="num"><%= sdf.format(post.get("post_date")) %></td>
             <td class="num"><%= loginUser %></td>
           </tr>
           <%
@@ -202,39 +212,48 @@
           <tr>
             <th class="num">목록</th>
             <th>제목 / 댓글 내용</th>
+            <th>정보</th>
             <th class="num">작성일자</th>
             <th class="num">작성자</th>
           </tr>
         </thead>
-		<tbody>
-		<%
-		    int cidx = 1;
-		    for (Map<String, Object> reply : replyList) {
-		        Integer postId = (Integer) reply.get("post_id");
-		        String postTitle = reply.get("post_title") != null ? (String) reply.get("post_title") : null;
-		
-		        // 게시글이 삭제된 경우(postId가 null) 댓글 숨김
-		        if (postId == null || postTitle == null) continue;
-		%>
-		<tr>
-		    <td class="num"><%= cidx++ %></td>
-		    <td>
-		        <a href="postInfo?postId=<%= postId %>&source=mypage"><%= postTitle %></a> / 
-		        <%= reply.get("reply_content") %>
-		    </td>
-		    <td class="num"><%= reply.get("reply_date") %></td>
-		    <td class="num"><%= loginUser %></td>
-		</tr>
-		<%
-		    }
-		    if (cidx == 1) { // 출력된 댓글이 없으면
-		%>
-		<tr><td colspan="4" class="center">작성한 댓글이 없습니다.</td></tr>
-		<%
-		    }
-		%>
-		</tbody>
+        <tbody>
+        <%
+            int cidx = 1;
+            for (Map<String, Object> reply : replyList) {
+                Integer postId = (Integer) reply.get("post_id");
+                String postTitle = reply.get("post_title") != null ? (String) reply.get("post_title") : null;
+                String postType = (String) reply.get("post_type");
 
+                if (postId == null || postTitle == null) continue;
+        %>
+        <tr>
+            <td class="num"><%= cidx++ %></td>
+            <td>
+                <a href="postInfo?postId=<%= postId %>&source=mypage"><%= postTitle %></a> / 
+                <%= reply.get("reply_content") %>
+            </td>
+            <td>
+                <%
+                    if ("정보페이지".equals(postType)) {
+                        out.print("정보페이지 댓글");
+                    } else {
+                        out.print("게시판 댓글");
+                    }
+                %>
+            </td>
+            <td class="num"><%= sdf.format(reply.get("reply_date")) %></td>
+            <td class="num"><%= loginUser %></td>
+        </tr>
+        <%
+            }
+            if (cidx == 1) {
+        %>
+        <tr><td colspan="5" class="center">작성한 댓글이 없습니다.</td></tr>
+        <%
+            }
+        %>
+        </tbody>
       </table>
 
       <h3 style="margin-top:28px;">즐겨찾기</h3>
@@ -244,28 +263,28 @@
       <p class="hint">카드를 클릭하면 해당 랜드마크 상세로 이동합니다.</p>
     </section>
 
-	<!-- 회원 정보 수정 -->
-	<section id="panel-profile" role="tabpanel" aria-labelledby="tab-profile" class="blk" hidden>
-	  <form class="form" action="editProfile" method="post">
-	    <div class="form-row">
-	      <label class="label" for="pwd">새 비밀번호 입력</label>
-	      <input id="pwd" name="pwd" type="password" class="input" autocomplete="new-password" />
-	    </div>
-	    <div class="form-row">
-	      <label class="label" for="pwd2">새 비밀번호 확인</label>
-	      <input id="pwd2" name="pwd2" type="password" class="input" autocomplete="new-password" />
-	    </div>
-	    <div class="form-row">
-	      <label class="label" for="email">이메일</label>
-	      <input id="email" name="email" type="email" class="input" value="<%= userEmail %>" />
-	    </div>
-	    <div class="actions">
-	      <a class="link-danger" href="deleteAccount.jsp">회원탈퇴</a>
-	      <button class="btn" type="submit">정보 저장</button>
-	    </div>
-	    <p class="hint">※ 저장 버튼 클릭 시 서버로 변경 사항을 전송합니다.</p>
-	  </form>
-	</section>
+    <!-- 회원 정보 수정 -->
+    <section id="panel-profile" role="tabpanel" aria-labelledby="tab-profile" class="blk" hidden>
+      <form class="form" action="editProfile" method="post">
+        <div class="form-row">
+          <label class="label" for="pwd">새 비밀번호 입력</label>
+          <input id="pwd" name="pwd" type="password" class="input" autocomplete="new-password" />
+        </div>
+        <div class="form-row">
+          <label class="label" for="pwd2">새 비밀번호 확인</label>
+          <input id="pwd2" name="pwd2" type="password" class="input" autocomplete="new-password" />
+        </div>
+        <div class="form-row">
+          <label class="label" for="email">이메일</label>
+          <input id="email" name="email" type="email" class="input" value="<%= userEmail %>" />
+        </div>
+        <div class="actions">
+          <a class="link-danger" href="deleteAccount.jsp">회원탈퇴</a>
+          <button class="btn" type="submit">정보 저장</button>
+        </div>
+        <p class="hint">※ 저장 버튼 클릭 시 서버로 변경 사항을 전송합니다.</p>
+      </form>
+    </section>
 
   </main>
 

@@ -116,12 +116,20 @@
       <div class="post-content"><%= post.getPostContent() %></div>
       
       <div class="footer-bar">
-        <button class="btn" onclick="location.href='<%= backUrl %>'">목록</button>
-        <% if (isOwner) { %>
-          <button class="btn" onclick="location.href='<%=request.getContextPath()%>/postEdit?postId=<%= post.getPostId() %>'">수정</button>
-          <button class="btn" onclick="deletePost()">삭제</button>
-        <% } %>
-      </div>
+    <!-- 목록 버튼 -->
+    <button class="btn" onclick="location.href='<%= backUrl %>'">목록</button>
+
+    <% if (isOwner) { %>
+        <!-- 수정 버튼: source 파라미터 전달 -->
+        <button class="btn"
+            onclick="location.href='<%=request.getContextPath()%>/postEdit?postId=<%= post.getPostId() %>&source=<%= source != null ? source : "postList" %>'">
+            수정
+        </button>
+
+        <!-- 삭제 버튼 -->
+        <button class="btn" onclick="deletePost()">삭제</button>
+    <% } %>
+</div>
     </section>
 
     <!-- 댓글 섹션 -->

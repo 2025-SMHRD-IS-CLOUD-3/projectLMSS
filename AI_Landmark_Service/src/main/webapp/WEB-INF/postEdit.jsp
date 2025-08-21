@@ -1,11 +1,11 @@
 <%@ page contentType="text/html; charset=UTF-8" language="java" %>
 <%
-    // EditPostServlet에서 넘겨준 게시글 데이터
     String loginUser = (String) session.getAttribute("loginUser");
     String contextPath = request.getContextPath();
-
-    // request에 담긴 post 객체
     model.Post post = (model.Post) request.getAttribute("post");
+
+    // 이전 페이지 정보 (게시판 or 마이페이지)
+    String redirect = request.getParameter("redirect") != null ? request.getParameter("redirect") : "postInfo";
 %>
 <!DOCTYPE html>
 <html lang="ko">
@@ -14,7 +14,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>게시글 수정 - Landmark Search</title>
 <style>
-  :root{ --ink:#111; --muted:#f6f7f9; --line:#e6e6e8; --brand:#57ACCB; --shadow:0 10px 30px rgba(0,0,0,.08); }
+  :root{ --ink:#111; --muted:#f6f7f9; --line:#e6e6e8; --brand:#57ACCB; --shadow:0 10px 30px rgba(0,0,0,.08);}
   *{box-sizing:border-box}
   body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--ink);background:#fff}
   header{position:fixed;top:0;left:0;width:100%;height:100px;background:#fff;
@@ -62,118 +62,98 @@
 </style>
 </head>
 <body>
-  <!-- Header -->
-  <header>
-      <h2>Landmark Search</h2>
-      <div><button class="menu-btn">≡</button></div>    
-  </header>
-    
-  <!-- Side Menu -->
-  <div class="side-menu" id="sideMenu">
-      <ul>
-          <li><a href="<%=contextPath%>/howLandmark.html">Landmark Search란?</a></li>
-          <li><a href="<%=contextPath%>/main.html">사진으로  랜드마크 찾기</a></li>
-          <li><a href="<%=contextPath%>/mapSearch.html">지도로  랜드마크 찾기</a></li>
-          <li><a href="<%=contextPath%>/postList">게시판</a></li>
-          <% if (loginUser != null) { %>
-              <li><a href="<%=contextPath%>/logout">로그아웃</a></li>
-          <% } else { %>
-              <li><a href="<%=contextPath%>/login.jsp">로그인</a></li>
-              <li><a href="<%=contextPath%>/join.jsp">회원가입</a></li>
-          <% } %>
-      </ul>
-  </div>
-  
-  <!-- Body -->
-  <main class="board">
-    <section class="panel">
-      <h2 class="title">게시글 수정</h2>
+<header>
+    <h2>Landmark Search</h2>
+    <div><button class="menu-btn">≡</button></div>    
+</header>
 
-      <!-- JSP용 폼 -->
-      <form class="form" id="postForm" method="post" action="<%=contextPath%>/postEdit">
-        <!-- 게시글 ID hidden -->
-        <input type="hidden" name="id" value="<%= post.getPostId() %>" />
+<div class="side-menu" id="sideMenu">
+    <ul>
+        <li><a href="<%=contextPath%>/howLandmark.html">Landmark Search란?</a></li>
+        <li><a href="<%=contextPath%>/main.html">사진으로  랜드마크 찾기</a></li>
+        <li><a href="<%=contextPath%>/mapSearch.html">지도로  랜드마크 찾기</a></li>
+        <li><a href="<%=contextPath%>/postList">게시판</a></li>
+        <% if (loginUser != null) { %>
+            <li><a href="<%=contextPath%>/logout">로그아웃</a></li>
+        <% } else { %>
+            <li><a href="<%=contextPath%>/login.jsp">로그인</a></li>
+            <li><a href="<%=contextPath%>/register.jsp">회원가입</a></li>
+        <% } %>
+    </ul>
+</div>
 
-        <div class="row2">
-          <!-- 제목 -->
-          <div>
-            <label for="postTitle">제목 입력</label>
-            <input id="postTitle" name="title" class="input" maxlength="120"
-                   value="<%= post.getTitle() %>" />
-          </div>
+<main class="board">
+  <section class="panel">
+    <h2 class="title">게시글 수정</h2>
 
-          <!-- 카테고리 -->
-          <div>
-            <label>카테고리</label>
-            <div class="select-wrap" id="categoryWrap">
-              <div id="postCategory" class="select-display" tabindex="0"><%= post.getCategories() %></div>
-              <div class="select-caret" id="categoryCaret"></div>
-              <div id="categoryOptions" class="options">
-                <div class="option" data-value="여행 후기">여행 후기</div>
-                <div class="option" data-value="여행 꿀팁">여행 꿀팁</div>
-                <div class="option" data-value="랜드마크 정보">랜드마크 정보</div>
-                <div class="option" data-value="자유게시판">자유게시판</div>
-              </div>
-            </div>
-            <input type="hidden" id="categoryValue" name="category" value="<%= post.getCategories() %>" />
-          </div>
-        </div>
+    <form class="form" id="postForm" method="post" action="<%=contextPath%>/postEdit">
+      <input type="hidden" name="postId" value="<%= post.getPostId() %>" />
+      <!-- redirect 값 전달 -->
+      <input type="hidden" name="redirect" value="<%= redirect %>" />
 
-        <!-- 내용 -->
+      <div class="row2">
         <div>
-          <label for="postContent">내용 입력</label>
-          <textarea id="postContent" name="content" class="textarea"><%= post.getPostContent() %></textarea>
+          <label for="postTitle">제목 입력</label>
+          <input id="postTitle" name="title" class="input" maxlength="120" value="<%= post.getTitle() %>" />
         </div>
 
-        <div class="btns">
-          <button type="button" class="btn sub" id="goList">게시글 목록</button>
-          <button type="submit" class="btn">게시글 수정</button>
+        <div>
+          <label>카테고리</label>
+          <div class="select-wrap" id="categoryWrap">
+            <div id="postCategory" class="select-display" tabindex="0"><%= post.getCategories() %></div>
+            <div class="select-caret" id="categoryCaret"></div>
+            <div id="categoryOptions" class="options">
+              <div class="option" data-value="여행 후기">여행 후기</div>
+              <div class="option" data-value="여행 꿀팁">여행 꿀팁</div>
+              <div class="option" data-value="랜드마크 정보">랜드마크 정보</div>
+              <div class="option" data-value="자유게시판">자유게시판</div>
+            </div>
+          </div>
+          <input type="hidden" id="categoryValue" name="category" value="<%= post.getCategories() %>" />
         </div>
-      </form>
-    </section>
-  </main>
+      </div>
+
+      <div>
+        <label for="postContent">내용 입력</label>
+        <textarea id="postContent" name="content" class="textarea"><%= post.getPostContent() %></textarea>
+      </div>
+
+      <div class="btns">
+        <button type="button" class="btn sub" id="goList">게시글 목록</button>
+        <button type="submit" class="btn">게시글 수정</button>
+      </div>
+    </form>
+  </section>
+</main>
 
 <script>
-  /* ===== 사이드메뉴 ===== */
-  const menuBtn=document.querySelector('.menu-btn');
-  const sideMenu=document.getElementById('sideMenu');
-  menuBtn.addEventListener('click',e=>{
-    e.stopPropagation();
-    sideMenu.classList.toggle('open');
-  });
-  document.addEventListener('click',e=>{
-    if(!sideMenu.contains(e.target) && !menuBtn.contains(e.target)){
-      sideMenu.classList.remove('open');
-    }
-  });
+const menuBtn=document.querySelector('.menu-btn');
+const sideMenu=document.getElementById('sideMenu');
+menuBtn.addEventListener('click',e=>{ e.stopPropagation(); sideMenu.classList.toggle('open'); });
+document.addEventListener('click',e=>{ if(!sideMenu.contains(e.target) && !menuBtn.contains(e.target)){ sideMenu.classList.remove('open'); } });
 
-  /* ===== 카테고리 선택 ===== */
-  const wrap = document.getElementById('categoryWrap');
-  const display = document.getElementById('postCategory');
-  const caret = document.getElementById('categoryCaret');
-  const options = document.getElementById('categoryOptions');
-  const hiddenInput = document.getElementById('categoryValue');
+const wrap=document.getElementById('categoryWrap');
+const display=document.getElementById('postCategory');
+const caret=document.getElementById('categoryCaret');
+const options=document.getElementById('categoryOptions');
+const hiddenInput=document.getElementById('categoryValue');
 
-  function openOptions(open){ options.classList.toggle('open', open); }
-  function selectCategory(value){
-    display.textContent = value || '카테고리 선택';
-    hiddenInput.value = value || '';
-    openOptions(false);
-  }
+function openOptions(open){ options.classList.toggle('open', open); }
+function selectCategory(value){
+  display.textContent=value||'카테고리 선택';
+  hiddenInput.value=value||'';
+  openOptions(false);
+}
+display.addEventListener('click', ()=> openOptions(!options.classList.contains('open')));
+caret.addEventListener('click', e=>{ e.stopPropagation(); openOptions(!options.classList.contains('open')); });
+document.addEventListener('click', e=>{ if(!wrap.contains(e.target)) openOptions(false); });
+options.addEventListener('click', e=>{ const opt=e.target.closest('.option'); if(!opt) return; selectCategory(opt.dataset.value); });
 
-  display.addEventListener('click', ()=> openOptions(!options.classList.contains('open')));
-  caret.addEventListener('click', (e)=>{ e.stopPropagation(); openOptions(!options.classList.contains('open')); });
-  document.addEventListener('click', (e)=> { if(!wrap.contains(e.target)) openOptions(false); });
-  options.addEventListener('click', (e)=>{
-    const opt = e.target.closest('.option');
-    if(!opt) return;
-    selectCategory(opt.dataset.value);
-  });
-
-  // 목록 버튼
-  document.getElementById('goList').addEventListener('click', ()=> {
-    location.href = '<%=contextPath%>/postList';
-  });
+// 목록 버튼 이동
+document.getElementById('goList').addEventListener('click', ()=> { 
+    const redirect = "<%= redirect %>";
+    location.href='<%=contextPath%>/' + redirect;
+});
 </script>
 </body>
 </html>

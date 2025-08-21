@@ -19,7 +19,7 @@ public class EditPostServlet extends HttpServlet {
 
         String postIdStr = request.getParameter("postId");
         if (postIdStr == null) {
-        	response.sendRedirect(request.getContextPath() + "/postList");
+            response.sendRedirect(request.getContextPath() + "/postList");
             return;
         }
 
@@ -33,9 +33,9 @@ public class EditPostServlet extends HttpServlet {
         try {
             Class.forName("oracle.jdbc.driver.OracleDriver");
             conn = DriverManager.getConnection(
-                "jdbc:oracle:thin:@project-db-campus.smhrd.com:1524:xe",
-                "campus_24IS_CLOUD3_p2_2",
-                "smhrd2"
+                    "jdbc:oracle:thin:@project-db-campus.smhrd.com:1524:xe",
+                    "campus_24IS_CLOUD3_p2_2",
+                    "smhrd2"
             );
 
             String sql = "SELECT POST_ID, TITLE, POST_CONTENT, CATEGORIES FROM POST WHERE POST_ID = ?";
@@ -60,7 +60,7 @@ public class EditPostServlet extends HttpServlet {
         }
 
         if (post == null) {
-            response.sendRedirect("postList");
+            response.sendRedirect(request.getContextPath() + "/postList");
             return;
         }
 
@@ -80,6 +80,12 @@ public class EditPostServlet extends HttpServlet {
         String postIdStr = request.getParameter("postId");
         int postId = (postIdStr != null && !postIdStr.isEmpty()) ? Integer.parseInt(postIdStr) : -1;
 
+        // 수정 후 리다이렉트 경로 유동 처리
+        String redirectPage = request.getParameter("redirect"); // 예: myProfile, postList
+        if (redirectPage == null || redirectPage.isEmpty()) {
+            redirectPage = "postList"; // 기본: 게시판 목록
+        }
+
         Connection conn = null;
         PreparedStatement pstmt = null;
         int result = 0;
@@ -87,9 +93,9 @@ public class EditPostServlet extends HttpServlet {
         try {
             Class.forName("oracle.jdbc.driver.OracleDriver");
             conn = DriverManager.getConnection(
-                "jdbc:oracle:thin:@project-db-campus.smhrd.com:1524:xe",
-                "campus_24IS_CLOUD3_p2_2",
-                "smhrd2"
+                    "jdbc:oracle:thin:@project-db-campus.smhrd.com:1524:xe",
+                    "campus_24IS_CLOUD3_p2_2",
+                    "smhrd2"
             );
 
             if ("delete".equals(action)) {
@@ -100,13 +106,11 @@ public class EditPostServlet extends HttpServlet {
                 result = pstmt.executeUpdate();
 
                 if (result > 0) {
-                    // 삭제 성공 → 목록으로 이동
                     response.sendRedirect(request.getContextPath() + "/postList?msg=deleteSuccess");
                 } else {
-                    // 실패
                     response.sendRedirect(request.getContextPath() + "/postList?error=deleteFail");
                 }
-                return; // 삭제 처리 끝났으니 여기서 메서드 종료
+                return; // 삭제 처리 끝났으니 종료
             }
 
             // ===== 글 수정 SQL =====
@@ -130,12 +134,15 @@ public class EditPostServlet extends HttpServlet {
             try { if (conn != null) conn.close(); } catch (Exception e) {}
         }
 
-        if(result > 0) {
-            // 수정 성공 → 상세보기 페이지로 이동
-            response.sendRedirect(request.getContextPath() + "/postInfo?id=" + postId);
-        } else {
-            // 실패 → 목록으로 이동
-            response.sendRedirect(request.getContextPath() + "/postList?error=updateFail");
+        if (result > 0) {
+            if ("mypage".equals(redirectPage)) {
+                response.sendRedirect(request.getContextPath() + "/myProfile.jsp");
+            } else if ("postList".equals(redirectPage)) {
+                response.sendRedirect(request.getContextPath() + "/postList");
+            } else {
+                response.sendRedirect(request.getContextPath() + "/postInfo?postId=" + postId);
+            }
         }
+
     }
 }
