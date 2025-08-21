@@ -21,7 +21,6 @@
             background-color: #57ACCB; color: white; padding: 20px; padding-top: 100px;
             transition: right 0.3s ease; font-size: 30px; z-index: 1001;
         }
-      padding:20px;padding-top:100px;transition:right .3s ease;z-index:1001;font-size:30px}
     .side-menu.open{ right: 0; }
     .side-menu li { list-style-type: none; margin-top: 20px; }
     .side-menu a { color: white; text-decoration: none; font-weight: bold; }
