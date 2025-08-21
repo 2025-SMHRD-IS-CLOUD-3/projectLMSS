@@ -1,4 +1,8 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%
+    // 현재 로그인 상태 확인
+    String loginUser = (String) session.getAttribute("loginUser");
+%>
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -16,11 +20,24 @@
         :root{ --ink:#111; --muted:#f6f7f9; --line:#e6e6e8; --brand:#57ACCB; --shadow:0 10px 30px rgba(0,0,0,.08); }
         *{box-sizing:border-box}
         body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--ink);background:#fff}
-        header{position:fixed;top:0;left:0;width:100%;height:86px;background:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 20px;z-index:1000;box-shadow:0 1px 0 rgba(0,0,0,.06)}
-        header h1{margin:0;font-size:18px;font-weight:900}
-        .menu-btn{width:44px;height:44px;border:none;background:transparent;cursor:pointer;font-size:28px;line-height:44px}
-        .side{position:fixed;top:0;right:-320px;width:320px;height:100%;background:var(--brand);color:#fff;padding:100px 20px 20px;transition:right .25s ease;z-index:1100}
-        .side.open{right:0}
+        header {
+            position:fixed; top:0; left:0; width:100%; height:100px; background:#fff;
+            display:flex; justify-content:space-between; align-items:center; padding:0 20px;
+            z-index:1000; box-shadow:0 1px 0 rgba(0,0,0,.04);
+        }
+        h2 a {
+		  text-decoration: none;
+		  color: inherit;
+		}
+        .menu-btn { position: fixed; top: 20px; right: 20px; font-size: 50px; background: none; border: none; color: black; cursor: pointer; z-index: 1002; }
+        .side{ 
+        	position: fixed; top: 0; right: -500px; width: 500px;
+        	height: 100%; background-color: #57ACCB; color: white; 
+        	padding: 20px; padding-top: 100px; box-sizing: border-box; 
+        	transition: right 0.3s ease; font-size: 30px; z-index: 1001; }
+        .side li { list-style-type: none; margin-top: 20px; }
+        .side a { color: white; text-decoration: none; font-weight: bold; }
+        .side.open { right: 0; }
         .side a{color:#fff;text-decoration:none;font-weight:700;display:block;margin:14px 0}
         .board{max-width:1100px;margin:120px auto 48px;background:var(--muted);border-radius:28px;padding:22px}
         .card{background:var(--soft);border:1px solid var(--line);border-radius:22px;padding:22px}
@@ -70,21 +87,26 @@
 </head>
 <body>
     <header>
-        <h1>Landmark Search</h1>
-        <button class="menu-btn" aria-label="메뉴">≡</button>
+        <h2><a href="<%=request.getContextPath()%>/main.jsp">Landmark Search</a></h2>
     </header>
+        <button class="menu-btn" aria-label="메뉴">≡</button>
 
-    <aside id="side" class="side" aria-hidden="true">
-        <a href="<%=request.getContextPath()%>/main.jsp">사진으로 찾기</a>
-        <a href="<%=request.getContextPath()%>/mapSearch.jsp">지도로 찾기</a>
-        <a href="<%=request.getContextPath()%>/howLandmark.jsp">Landmark Search란?</a>
-        <a href="<%=request.getContextPath()%>/postList">게시판</a>
-        <% if (session.getAttribute("loginUser") != null) { %>
-            <a href="<%=request.getContextPath()%>/logout">로그아웃</a>
-            <a href="<%=request.getContextPath()%>/myProfile.jsp">마이페이지</a>
-        <% } else { %>
-            <a href="<%=request.getContextPath()%>/login.jsp">로그인</a>
-        <% } %>
+    <aside class="side" id="side">
+        <ul>
+            <li><a href="<%=request.getContextPath()%>/howLandmark.jsp">Landmark Search란?</a></li>
+            <li><a href="<%=request.getContextPath()%>/main.jsp">사진으로 랜드마크 찾기</a></li>
+            <li><a href="<%=request.getContextPath()%>/mapSearch.jsp">지도로 랜드마크 찾기</a></li>
+            <li><a href="<%=request.getContextPath()%>/postList">게시판</a></li>
+            <% if (loginUser != null) { %>
+                <li>
+                    <a href="<%=request.getContextPath()%>/logout">로그아웃</a>
+                </li>
+                <li><a href="<%=request.getContextPath()%>/myProfile.jsp">마이페이지</a></li>
+            <% } else { %>
+                <li><a href="<%=request.getContextPath()%>/login.jsp">로그인</a></li>
+                <li><a href="<%=request.getContextPath()%>/join.jsp">회원가입</a></li>
+            <% } %>
+        </ul>
     </aside>
 
     <main class="board">

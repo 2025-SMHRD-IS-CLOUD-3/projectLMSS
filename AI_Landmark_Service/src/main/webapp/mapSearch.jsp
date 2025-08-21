@@ -14,11 +14,14 @@
     <script src="https://unpkg.com/@turf/turf@6.5.0/turf.min.js" defer></script>
     
     <style>
+    	h2 a {
+		  text-decoration: none;
+		  color: inherit;
+		}
         :root { --ink:#111; --muted:#f4f4f4; --line:#e5e5e5; --brand:#57ACCB; }
         * { box-sizing:border-box; }
         body { margin:0; font-family:system-ui,-apple-system, Segoe UI, Roboto, Arial, sans-serif; color:var(--ink); background:#fff; }
         header { position:fixed; top:0; left:0; width:100%; height:100px; background:#fff; display:flex; justify-content:space-between; align-items:center; padding:0 20px; z-index:1000; box-shadow:0 1px 0 rgba(0,0,0,.04); }
-        header h2 { margin:0; font-size:18px; font-weight:bold; }
         .menu-btn { position:fixed; top:20px; right:20px; font-size:50px; background:none; border:none; color:#000; cursor:pointer; z-index:1002; }
         .side-menu { position:fixed; top:0; right:-500px; width:500px; height:100%; background:var(--brand); color:#fff; padding:20px; padding-top:100px; transition:right .3s ease; z-index:1001; font-size:30px; }
         .side-menu.open { right:0; }
@@ -47,7 +50,7 @@
 </head>
 <body>
     <header>
-        <h2>Landmark Search</h2>
+        <h2><a href="<%=request.getContextPath()%>/main.jsp">Landmark Search</a></h2>
     </header>
         <button class="menu-btn" aria-label="메뉴 열기">≡</button>
     <aside class="side-menu" id="sideMenu" aria-hidden="true">

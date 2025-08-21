@@ -21,8 +21,15 @@
             display:flex; justify-content:space-between; align-items:center; padding:0 20px;
             z-index:1000; box-shadow:0 1px 0 rgba(0,0,0,.04);
         }
-        header h2 { font-size: 18px; margin: 0; font-weight: bold; }
-        .side-menu { position: fixed; top: 0; right: -500px; width: 500px; height: 100%; background-color: #57ACCB; color: white; padding: 20px; padding-top: 100px; box-sizing: border-box; transition: right 0.3s ease; font-size: 30px; z-index: 1001; }
+        h2 a {
+		  text-decoration: none;
+		  color: inherit;
+		}
+        .side-menu { 
+        	position: fixed; top: 0; right: -500px; width: 500px;
+        	height: 100%; background-color: #57ACCB; color: white; 
+        	padding: 20px; padding-top: 100px; box-sizing: border-box; 
+        	transition: right 0.3s ease; font-size: 30px; z-index: 1001; }
         .side-menu li { list-style-type: none; margin-top: 20px; }
         .side-menu a { color: white; text-decoration: none; font-weight: bold; }
         .side-menu.open { right: 0; }
@@ -50,7 +57,7 @@
 </head>
 <body>
     <header>
-        <h2>Landmark Search</h2>
+        <h2><a href="<%=request.getContextPath()%>/main.jsp">Landmark Search</a></h2>
     </header>
         <button class="menu-btn" aria-label="open side menu">≡</button>
 
