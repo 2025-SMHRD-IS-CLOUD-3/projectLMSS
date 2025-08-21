@@ -13,6 +13,7 @@
     String userEmail = "";
     List<Map<String, Object>> postList = new ArrayList<>();
     List<Map<String, Object>> replyList = new ArrayList<>();
+    List<Map<String, Object>> favoriteList = new ArrayList<>(); // 즐겨찾기 리스트 선언
 
     Connection conn = null;
     PreparedStatement pstmt = null;
@@ -96,7 +97,31 @@
             pstmt.close();
         }
 
-        
+     // 회원이 즐겨찾기한 랜드마크 가져오기
+        if (loginMemberId != null) {
+            String sqlFavorites =
+                "SELECT * FROM (" +
+                "    SELECT L.LANDMARK_ID, L.LANDMARK_NAME, I.IMAGE_URL, " +
+                "    ROW_NUMBER() OVER(PARTITION BY L.LANDMARK_ID ORDER BY CASE WHEN I.IMAGE_TYPE = 'thumbnail' THEN 1 ELSE 2 END, I.IMAGE_ID ASC) AS RN " +
+                "    FROM FAVORITES F " +
+                "    JOIN LANDMARK L ON F.LANDMARK_ID = L.LANDMARK_ID " +
+                "    JOIN LANDMARK_IMAGE I ON L.LANDMARK_ID = I.LANDMARK_ID " +
+                "    WHERE F.MEMBER_ID = ?" +
+                ") WHERE RN = 1";
+            
+            pstmt = conn.prepareStatement(sqlFavorites);
+            pstmt.setInt(1, loginMemberId);
+            rs = pstmt.executeQuery();
+            while (rs.next()) {
+                Map<String, Object> row = new HashMap<>();
+                row.put("id", rs.getInt("LANDMARK_ID"));
+                row.put("name", rs.getString("LANDMARK_NAME"));
+                row.put("thumbnail", rs.getString("IMAGE_URL"));
+                favoriteList.add(row);
+            }
+            rs.close();
+            pstmt.close();
+        }
 
     } catch(Exception e){ 
         e.printStackTrace(); 
@@ -184,7 +209,6 @@
       <button id="tab-profile"  role="tab" aria-selected="false">회원 정보 수정</button>
     </nav>
 
-    <!-- 활동 내역 -->
     <section id="panel-activity" role="tabpanel" aria-labelledby="tab-activity" class="blk">
       <h3>내 게시글</h3>
       <table class="table" id="tbl-posts">
@@ -272,13 +296,54 @@
       </table>
 
       <h3 style="margin-top:28px;">즐겨찾기</h3>
-      <div id="favGrid" class="fav-grid">
-        <!-- DB 연동 후 즐겨찾기 삽입 -->
-      </div>
-      <p class="hint">카드를 클릭하면 해당 랜드마크 상세로 이동합니다.</p>
+<table class="table" id="tbl-favorites">
+  <thead>
+    <tr>
+      <th class="num">목록</th>
+      <th>랜드마크 이름</th>
+      <th class="num">썸네일</th>
+    </tr>
+  </thead>
+  <!-- 기존 즐겨찾기 테이블 tbody 부분만 수정 -->
+<tbody>
+<%
+  int favIdx = 1;
+  if (favoriteList == null || favoriteList.isEmpty()) {
+%>
+  <tr><td colspan="3" class="center">즐겨찾기한 랜드마크가 없습니다.</td></tr>
+<%
+  } else {
+    for (Map<String, Object> fav : favoriteList) {
+      Integer landmarkId = (Integer) fav.get("id");
+      String landmarkName = (String) fav.get("name");
+      String thumbnail = (String) fav.get("thumbnail");
+
+      if (landmarkId != null && landmarkName != null && thumbnail != null) {
+%>
+<tr>
+  <td class="num"><%= favIdx++ %></td>
+  <td>
+    <a href="landmarkInfo.jsp?name=<%= java.net.URLEncoder.encode(landmarkName, "UTF-8") %>">
+      <%= landmarkName %>
+    </a>
+  </td>
+  <td class="num">
+    <img src="<%= thumbnail.replace("https://imgur.com/", "https://i.imgur.com/") + ".jpg" %>"
+     class="thumb" alt="<%= landmarkName %>"
+     style="width: 50px; height: 50px; object-fit: cover;">
+    
+  </td>
+</tr>
+<%
+      } // 널 체크 끝
+    }
+  }
+%>
+</tbody>
+  
+</table>
     </section>
 
-    <!-- 회원 정보 수정 -->
     <section id="panel-profile" role="tabpanel" aria-labelledby="tab-profile" class="blk" hidden>
       <form class="form" action="editProfile" method="post">
         <div class="form-row">
