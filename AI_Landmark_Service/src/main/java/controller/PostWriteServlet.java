@@ -56,15 +56,24 @@ public class PostWriteServlet extends HttpServlet {
         System.out.println("카테고리: " + category);
         System.out.println("내용: " + content);
         
-        // 유효성 검사
+     // ★ 실패 시 입력값 유지용
+        request.setAttribute("formTitle",    title);
+        request.setAttribute("formCategory", category);
+        request.setAttribute("formContent",  content);
+        
+     // ★ 필수값 검증: 빠진 항목마다 alertMsg 세팅 후 forward (리다이렉트 X)
         if (title == null || title.trim().isEmpty()) {
-            request.setAttribute("error", "제목을 입력해주세요.");
+            request.setAttribute("alertMsg", "제목을 입력하세요.");
             request.getRequestDispatcher("/WEB-INF/postWrite.jsp").forward(request, response);
             return;
         }
-        
+        if (category == null || category.trim().isEmpty()) {
+            request.setAttribute("alertMsg", "카테고리를 선택하세요.");
+            request.getRequestDispatcher("/WEB-INF/postWrite.jsp").forward(request, response);
+            return;
+        }
         if (content == null || content.trim().isEmpty()) {
-            request.setAttribute("error", "내용을 입력해주세요.");
+            request.setAttribute("alertMsg", "내용을 입력하세요.");
             request.getRequestDispatcher("/WEB-INF/postWrite.jsp").forward(request, response);
             return;
         }

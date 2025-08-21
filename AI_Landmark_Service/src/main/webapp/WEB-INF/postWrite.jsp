@@ -1,4 +1,5 @@
 <%@ page contentType="text/html; charset=UTF-8" language="java" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>  <%-- ★ 서버에서 전달한 값(formTitle, formCategory, formContent, alertMsg) 사용 --%>
 <%
     // 로그인 체크는 Servlet(PostWriteServlet)에서 처리
     String loginUser = (String) session.getAttribute("loginUser");
@@ -17,7 +18,7 @@
   header{position:fixed;top:0;left:0;width:100%;height:100px;background:#fff;
     display:flex;align-items:center;justify-content:space-between;padding:0 20px;z-index:1000;
     box-shadow:0 1px 0 rgba(0,0,0,.04)}
-  header h1{margin:0;font-size:22px}
+  header h2{margin:0;font-size:22px}
   .menu-btn{position:fixed;top:20px;right:20px;font-size:50px;background:none;border:none;cursor:pointer}
   .side-menu{position:fixed;top:0;right:-500px;width:500px;height:100%;background:var(--brand);color:#fff;
     padding:20px;padding-top:100px;transition:right .3s ease;z-index:1001;font-size:30px}
@@ -43,9 +44,7 @@
     position:absolute;top:0;right:0;height:100%;width:44px;border-left:1px solid #cfcfd2;
     display:grid;place-items:center;pointer-events:auto;cursor:pointer
   }
-  .select-caret::after{
-    content:"▾"; font-size:16px; color:#2d5d72;
-  }
+  .select-caret::after{ content:"▾"; font-size:16px; color:#2d5d72; }
   .options{
     position:absolute;left:0;right:0;top:calc(100% + 6px);background:#fff;border:1px solid var(--line);
     border-radius:12px;box-shadow:var(--shadow);display:none;max-height:260px;overflow:auto;z-index:10
@@ -76,12 +75,9 @@
           <li><a href="<%=contextPath%>/main.html">사진으로  랜드마크 찾기</a></li>
           <li><a href="<%=contextPath%>/mapSearch.html">지도로  랜드마크 찾기</a></li>
           <li><a href="<%=contextPath%>/postList">게시판</a></li>
-
           <% if (loginUser != null) { %>
-              <!-- 로그인 상태 -->
               <li><a href="<%=contextPath%>/logout">로그아웃</a></li>
           <% } else { %>
-              <!-- 비로그인 상태 -->
               <li><a href="<%=contextPath%>/login.jsp">로그인</a></li>
               <li><a href="<%=contextPath%>/join.jsp">회원가입</a></li>
           <% } %>
@@ -94,18 +90,20 @@
       <h2 class="title">게시글 작성</h2>
 
       <!-- JSP용 폼 -->
-      <form class="form" id="postForm" method="post" action="<%=contextPath%>/postWrite">
+      <form class="form" id="postForm" method="post" action="<%=contextPath%>/postWrite" autocomplete="off">
         <div class="row2">
           <!-- 제목 -->
           <div>
             <label for="postTitle">제목 입력</label>
-            <input id="postTitle" name="title" class="input" placeholder="제목을 입력하세요" maxlength="120" />
+            <!-- ★ 서버에서 되돌려준 제목 값 유지 -->
+            <input id="postTitle" name="title" class="input" placeholder="제목을 입력하세요" maxlength="120"
+                   value="<c:out value='${formTitle}'/>" />
           </div>
 
           <!-- 카테고리 -->
           <div>
             <label>카테고리</label>
-            <div class="select-wrap" id="categoryWrap">
+            <div class="select-wrap" id="categoryWrap" data-init-category="<c:out value='${formCategory}'/>"><!-- ★ 복원값 data로 보관 -->
               <div id="postCategory" class="select-display" tabindex="0">카테고리 선택</div>
               <div class="select-caret" id="categoryCaret"></div>
               <div id="categoryOptions" class="options">
@@ -115,14 +113,15 @@
                 <div class="option" data-value="자유게시판">자유게시판</div>
               </div>
             </div>
-            <input type="hidden" id="categoryValue" name="category" />
+            <input type="hidden" id="categoryValue" name="category" value="<c:out value='${formCategory}'/>"/><!-- ★ hidden 값 유지 -->
           </div>
         </div>
 
         <!-- 내용 -->
         <div>
           <label for="postContent">내용 입력</label>
-          <textarea id="postContent" name="content" class="textarea" placeholder="내용을 입력하세요"></textarea>
+          <!-- ★ textarea는 value 속성이 아닌 태그 본문으로 값 유지 -->
+          <textarea id="postContent" name="content" class="textarea" placeholder="내용을 입력하세요"><c:out value='${formContent}'/></textarea>
         </div>
 
         <div class="btns">
@@ -132,6 +131,13 @@
       </form>
     </section>
   </main>
+
+<!-- ★ 서버 유효성 실패 시 alert 메시지 -->
+<c:if test="${not empty alertMsg}">
+  <script>
+    alert('<c:out value="${alertMsg}"/>');
+  </script>
+</c:if>
 
 <script>
   /* ===== 사이드메뉴 ===== */
@@ -175,9 +181,28 @@
     selectCategory(opt.dataset.value);
   });
 
-  // 목록 버튼
+  // ★ 초기 로드 시, 서버가 준 formCategory로 표시/값 복원
+  document.addEventListener('DOMContentLoaded', () => {
+    const initCat = (wrap.dataset.initCategory || '').trim();
+    if (initCat) { selectCategory(initCat); } // 표시/hidden 동시 세팅
+  });
+
+  /* ===== 목록 버튼 ===== */
   document.getElementById('goList').addEventListener('click', ()=> {
     location.href = '<%=contextPath%>/postList';
+  });
+
+  /* ===== 클라이언트 측 제출 전 검증 (alert + 제출 차단) =====
+     - 제목/카테고리/내용 중 하나라도 비면 alert을 띄우고 submit 중단
+     - 값은 그대로 유지됨(페이지 리로드 X) */
+  document.getElementById('postForm').addEventListener('submit', function(e) {
+    const title = this.title.value.trim();
+    const category = this.category.value.trim();   // hidden input 값
+    const content = this.content.value.trim();
+
+    if (!title)   { alert('제목을 입력하세요.');     e.preventDefault(); return; }
+    if (!category){ alert('카테고리를 선택하세요.'); e.preventDefault(); return; }
+    if (!content) { alert('내용을 입력하세요.');     e.preventDefault(); return; }
   });
 </script>
 </body>
