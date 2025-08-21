@@ -67,11 +67,6 @@
 <body>
     <header>
         <h2>Landmark Search</h2>
-        <div>
-            <% if (loginUser != null) { %>
-                <span class="user-info"><%= loginUser %>님 환영합니다</span>
-            <% } %>
-        </div>
     </header>
             <button class="menu-btn">≡</button>
 
