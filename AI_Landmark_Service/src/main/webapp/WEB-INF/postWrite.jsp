@@ -12,20 +12,27 @@
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>게시글 작성 - Landmark Search</title>
 <style>
-  :root{ --ink:#111; --muted:#f6f7f9; --line:#e6e6e8; --brand:#57ACCB; --shadow:0 10px 30px rgba(0,0,0,.08); }
-  *{box-sizing:border-box}
-  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--ink);background:#fff}
-  header{position:fixed;top:0;left:0;width:100%;height:100px;background:#fff;
-    display:flex;align-items:center;justify-content:space-between;padding:0 20px;z-index:1000;
-    box-shadow:0 1px 0 rgba(0,0,0,.04)}
-  header h2{margin:0;font-size:22px}
-  .menu-btn{position:fixed;top:20px;right:20px;font-size:50px;background:none;border:none;cursor:pointer}
-  .side-menu{position:fixed;top:0;right:-500px;width:500px;height:100%;background:var(--brand);color:#fff;
-    padding:20px;padding-top:100px;transition:right .3s ease;z-index:1001;font-size:30px}
-  .side-menu.open{right:0}
-  .side-menu ul{margin:0;padding:0}
-  .side-menu li{list-style:none;margin:18px 0}
-  .side-menu a{color:#fff;text-decoration:none;font-weight:700}
+    :root{ --ink:#111; --muted:#f6f7f9; --line:#e6e6e8; --brand:#57ACCB; --shadow:0 10px 30px rgba(0,0,0,.08); }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--ink);background:#fff}
+    header {
+            position:fixed; top:0; left:0; width:100%; height:100px; background:#fff;
+            display:flex; justify-content:space-between; align-items:center; padding:0 20px;
+            z-index:1000; box-shadow:0 1px 0 rgba(0,0,0,.04);
+        }
+    h2 a {
+		  text-decoration: none;
+		  color: inherit;
+		}
+    .side-menu { 
+        	position: fixed; top: 0; right: -500px; width: 500px;
+        	height: 100%; background-color: #57ACCB; color: white; 
+        	padding: 20px; padding-top: 100px; box-sizing: border-box; 
+        	transition: right 0.3s ease; font-size: 30px; z-index: 1001; }
+    .side-menu li { list-style-type: none; margin-top: 20px; }
+    .side-menu a { color: white; text-decoration: none; font-weight: bold; }
+    .side-menu.open { right: 0; }
+    .menu-btn { position: fixed; top: 20px; right: 20px; font-size: 50px; background: none; border: none; color: black; cursor: pointer; z-index: 1002; }
   .board{max-width:1000px;margin:140px auto 40px;background:var(--muted);border-radius:28px;padding:22px}
   .panel{background:#fff;border:1px solid var(--line);border-radius:22px;padding:26px;box-shadow:var(--shadow)}
   .title{margin:8px 0 22px;text-align:center;font-size:28px;font-weight:900}
@@ -60,13 +67,10 @@
 </style>
 </head>
 <body>
-  <!-- Header -->
   <header>
-      <h2>Landmark Search</h2>
-      <div>
-          <button class="menu-btn">≡</button>
-      </div>    
-  </header>
+        <h2><a href="<%=request.getContextPath()%>/main.jsp">Landmark Search</a></h2>
+    </header>
+        <button class="menu-btn" aria-label="open side menu">≡</button>
     
   <!-- Side Menu -->
   <div class="side-menu" id="sideMenu">

@@ -14,42 +14,33 @@
     <style>
         :root{ --ink:#111; --muted:#f6f7f9; --line:#e5e7eb; --brand:#57ACCB; --ink2:#555; }
         *{ box-sizing:border-box; }
-        body{ margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; color:var(--ink); background:#fff; }
-        header{ position:sticky; top:0; background:#fff; border-bottom:1px solid var(--line); z-index:10; }
-        .hd-inner{ max-width:1080px; margin:0 auto; height:72px; display:flex; align-items:center; justify-content:space-between; padding:0 16px; }
-        .logo{ font-weight:900; }
-        .menu{ font-size:28px; }
-        
-        /* 사이드 메뉴 스타일 */
-        .menu-btn{ 
-            background:none; 
-            border:none; 
-            font-size:28px; 
-            cursor:pointer; 
-            padding:0; 
-            margin:0; 
-            color:var(--ink);
+        header {
+            position:fixed; top:0; left:0; width:100%; height:100px; background:#fff;
+            display:flex; justify-content:space-between; align-items:center; padding:0 20px;
+            z-index:1000; box-shadow:0 1px 0 rgba(0,0,0,.04);
+            font-size: 15px;
         }
-        .side-menu{ 
-            position:fixed; 
-            top:0; 
-            right:-500px; 
-            width:500px; 
-            height:100%; 
-            background:var(--brand); 
-            color:#fff; 
-            padding:20px; 
-            padding-top:100px; 
-            transition:right .3s ease; 
-            z-index:1001; 
-            font-size:30px;
-        }
-        .side-menu.open{ right:0; }
-        .side-menu ul{ margin:0; padding:0; }
-        .side-menu li{ list-style:none; margin:18px 0; }
-        .side-menu a{ color:#fff; text-decoration:none; font-weight:700; }
+    	h2 a {
+		  text-decoration: none;
+		  color: inherit;
+		}
+    	.side-menu { 
+        	position: fixed; top: 0; right: -500px; width: 500px;
+        	height: 100%; background-color: #57ACCB; color: white; 
+        	padding: 20px; padding-top: 100px; box-sizing: border-box; 
+        	transition: right 0.3s ease; font-size: 30px; z-index: 1001; }
+    	.side-menu li { list-style-type: none; margin-top: 20px; }
+    	.side-menu a { color: white; text-decoration: none; font-weight: bold; }
+    	.side-menu.open { right: 0; }
+    	.menu-btn { position: fixed; top: 20px; right: 20px; font-size: 50px; background: none; border: none; color: black; cursor: pointer; z-index: 1002; }
         
-        .board{ max-width:1080px; margin:24px auto 40px; background:var(--muted); border-radius:28px; padding:20px; }
+        .board { 
+		    max-width:1080px; 
+		    margin:130px auto 50px;
+		    background:var(--muted); 
+		    border-radius:28px; 
+		    padding:20px; 
+		}
         .paper{ background:#fff; border:1px solid var(--line); border-radius:22px; padding:16px; }
         .title{ text-align:center; font-size:22px; font-weight:900; margin:4px 0 18px; }
         .toolbar{ display:flex; gap:8px; align-items:center; justify-content:space-between; margin:4px 0 10px; }
@@ -72,20 +63,18 @@
         .pager button{ min-width:36px; height:36px; border:1px solid var(--line); background:#fff; border-radius:10px; cursor:pointer; }
         .pager button[aria-current="true"]{ background:var(--brand); color:#fff; border-color:var(--brand); font-weight:800; }
         @media (max-width: 680px){
-            .searchbox input{ width:170px; }
-            .col-cat{ display:none; }
-            .col-writer{ display:none; }
-            .side-menu{ width:100%; right:-100%; }
+        .searchbox input{ width:170px; }
+        .col-cat{ display:none; }
+        .col-writer{ display:none; }
+        .side-menu{ width:100%; right:-100%; }
         }
     </style>
 </head>
 <body>
     <header>
-        <div class="hd-inner">
-            <div class="logo">Landmark Search</div>
-            <div><button class="menu-btn" aria-label="open side menu">≡</button></div>
-        </div>
+        <h2><a href="<%=request.getContextPath()%>/main.jsp">Landmark Search</a></h2>
     </header>
+        <button class="menu-btn" aria-label="open side menu">≡</button>
     
     <div class="side-menu" id="sideMenu">
         <ul>
