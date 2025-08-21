@@ -74,7 +74,7 @@
                 <li><a href="<%=request.getContextPath()%>/myProfile.jsp">마이페이지</a></li>
             <% } else { %>
                 <li><a href="<%=request.getContextPath()%>/login.jsp">로그인</a></li>
-                <li><a href="<%=request.getContextPath()%>/join.jsp">회원가입</a></li>
+                <li><a href="<%=request.getContextPath()%>/register.jsp">회원가입</a></li>
             <% } %>
         </ul>
     </aside>

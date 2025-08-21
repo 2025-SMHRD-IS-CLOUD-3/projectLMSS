@@ -25,7 +25,10 @@
             background-color: white; display: flex; justify-content: space-between; align-items: center;
             padding: 0 20px;
         }
-        header h2 { font-size: 18px; margin: 0; font-weight: bold; }
+        h2 a {
+		  text-decoration: none;
+		  color: inherit;
+		}
         .user-info { font-size: 14px; color: #555; margin-right: 10px; }
 
         .side-menu {
@@ -66,7 +69,7 @@
 </head>
 <body>
     <header>
-        <h2>Landmark Search</h2>
+        <h2><a href="<%=request.getContextPath()%>/main.jsp">Landmark Search</a></h2>
     </header>
             <button class="menu-btn">≡</button>
 

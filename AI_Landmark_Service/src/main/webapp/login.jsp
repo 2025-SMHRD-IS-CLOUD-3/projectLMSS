@@ -10,17 +10,20 @@
     *{box-sizing:border-box}
     body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--ink);background:#fff}
     header {
-            position:fixed; top:0; left:0; width:100%; height:100px; background:#fff;
-            display:flex; justify-content:space-between; align-items:center; padding:0 20px;
-            z-index:1000; box-shadow:0 1px 0 rgba(0,0,0,.04);
-        }
-    header h1{margin:0;font-size:22px}
+        position:fixed; top:0; left:0; width:100%; height:100px; background:#fff;
+        display:flex; justify-content:space-between; align-items:center; padding:0 20px;
+        z-index:1000; box-shadow:0 1px 0 rgba(0,0,0,.04);
+    }
+    h2 a {
+		  text-decoration: none;
+		  color: inherit;
+	}
     .menu-btn { position: fixed; top: 20px; right: 20px; font-size: 50px; background: none; border: none; color: black; cursor: pointer; z-index: 1002; }
     .side-menu {
-            position: fixed; top: 0; right: -500px; width: 500px; height: 100%;
-            background-color: #57ACCB; color: white; padding: 20px; padding-top: 100px;
-            transition: right 0.3s ease; font-size: 30px; z-index: 1001;
-        }
+        position: fixed; top: 0; right: -500px; width: 500px; height: 100%;
+        background-color: #57ACCB; color: white; padding: 20px; padding-top: 100px;
+        transition: right 0.3s ease; font-size: 30px; z-index: 1001;
+    }
     .side-menu.open{ right: 0; }
     .side-menu li { list-style-type: none; margin-top: 20px; }
     .side-menu a { color: white; text-decoration: none; font-weight: bold; }
@@ -49,7 +52,7 @@
 <body>
   <!-- ===== 헤더 ===== -->
   <header>
-      <h2>Landmark Search</h2>
+      <h2><a href="<%=request.getContextPath()%>/main.jsp">Landmark Search</a></h2>
   </header>
           <button class="menu-btn" aria-label="open side menu">≡</button>
 
