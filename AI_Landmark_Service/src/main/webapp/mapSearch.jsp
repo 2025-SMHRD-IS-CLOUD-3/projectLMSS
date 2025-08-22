@@ -54,11 +54,22 @@
         .sw{ width:14px; height:10px; border:2px solid #ff2d20; background:#9fbfff33; }
         .sw.off{ border-color:#9aa3aa; background:transparent; }
         @media (max-width:960px){ #map { height:420px; } .card { grid-template-columns:100px 1fr; } .thumb { width:100px; height:76px; } }
+        #headerImage{
+			height: 100%;
+			width: 500px;
+			display: flex;
+		    justify-content: center;
+		    position: absolute;
+		    top: 50%;
+		    left: 50%;
+		    transform: translate(-50%, -50%);
+		}
     </style>
 </head>
 <body>
     <header>
         <h2><a href="<%=request.getContextPath()%>/main.jsp">Landmark Search</a></h2>
+        <img src="./image/headerImage.png" alt="MySite Logo" id="headerImage">
     </header>
         <button class="menu-btn" aria-label="메뉴 열기">≡</button>
     <aside class="side-menu" id="sideMenu" aria-hidden="true">

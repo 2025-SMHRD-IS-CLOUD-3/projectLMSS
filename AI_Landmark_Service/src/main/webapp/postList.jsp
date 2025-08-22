@@ -41,6 +41,16 @@
 		    border-radius:28px; 
 		    padding:20px; 
 		}
+		#headerImage{
+			height: 100%;
+			width: 500px;
+			display: flex;
+		    justify-content: center;
+		    position: absolute;
+		    top: 50%;
+		    left: 50%;
+		    transform: translate(-50%, -50%);
+		}
         .paper{ background:#fff; border:1px solid var(--line); border-radius:22px; padding:16px; }
         .title{ text-align:center; font-size:22px; font-weight:900; margin:4px 0 18px; }
         .toolbar{ display:flex; gap:8px; align-items:center; justify-content:space-between; margin:4px 0 10px; }
@@ -73,6 +83,7 @@
 <body>
     <header>
         <h2><a href="<%=request.getContextPath()%>/main.jsp">Landmark Search</a></h2>
+        <img src="./image/headerImage.png" alt="MySite Logo" id="headerImage">
     </header>
         <button class="menu-btn" aria-label="open side menu">≡</button>
     

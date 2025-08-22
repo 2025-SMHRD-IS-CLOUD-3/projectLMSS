@@ -66,11 +66,22 @@
   .btns{display:flex;gap:10px;justify-content:flex-end;margin-top:10px}
   .btn{background:#57ACCB;color:#fff;border:none;border-radius:12px;padding:12px 18px;font-weight:800;cursor:pointer}
   .btn.sub{background:#e9eef1;color:#234}
+  #headerImage{
+			height: 100%;
+			width: 500px;
+			display: flex;
+		    justify-content: center;
+		    position: absolute;
+		    top: 50%;
+		    left: 50%;
+		    transform: translate(-50%, -50%);
+		}
 </style>
 </head>
 <body>
 	<header>
         <h2><a href="<%=request.getContextPath()%>/main.jsp">Landmark Search</a></h2>
+        <img src="./image/headerImage.png" alt="MySite Logo" id="headerImage">
     </header>
         <button class="menu-btn" aria-label="open side menu">≡</button>
 
