@@ -163,103 +163,174 @@
     </main>
 
     <script>
-        /* ==============================
-         * 0) 설정
-         * ============================== */
-        const CONTEXT_PATH = "<%=request.getContextPath()%>";
+  /* ==============================
+   * 0) 설정
+   * ============================== */
+  const CONTEXT_PATH = "<%=request.getContextPath()%>";
 
-        // ❗ [수정] PostWriteServlet 경로로 수정
-        function getWritePageUrl() {
-            return CONTEXT_PATH + '/postWrite';
-        }
+  // 글쓰기 페이지 URL
+  function getWritePageUrl() {
+    return CONTEXT_PATH + '/postWrite';
+  }
 
-        function getReadPageUrl(id) {
-            return CONTEXT_PATH + '/postInfo?postId=' + encodeURIComponent(id);
-        }
+  function getReadPageUrl(id) {
+    return CONTEXT_PATH + '/postInfo?postId=' + encodeURIComponent(id);
+  }
 
-        /* ==============================
-         * 1) 상태값
-         * ============================== */
-        let state = { page: 1, pageSize: 10, total: 0, keyword: '' };
+  /* ==============================
+   * 1) 사이드 메뉴 토글
+   * ============================== */
+  function initializeSideMenu() {
+    const menuBtn  = document.querySelector('.menu-btn');
+    const sideMenu = document.getElementById('sideMenu');
+    if (!menuBtn || !sideMenu) return;
 
-        /* ==============================
-         * 2) 도우미
-         * ============================== */
-        const $ = sel => document.querySelector(sel);
-        function formatDate(d) {
-            if(!d) return '';
-            if(d.length>=10) return d.slice(0,10).replaceAll('-', '/');
-            return d;
-        }
+    menuBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      sideMenu.classList.toggle('open');
+    });
 
-        /* ==============================
-         * 3) 사이드 메뉴 기능
-         * ============================== */
-        function initializeSideMenu() {
-            const menuBtn = document.querySelector('.menu-btn');
-            const sideMenu = document.getElementById('sideMenu');
-            
-            if (menuBtn && sideMenu) {
-                menuBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    sideMenu.classList.toggle('open');
-                });
-                
-                document.addEventListener('click', (e) => {
-                    if (!sideMenu.contains(e.target) && !menuBtn.contains(e.target)) {
-                        sideMenu.classList.remove('open');
-                    }
-                });
-            }
-        }
+    document.addEventListener('click', (e) => {
+      if (!sideMenu.contains(e.target) && !menuBtn.contains(e.target)) {
+        sideMenu.classList.remove('open');
+      }
+    });
+  }
 
-        /* ==============================
-         * 4) 검색 기능
-         * ============================== */
-        function performSearch() {
-            const keyword = $('#keyword').value.trim();
-            if (keyword) {
-                // 검색어가 있으면 서버로 검색 요청
-                location.href = CONTEXT_PATH + '/postList?keyword=' + encodeURIComponent(keyword);
-            } else {
-                // 검색어가 없으면 전체 목록으로
-                location.href = CONTEXT_PATH + '/postList';
-            }
-        }
+  /* ==============================
+   * 2) 검색
+   * ============================== */
+  function performSearch() {
+    const keyword = (document.querySelector('#keyword')?.value || '').trim();
+    if (keyword) {
+      location.href = CONTEXT_PATH + '/postList?keyword=' + encodeURIComponent(keyword);
+    } else {
+      location.href = CONTEXT_PATH + '/postList';
+    }
+  }
 
-        /* ==============================
-         * 5) 이벤트
-         * ============================== */
-        $('#btnSearch').addEventListener('click', performSearch);
-        
-        $('#keyword').addEventListener('keydown', (e) => {
-            if(e.key==='Enter') performSearch();
-        });
-        
-        $('#btnReset').addEventListener('click', () => {
-            $('#keyword').value = '';
-            location.href = CONTEXT_PATH + '/postList';
-        });
-        
-        $('#btnWrite').addEventListener('click', () => {
-            // 로그인 체크는 JSP에서 이미 처리됨
-            location.href = getWritePageUrl();
-        });
+  /* ==============================
+   * 3) 게시판 페이지네이션 (10행/페이지)
+   *    - tbody의 모든 tr을 기준으로 페이징
+   *    - "게시글이 없습니다." 단일 행이면 페이저 숨김
+   * ============================== */
+  function paginateBoard(tbodyId, pagerId, rowsPerPage) {
+    const tbody = document.getElementById(tbodyId);
+    const pager = document.getElementById(pagerId);
+    if (!tbody || !pager) return;
 
-        /* ==============================
-         * 6) 시작
-         * ============================== */
-        document.addEventListener('DOMContentLoaded', () => {
-            // 사이드 메뉴 초기화
-            initializeSideMenu();
-            
-            // 페이지 로드 시 검색어가 있으면 input에 표시
-            const urlParams = new URLSearchParams(window.location.search);
-            const keyword = urlParams.get('keyword');
-            if (keyword) {
-                $('#keyword').value = keyword;
-            }
-        });
-    </script>
+    const allRows = Array.from(tbody.querySelectorAll('tr'));
+
+    // 빈 목록 감지: 1행이고 colspan 가진 셀만 있는 경우
+    const isEmptyList =
+      allRows.length === 1 &&
+      allRows[0].querySelector('td[colspan]');
+
+    if (isEmptyList || allRows.length === 0) {
+      pager.style.display = 'none';
+      return;
+    }
+
+    let currentPage = 1;
+    const totalPages = Math.ceil(allRows.length / rowsPerPage);
+
+    // 1페이지면 페이저 숨김
+    if (totalPages <= 1) {
+      pager.style.display = 'none';
+      return;
+    } else {
+      pager.style.display = '';
+    }
+
+    function renderPage() {
+      // 1) 일단 모두 숨김
+      allRows.forEach(tr => (tr.style.display = 'none'));
+
+      // 2) 해당 페이지의 범위만 노출
+      const start = (currentPage - 1) * rowsPerPage;
+      const end   = Math.min(start + rowsPerPage, allRows.length);
+      for (let i = start; i < end; i++) {
+        allRows[i].style.display = '';
+      }
+
+      // 3) 페이저 다시 그림
+      drawPager();
+    }
+
+    function button(label, page, { disabled = false, current = false } = {}) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = label;
+      if (disabled) b.disabled = true;
+      if (current)  b.setAttribute('aria-current', 'true');
+      b.addEventListener('click', () => {
+        if (page < 1 || page > totalPages) return;
+        currentPage = page;
+        renderPage();
+      });
+      return b;
+    }
+
+    function drawPager() {
+      pager.innerHTML = '';
+
+      // 처음/이전
+      pager.appendChild(button('≪', 1, { disabled: currentPage === 1 }));
+      pager.appendChild(button('〈', currentPage - 1, { disabled: currentPage === 1 }));
+
+      // 숫자(최대 7칸 윈도우)
+      const windowSize = 7;
+      let start = Math.max(1, currentPage - Math.floor(windowSize / 2));
+      let end   = start + windowSize - 1;
+      if (end > totalPages) {
+        end = totalPages;
+        start = Math.max(1, end - windowSize + 1);
+      }
+      for (let p = start; p <= end; p++) {
+        pager.appendChild(button(String(p), p, { current: p === currentPage }));
+      }
+
+      // 다음/마지막
+      pager.appendChild(button('〉', currentPage + 1, { disabled: currentPage === totalPages }));
+      pager.appendChild(button('≫', totalPages, { disabled: currentPage === totalPages }));
+    }
+
+    // 최초 렌더링
+    renderPage();
+  }
+
+  /* ==============================
+   * 4) 이벤트 바인딩 & 초기화
+   * ============================== */
+  document.addEventListener('DOMContentLoaded', () => {
+    // 사이드 메뉴
+    initializeSideMenu();
+
+    // 검색/초기화/글쓰기 버튼
+    document.getElementById('btnSearch')?.addEventListener('click', performSearch);
+    document.getElementById('keyword')?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') performSearch();
+    });
+    document.getElementById('btnReset')?.addEventListener('click', () => {
+      const $kw = document.getElementById('keyword');
+      if ($kw) $kw.value = '';
+      location.href = CONTEXT_PATH + '/postList';
+    });
+    document.getElementById('btnWrite')?.addEventListener('click', () => {
+      location.href = getWritePageUrl();
+    });
+
+    // URL 검색어 유지 표시
+    const urlParams = new URLSearchParams(window.location.search);
+    const keyword = urlParams.get('keyword');
+    if (keyword && document.getElementById('keyword')) {
+      document.getElementById('keyword').value = keyword;
+    }
+
+    // ✨ 게시판 페이징 적용: 10개/페이지
+    paginateBoard('tbody', 'pager', 10);
+  });
+</script>
+
 </body>
 </html>
