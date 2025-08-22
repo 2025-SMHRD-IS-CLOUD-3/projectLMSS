@@ -59,11 +59,22 @@ h2 a {text-decoration: none;color: inherit;}
 .comment-meta{font-size:12px;color:#666;margin-bottom:4px}
 .comment-text{color:#222;line-height:1.5}
 .comment-delete-btn{position:absolute;top:10px;right:0;padding:2px 6px;font-size:12px;background:#f44336;color:#fff;border:none;border-radius:4px;cursor:pointer;}
+#headerImage{
+			height: 100%;
+			width: 500px;
+			display: flex;
+		    justify-content: center;
+		    position: absolute;
+		    top: 50%;
+		    left: 50%;
+		    transform: translate(-50%, -50%);
+		}
 </style>
 </head>
 <body>
 <header>
 <h2><a href="<%=request.getContextPath()%>/main.jsp">Landmark Search</a></h2>
+<img src="./image/headerImage.png" alt="MySite Logo" id="headerImage">
 </header>
 <button class="menu-btn" aria-label="open side menu">≡</button>
 
