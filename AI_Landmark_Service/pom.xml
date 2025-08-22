@@ -65,6 +65,19 @@
     <version>3.5.15</version>
   </dependency>
 
+  <!-- 번역 기능 추가를 위한 OkHttp 라이브러리 -->
+  <dependency>
+      <groupId>com.squareup.okhttp3</groupId>
+      <artifactId>okhttp</artifactId>
+      <version>4.10.0</version>
+  </dependency>
+  <!-- JSON 데이터 처리를 위한 org.json 라이브러리 -->
+  <dependency>
+      <groupId>org.json</groupId>
+      <artifactId>json</artifactId>
+      <version>20230618</version>
+  </dependency>
+
   <!-- Oracle JDBC -->
   <dependency>
     <groupId>com.oracle.database.jdbc</groupId>

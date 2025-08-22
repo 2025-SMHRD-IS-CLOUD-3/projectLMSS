@@ -69,12 +69,20 @@ h2 a {text-decoration: none;color: inherit;}
 		    left: 50%;
 		    transform: translate(-50%, -50%);
 		}
+/* 번역 버튼 스타일 추가 */
+#google_translate_element {
+    position: absolute;
+    top: 30px; 
+    right: 60px;
+    z-index: 9999;
+}
 </style>
 </head>
 <body>
 <header>
 <h2><a href="<%=request.getContextPath()%>/main.jsp">Landmark Search</a></h2>
 <img src="./image/headerImage.png" alt="MySite Logo" id="headerImage">
+<div id="google_translate_element"></div>
 </header>
 <button class="menu-btn" aria-label="open side menu">≡</button>
 
@@ -262,5 +270,19 @@ async function deleteComment(commentId){
 
 document.addEventListener('DOMContentLoaded',()=>{loadComments();});
 </script>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+<script type="text/javascript">
+    function googleTranslateElementInit() {
+        new google.translate.TranslateElement({
+            pageLanguage: 'ko',
+            layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+            autoDisplay: false,
+            includedLanguages: 'ko,en,zh-CN,ja'
+        }, 'google_translate_element');
+    }
+</script>
+<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </body>
 </html>
