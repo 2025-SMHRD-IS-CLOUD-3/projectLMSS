@@ -44,9 +44,6 @@
 
 ---
 
-## 🗂️ 데이터베이스 스키마 (ERD)
-
-
 ## 📌 테이블 개요
 
 | 테이블명        | ID              | 설명                        |
@@ -87,6 +84,7 @@ CREATE TABLE POST(
     VIEWS NUMBER(10),
     POST_DATE DATE,
     POST_CONTENT CLOB NOT NULL,
+    POST_IMAGE_URL VARCHAR2(400),
     MEMBER_ID NUMBER(10),
     FOREIGN KEY (MEMBER_ID) REFERENCES MEMBER(MEMBER_ID)
 );
