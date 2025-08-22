@@ -46,7 +46,7 @@
         .fav{position:absolute;right:6px;top:-4px;border:none;background:transparent;cursor:pointer}
         .fav svg{width:28px;height:28px;fill:#ffd24d;stroke:#caa400}
         .fav[aria-pressed="false"] svg{fill:#fff;stroke:#caa400}
-        .hero{width:100%;max-height:520px;object-fit:cover;border-radius:10px;border:1px solid var(--line)}
+        .hero{width:100%;height:600px;object-fit:cover;border-radius:10px;border:1px solid var(--line)}
         .info-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:20px;margin-top:16px}
         .spec{border:1px solid var(--line);border-radius:12px;padding:14px;background:#fff}
         .spec dl{margin:0;display:grid;grid-template-columns:110px 1fr;gap:10px}
@@ -105,8 +105,8 @@
 		    text-decoration: underline;
 		}
 		#headerImage{
-			height: 100%;
-			width: 500px;
+			height: 80%;
+			width: auto;
 			display: flex;
 		    justify-content: center;
 		    position: absolute;
@@ -599,71 +599,65 @@
         }
         
         function updateHotspotsOnMap() {
+            // 1. 사용할 마커 아이콘들을 미리 정의합니다.
+            const iconSize = [40, 40]; // 아이콘 크기
+            const iconAnchor = [16, 32]; // 아이콘의 뾰족한 끝 부분
+            const popupAnchor = [0, -32]; // 팝업이 표시될 위치
+
+            const foodIcon = L.icon({
+                iconUrl: CONTEXT_PATH + '/image/foodMarker.png',
+                iconSize: iconSize,
+                iconAnchor: iconAnchor,
+                popupAnchor: popupAnchor
+            });
+            const photospotIcon = L.icon({
+                iconUrl: CONTEXT_PATH + '/image/photospotMarker.png',
+                iconSize: iconSize,
+                iconAnchor: iconAnchor,
+                popupAnchor: popupAnchor
+            });
+            const placeIcon = L.icon({
+                iconUrl: CONTEXT_PATH + '/image/placeMarker.png',
+                iconSize: iconSize,
+                iconAnchor: iconAnchor,
+                popupAnchor: popupAnchor
+            });
+            
             // 기존 핫스팟 마커들 제거
             currentHotspotMarkers.forEach(marker => {
                 if (map && marker) map.removeLayer(marker);
             });
             currentHotspotMarkers = [];
             
-            // 랜드마크 이름 가져오기 (한글 이름 우선)
-            const landmarkName = $('#title').textContent.split(',')[0].trim();
-            
-            let hotspots = [];
-            
-            // 탭 타입에 따라 적절한 데이터 소스 선택
-            if (currentTabType === 'PHOTOSPOT' && typeof photospotInfo !== 'undefined') {
-                hotspots = photospotInfo[landmarkName] || [];
-            } else if (currentTabType === 'FOOD' && typeof restaurantInfo !== 'undefined') {
-                hotspots = restaurantInfo[landmarkName] || [];
-            } else if (currentTabType === 'PLACE' && typeof attractionInfo !== 'undefined') {
-                hotspots = attractionInfo[landmarkName] || [];
-            }
-            
-            // 서버 API 데이터도 함께 사용 (백업)
-            const serverHotspots = allHotspots.filter(hotspot => {
+            // 현재 탭 타입에 맞는 핫스팟만 필터링
+            const filteredHotspots = allHotspots.filter(hotspot => {
                 const hotspotType = hotspot.hotspot_type || hotspot.HOTSPOT_TYPE;
                 return hotspotType === currentTabType;
             });
             
-            // 클라이언트 데이터와 서버 데이터 병합
-            const allHotspotsData = [...hotspots, ...serverHotspots];
-            
-            allHotspotsData.forEach(hotspot => {
-                let lat, lng, name, info;
-                
-                // 클라이언트 데이터 구조 확인
-                if (hotspot.lat && hotspot.lng) {
-                    lat = Number(hotspot.lat);
-                    lng = Number(hotspot.lng);
-                    name = hotspot.name || '알 수 없는 장소';
-                    info = hotspot.description || '';
-                } else {
-                    // 서버 데이터 구조 확인
-                    const get = (key) => hotspot[key.toLowerCase()] || hotspot[key.toUpperCase()] || 0;
-                    lat = Number(get('HOTSPOT_LATI'));
-                    lng = Number(get('HOTSPOT_LONG'));
-                    name = get('HOTSPOT_NAME') || '알 수 없는 장소';
-                    info = get('HOTSPOT_INFO') || '';
-                }
+            // 필터링된 핫스팟들을 지도에 표시
+            filteredHotspots.forEach(hotspot => {
+                const get = (key) => hotspot[key.toLowerCase()] || hotspot[key.toUpperCase()] || 0;
+                const lat = Number(get('HOTSPOT_LATI'));
+                const lng = Number(get('HOTSPOT_LONG'));
+                const name = get('HOTSPOT_NAME') || '알 수 없는 장소';
+                const info = get('HOTSPOT_INFO') || '';
                 
                 if (lat && lng && map) {
-                    let iconColor = '#57ACCB';
-                    if (currentTabType === 'FOOD') iconColor = '#FF6B6B';
-                    else if (currentTabType === 'PHOTOSPOT') iconColor = '#4ECDC4';
-                    else if (currentTabType === 'PLACE') iconColor = '#45B7D1';
+                    // 2. 현재 탭 타입에 따라 사용할 아이콘을 선택합니다.
+                    let selectedIcon = photospotIcon; // 기본값
+                    if (currentTabType === 'FOOD') {
+                        selectedIcon = foodIcon;
+                    } else if (currentTabType === 'PLACE') {
+                        selectedIcon = placeIcon;
+                    }
                     
-                    const hotspotIcon = L.divIcon({
-                        className: 'hotspot-marker',
-                        html: '<div style="background-color: ' + iconColor + '; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>',
-                        iconSize: [12, 12],
-                        iconAnchor: [6, 6]
-                    });
-                    
-                    const marker = L.marker([lat, lng], { icon: hotspotIcon })
+                    // 3. 선택된 아이콘으로 마커를 생성합니다.
+                    const marker = L.marker([lat, lng], { icon: selectedIcon })
                         .addTo(map)
                         .bindPopup(
                             '<div style="min-width: 200px;">' +
-                                '<h4 style="margin: 0 0 8px; color: ' + iconColor + ';">' + name + '</h4>' +
+                                '<h4 style="margin: 0 0 8px;">' + name + '</h4>' +
                                 (info ? '<p style="margin: 0; font-size: 14px; color: #666;">' + info + '</p>' : '') +
                             '</div>'
                         );
