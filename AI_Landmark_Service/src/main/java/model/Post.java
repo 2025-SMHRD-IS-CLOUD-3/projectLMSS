@@ -10,9 +10,18 @@ public class Post {
     private Date postDate;
     private String postContent;
     private int memberId;
-    private String nickname; // 작성자 닉네임 추가
+    private String nickname;
+    private String postImageUrl;
 
-    public int getPostId() {
+    public String getPostImageUrl() {
+		return postImageUrl;
+	}
+
+	public void setPostImageUrl(String postImageUrl) {
+		this.postImageUrl = postImageUrl;
+	}
+
+	public int getPostId() {
         return postId;
     }
 

@@ -63,15 +63,19 @@ public class PostDAO {
             Class.forName("oracle.jdbc.driver.OracleDriver");
             conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
 
-            // POST_SEQ 시퀀스가 없을 경우를 대비하여 MAX값 사용
-            String sql = "INSERT INTO POST (POST_ID, CATEGORIES, TITLE, VIEWS, POST_DATE, POST_CONTENT, MEMBER_ID) " +
-                         "VALUES ((SELECT NVL(MAX(POST_ID), 0) + 1 FROM POST), ?, ?, 0, SYSDATE, ?, ?)";
+            // 👇 [수정] POST_IMAGE_URL 컬럼과 값을 추가합니다. (DB 테이블에 해당 컬럼이 있어야 합니다)
+            String sql = "INSERT INTO POST (POST_ID, CATEGORIES, TITLE, VIEWS, POST_DATE, POST_CONTENT, MEMBER_ID, POST_IMAGE_URL) " +
+                         "VALUES ((SELECT NVL(MAX(POST_ID), 0) + 1 FROM POST), ?, ?, 0, SYSDATE, ?, ?, ?)";
 
             pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, post.getCategories());
             pstmt.setString(2, post.getTitle());
             pstmt.setString(3, post.getPostContent());
             pstmt.setInt(4, post.getMemberId());
+            
+            // 👇 [추가] 5번째 물음표(?) 자리에 이미지 URL 값을 설정합니다.
+            // Post 모델에 getPostImageUrl() 메소드가 있다고 가정합니다.
+            pstmt.setString(5, post.getPostImageUrl());
 
             result = pstmt.executeUpdate();
 
@@ -88,7 +92,7 @@ public class PostDAO {
         return result; // 1이면 성공, 0이면 실패
     }
 
-    // ✅ 게시글 단일 조회 (작성자 닉네임 포함)
+ // ✅ 게시글 단일 조회 (작성자 닉네임 및 이미지 URL 포함)
     public Post getPostById(int postId) {
         Post post = null;
         Connection conn = null;
@@ -99,9 +103,10 @@ public class PostDAO {
             Class.forName("oracle.jdbc.driver.OracleDriver");
             conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
 
+            // 👇 [수정] POST_IMAGE_URL 컬럼을 함께 SELECT 하도록 변경
             String sql = "SELECT P.*, M.NICKNAME FROM POST P " +
-                        "JOIN MEMBER M ON P.MEMBER_ID = M.MEMBER_ID " +
-                        "WHERE P.POST_ID = ?";
+                         "JOIN MEMBER M ON P.MEMBER_ID = M.MEMBER_ID " +
+                         "WHERE P.POST_ID = ?";
             pstmt = conn.prepareStatement(sql);
             pstmt.setInt(1, postId);
             rs = pstmt.executeQuery();
@@ -115,7 +120,10 @@ public class PostDAO {
                 post.setPostDate(rs.getDate("POST_DATE"));
                 post.setPostContent(rs.getString("POST_CONTENT"));
                 post.setMemberId(rs.getInt("MEMBER_ID"));
-                post.setNickname(rs.getString("NICKNAME")); // 작성자 닉네임 추가
+                post.setNickname(rs.getString("NICKNAME"));
+                
+                // 👇 [추가] DB에서 가져온 이미지 URL을 Post 객체에 저장합니다.
+                post.setPostImageUrl(rs.getString("POST_IMAGE_URL"));
             }
         } catch (SQLException | ClassNotFoundException e) {
             e.printStackTrace();
