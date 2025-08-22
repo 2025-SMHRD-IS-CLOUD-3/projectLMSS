@@ -37,7 +37,14 @@
     .row{display:grid;gap:8px}
     .row-inline{display:flex;align-items:center;justify-content:space-between;gap:12px}
     .muted{color:#6a6a6a;font-size:14px}
-    .error{color:#c62828;font-size:14px}
+    /* 수정된 부분: .error 클래스 스타일 */
+    .error {
+        color: #c62828; /* 오류 메시지 색상 */
+        font-size: 14px;
+        font-weight: bold;
+        text-align: left; /* "로그인 상태 유지" 아래에 위치하므로 왼쪽 정렬 */
+        margin-top: 5px; /* "로그인 상태 유지"와의 상단 간격 */
+    }
     .btn{background:#57ACCB;color:#fff;font-weight:800;border:none;border-radius:12px;padding:14px 20px;font-size:16px;cursor:pointer}
     .btn:disabled{opacity:.6;cursor:not-allowed}
     .link{color:#1466e2;text-decoration:none}
@@ -72,7 +79,7 @@
           <li><a href="${pageContext.request.contextPath}/howLandmark.jsp">Landmark Search란?</a></li>
           <li><a href="${pageContext.request.contextPath}/main.jsp">사진으로 랜드마크 찾기</a></li>
           <li><a href="${pageContext.request.contextPath}/mapSearch.jsp">지도로 랜드마크 찾기</a></li>
-          <li><a href="${pageContext.request.contextPath}/postList.jsp">게시판</a></li>
+          <li><a href="${pageContext.request.contextPath}/postList">게시판</a></li>
           <li><a href="${pageContext.request.contextPath}/login.jsp">로그인</a></li>
           <li><a href="${pageContext.request.contextPath}/register.jsp">회원가입</a></li>
       </ul>
@@ -107,6 +114,16 @@
           <label class="muted"><input type="checkbox" id="remember"/> 로그인 상태 유지</label>
           <a class="link" href="${pageContext.request.contextPath}/register.jsp">회원가입</a>
         </div>
+        
+        <%
+            // 서블릿에서 설정한 loginError 메시지를 가져와 표시합니다.
+            String loginError = (String) request.getAttribute("loginError");
+            if (loginError != null) {
+        %>
+                <p class="error"><%= loginError %></p>
+        <%
+            }
+        %>
 
         <div class="row-inline" style="justify-content:flex-end">
           <button class="btn" type="submit">로그인</button>
