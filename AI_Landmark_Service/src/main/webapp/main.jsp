@@ -34,8 +34,8 @@
         .side-menu.open { right: 0; }
         .menu-btn { position: fixed; top: 20px; right: 20px; font-size: 50px; background: none; border: none; color: black; cursor: pointer; z-index: 1002; }
         #headerImage{
-			height: 100%;
-			width: 500px;
+			height: 80%;
+			width: auto;
 			display: flex;
 		    justify-content: center;
 		    position: absolute;

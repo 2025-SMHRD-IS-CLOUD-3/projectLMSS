@@ -60,8 +60,8 @@ h2 a {text-decoration: none;color: inherit;}
 .comment-text{color:#222;line-height:1.5}
 .comment-delete-btn{position:absolute;top:10px;right:0;padding:2px 6px;font-size:12px;background:#f44336;color:#fff;border:none;border-radius:4px;cursor:pointer;}
 #headerImage{
-			height: 100%;
-			width: 500px;
+			height: 80%;
+			width: auto;
 			display: flex;
 		    justify-content: center;
 		    position: absolute;
