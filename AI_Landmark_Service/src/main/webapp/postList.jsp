@@ -42,8 +42,8 @@
 		    padding:20px; 
 		}
 		#headerImage{
-			height: 100%;
-			width: 500px;
+			height: 80%;
+			width: auto;
 			display: flex;
 		    justify-content: center;
 		    position: absolute;

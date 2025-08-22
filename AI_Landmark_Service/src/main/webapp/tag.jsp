@@ -43,8 +43,8 @@
         .state { margin:12px 0 0; font-size:14px; color:#555; }
         @media (max-width:960px){ .card { grid-template-columns:100px 1fr; } .thumb { width:100px; height:76px; } }
         #headerImage{
-			height: 100%;
-			width: 500px;
+			height: 80%;
+			width: auto;
 			display: flex;
 		    justify-content: center;
 		    position: absolute;
