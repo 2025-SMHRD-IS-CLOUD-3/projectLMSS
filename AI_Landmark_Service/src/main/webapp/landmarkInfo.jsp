@@ -77,7 +77,19 @@
         .comment-form{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
         .comment-form textarea{width:100%;border:1px solid var(--line);border-radius:8px;padding:10px;font-family:inherit;resize:vertical}
         .comment-form button{align-self:flex-end;padding:8px 14px;border:none;border-radius:8px;background:var(--brand);color:#fff;cursor:pointer;font-weight:700}
-        .comment-item{border-top:1px dashed #d7d7da;padding:10px 0}
+        .comment-item{border-top:1px dashed #d7d7da;padding:10px 0; position: relative;}
+        .comment-delete-btn{
+            position:absolute;
+            top:10px;
+            right:0;
+            padding:2px 6px;
+            font-size:12px;
+            background:#f44336;
+            color:#fff;
+            border:none;
+            border-radius:4px;
+            cursor:pointer;
+        }
         .comment-meta{font-size:12px;color:#777;margin-bottom:6px}
         .comment-text{white-space:pre-wrap;line-height:1.5}
         .login-required{text-align:center;padding:20px;color:#666;background:#f8f9fa;border-radius:8px;border:1px solid #e9ecef}
@@ -233,6 +245,7 @@
             getHotspots: () => CONTEXT_PATH + '/getHotspots',
             getReplies: (id) => CONTEXT_PATH + '/getReply?landmarkId=' + encodeURIComponent(id),
             addReply: () => CONTEXT_PATH + '/addReply',
+            deleteReply: () => CONTEXT_PATH + '/deleteReply',
             favorite: () => CONTEXT_PATH + '/favorite'
         };
 
@@ -241,6 +254,10 @@
         let currentHotspotMarkers = [];
         let map;
         let landmarkMarker; // 랜드마크 메인 마커
+        
+        /* 👇 여기 아래에 로그인 상태 변수를 추가합니다. 👇 */
+        const IS_LOGGED_IN = <%= session.getAttribute("memberId") != null ? "true" : "false" %>;
+        const LOGIN_MEMBER_ID = "<%= session.getAttribute("memberId") != null ? session.getAttribute("memberId").toString() : "" %>";
 
         /* ===========================================================
          * 2. 유틸리티 함수들
@@ -799,17 +816,49 @@
             listEl.innerHTML = '';
             replies.forEach(r => {
                 const get = (key) => r[key.toLowerCase()] || r[key.toUpperCase()] || '';
+                const commentId = get('REPLY_ID');              /* 이 줄을 추가합니다. */
+                const memberId = get('MEMBER_ID');              /* 이 줄을 추가합니다. */
                 const userName = get('MEMBER_NICKNAME') || '익명';
                 const text = get('REPLY_CONTENT');
                 const createdAt = (get('REPLY_DATE') || '').split(' ')[0]; // 날짜 부분만 사용
                 
                 const item = document.createElement('div');
                 item.className = 'comment-item';
-                item.innerHTML = 
-                    '<div class="comment-meta">' + userName + (createdAt ? ' · <span>' + createdAt + '</span>' : '') + '</div>' +
-                    '<div class="comment-text">' + escapeHtml(text) + '</div>';
+                let html = '<div class="comment-meta">' + userName + (createdAt ? ' · <span>' + createdAt + '</span>' : '') + '</div>';
+
+                /* 👇 여기 아래에 삭제 버튼 로직을 추가합니다. 👇 */
+                if (IS_LOGGED_IN && LOGIN_MEMBER_ID === String(memberId)) {
+                	html += '<button class="comment-delete-btn" onclick="deleteComment(' + commentId + ')">삭제</button>';
+                }
+
+                html += '<div class="comment-text">' + escapeHtml(text) + '</div>';
+                item.innerHTML = html;
                 listEl.appendChild(item);
             });
+        }
+        
+     // 댓글 삭제 요청을 보내는 함수 (새로 추가)
+        async function deleteComment(commentId){
+            if(!confirm('정말로 이 댓글을 삭제하시겠습니까?')) return;
+            try{
+                const params=new URLSearchParams();
+                params.append('commentId',commentId);
+                const res=await fetch(API.deleteReply(),{
+                    method:'POST',
+                    headers:{'Content-Type':'application/x-www-form-urlencoded'},
+                    body:params
+                });
+                if(res.ok){
+                    showMessage('댓글이 삭제되었습니다.','success');
+                    loadComments();
+                } else {
+                    const errorText=await res.text();
+                    showMessage('댓글 삭제에 실패했습니다: '+errorText,'error');
+                }
+            }catch(err){
+                showMessage('댓글 삭제 중 오류가 발생했습니다.','error');
+                console.error(err);
+            }
         }
 
         function escapeHtml(str) {
