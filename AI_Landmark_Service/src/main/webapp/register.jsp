@@ -52,8 +52,8 @@
 	    .terms{border:1px solid var(--line);border-radius:12px;padding:12px}
 	    @media (max-width:720px){ .board{margin:120px 12px} .panel{padding:20px} }
 	    #headerImage{
-			height: 100%;
-			width: 500px;
+			height: 80%;
+			width: auto;
 			display: flex;
 		    justify-content: center;
 		    position: absolute;

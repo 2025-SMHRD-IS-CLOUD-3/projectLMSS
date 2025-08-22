@@ -55,8 +55,8 @@
         .sw.off{ border-color:#9aa3aa; background:transparent; }
         @media (max-width:960px){ #map { height:420px; } .card { grid-template-columns:100px 1fr; } .thumb { width:100px; height:76px; } }
         #headerImage{
-			height: 100%;
-			width: 500px;
+			height: 80%;
+			width: auto;
 			display: flex;
 		    justify-content: center;
 		    position: absolute;
