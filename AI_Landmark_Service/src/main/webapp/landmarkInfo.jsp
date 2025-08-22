@@ -277,6 +277,12 @@
             // 간단한 메시지 표시 (필요시 더 정교한 UI로 개선 가능)
             const messageDiv = document.createElement('div');
             let backgroundColor = '#4CAF50'; // 기본값
+            if (type ==='success'){
+            	backgroundColor = '#6DC5FC'
+            }
+            if (type ==='info'){
+            	backgroundColor = '#fa6f1e'
+            }
             if (type === 'error') {
                 backgroundColor = '#f44336';
             }
@@ -600,7 +606,7 @@
         
         function updateHotspotsOnMap() {
             // 1. 사용할 마커 아이콘들을 미리 정의합니다.
-            const iconSize = [40, 40]; // 아이콘 크기
+            const iconSize = [30, 30]; // 아이콘 크기
             const iconAnchor = [16, 32]; // 아이콘의 뾰족한 끝 부분
             const popupAnchor = [0, -32]; // 팝업이 표시될 위치
 
@@ -778,7 +784,13 @@
                     if (data.success) {
                         // 서버 응답에 따라 버튼 상태를 업데이트합니다.
                         favBtn.setAttribute('aria-pressed', data.isFavorited);
+                        if (data.isFavorited) {
+                            showMessage('즐겨찾기에 추가되었습니다.', 'success');
+                        } else {
+                            showMessage('즐겨찾기에서 제거되었습니다.', 'info');
+                        }
                     }
+                    console.log(data)
                 } catch (err) {
                     console.error('즐겨찾기 토글 오류:', err);
                     alert('즐겨찾기 상태를 변경하는 데 실패했습니다.');
@@ -854,7 +866,7 @@
                     body:params
                 });
                 if(res.ok){
-                    showMessage('댓글이 삭제되었습니다.','success');
+                    showMessage('댓글이 삭제되었습니다.','info');
                     loadComments();
                 } else {
                     const errorText=await res.text();
