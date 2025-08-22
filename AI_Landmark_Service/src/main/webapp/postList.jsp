@@ -2,7 +2,6 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%
-    // 로그인 상태 확인
     String loginUser = (String) session.getAttribute("loginUser");
 %>
 <!DOCTYPE html>
@@ -14,43 +13,43 @@
     <style>
         :root{ --ink:#111; --muted:#f6f7f9; --line:#e5e7eb; --brand:#57ACCB; --ink2:#555; }
         *{ box-sizing:border-box; }
+        body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; height: 100vh; background-color: #ffffff; }
+
         header {
             position:fixed; top:0; left:0; width:100%; height:100px; background:#fff;
             display:flex; justify-content:space-between; align-items:center; padding:0 20px;
             z-index:1000; box-shadow:0 1px 0 rgba(0,0,0,.04);
             font-size: 15px;
         }
-    	h2 a {
-		  text-decoration: none;
-		  color: inherit;
-		}
-    	.side-menu { 
-        	position: fixed; top: 0; right: -500px; width: 500px;
-        	height: 100%; background-color: #57ACCB; color: white; 
-        	padding: 20px; padding-top: 100px; box-sizing: border-box; 
-        	transition: right 0.3s ease; font-size: 30px; z-index: 1001; }
+        h2 a { text-decoration: none; color: inherit; }
+        #headerImage{
+            height: 80%;
+            width: auto;
+            display: flex;
+            justify-content: center;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+    	.side-menu {
+            position: fixed; top: 0; right: -500px; width: 500px;
+            height: 100%; background-color: #57ACCB; color: white;
+            padding: 20px; padding-top: 100px; box-sizing: border-box;
+            transition: right 0.3s ease; font-size: 30px; z-index: 1001;
+        }
     	.side-menu li { list-style-type: none; margin-top: 20px; }
     	.side-menu a { color: white; text-decoration: none; font-weight: bold; }
     	.side-menu.open { right: 0; }
     	.menu-btn { position: fixed; top: 20px; right: 20px; font-size: 50px; background: none; border: none; color: black; cursor: pointer; z-index: 1002; }
-        
-        .board { 
-		    max-width:1080px; 
-		    margin:130px auto 50px;
-		    background:var(--muted); 
-		    border-radius:28px; 
-		    padding:20px; 
-		}
-		#headerImage{
-			height: 80%;
-			width: auto;
-			display: flex;
-		    justify-content: center;
-		    position: absolute;
-		    top: 50%;
-		    left: 50%;
-		    transform: translate(-50%, -50%);
-		}
+
+        .board {
+            max-width:1080px;
+            margin:130px auto 50px;
+            background:var(--muted);
+            border-radius:28px;
+            padding:20px;
+        }
         .paper{ background:#fff; border:1px solid var(--line); border-radius:22px; padding:16px; }
         .title{ text-align:center; font-size:22px; font-weight:900; margin:4px 0 18px; }
         .toolbar{ display:flex; gap:8px; align-items:center; justify-content:space-between; margin:4px 0 10px; }
@@ -73,20 +72,68 @@
         .pager button{ min-width:36px; height:36px; border:1px solid var(--line); background:#fff; border-radius:10px; cursor:pointer; }
         .pager button[aria-current="true"]{ background:var(--brand); color:#fff; border-color:var(--brand); font-weight:800; }
         @media (max-width: 680px){
-        .searchbox input{ width:170px; }
-        .col-cat{ display:none; }
-        .col-writer{ display:none; }
-        .side-menu{ width:100%; right:-100%; }
+            .searchbox input{ width:170px; }
+            .col-cat{ display:none; }
+            .col-writer{ display:none; }
+            .side-menu{ width:100%; right:-100%; }
+        }
+
+        /* Google 번역 위젯 숨기기 */
+        #google_translate_element { display: none; }
+
+        /* 커스텀 언어 선택 드롭다운 */
+        .language-selector {
+            position: fixed;
+            top: 30px;
+            right: 120px;
+            z-index: 1003;
+        }
+        .custom-select {
+            padding: 10px 15px;
+            font-size: 16px;
+            border: 2px solid #57ACCB;
+            border-radius: 8px;
+            background-color: white;
+            color: #333;
+            font-weight: bold;
+            outline: none;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%2357ACCB"><path d="M4 6l4 4 4-4z"/></svg>');
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 16px;
+            transition: all 0.3s ease;
+        }
+        .custom-select:hover {
+            border-color: #3d94b8;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .custom-select:focus {
+            border-color: #2a82a1;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
     </style>
 </head>
 <body>
     <header>
         <h2><a href="<%=request.getContextPath()%>/main.jsp">Landmark Search</a></h2>
-        <img src="./image/headerImage.png" alt="MySite Logo" id="headerImage">
+        <img src="<%=request.getContextPath()%>/image/headerImage.png" alt="MySite Logo" id="headerImage">
+        <div id="google_translate_element"></div>
+
+        <div class="language-selector">
+            <select id="languageSelect" class="custom-select">
+                <option value="ko">한국어</option>
+                <option value="en">English</option>
+                <option value="ja">日本語</option>
+                <option value="zh-CN">中文(简体)</option>
+            </select>
+        </div>
     </header>
-        <button class="menu-btn" aria-label="open side menu">≡</button>
-    
+    <button class="menu-btn" aria-label="open side menu">≡</button>
+
     <div class="side-menu" id="sideMenu">
         <ul>
             <li><a href="<%=request.getContextPath()%>/howLandmark.jsp">Landmark Search란?</a></li>
@@ -162,175 +209,175 @@
         </div>
     </main>
 
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
     <script>
-  /* ==============================
-   * 0) 설정
-   * ============================== */
-  const CONTEXT_PATH = "<%=request.getContextPath()%>";
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+                pageLanguage: 'ko',
+                autoDisplay: false
+            }, 'google_translate_element');
+        }
 
-  // 글쓰기 페이지 URL
-  function getWritePageUrl() {
-    return CONTEXT_PATH + '/postWrite';
-  }
+        document.addEventListener('DOMContentLoaded', () => {
+            const select = document.getElementById('languageSelect');
 
-  function getReadPageUrl(id) {
-    return CONTEXT_PATH + '/postInfo?postId=' + encodeURIComponent(id);
-  }
+            function applyLanguage(lang) {
+                const combo = document.querySelector('.goog-te-combo');
+                if (combo) {
+                    combo.value = lang;
+                    combo.dispatchEvent(new Event('change'));
+                }
+            }
 
-  /* ==============================
-   * 1) 사이드 메뉴 토글
-   * ============================== */
-  function initializeSideMenu() {
-    const menuBtn  = document.querySelector('.menu-btn');
-    const sideMenu = document.getElementById('sideMenu');
-    if (!menuBtn || !sideMenu) return;
+            const interval = setInterval(() => {
+                if (document.querySelector('.goog-te-combo')) {
+                    applyLanguage(select.value);
+                    clearInterval(interval);
+                }
+            }, 500);
 
-    menuBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      sideMenu.classList.toggle('open');
-    });
+            select.addEventListener('change', () => {
+                applyLanguage(select.value);
+            });
+        });
 
-    document.addEventListener('click', (e) => {
-      if (!sideMenu.contains(e.target) && !menuBtn.contains(e.target)) {
-        sideMenu.classList.remove('open');
-      }
-    });
-  }
+        const CONTEXT_PATH = "<%=request.getContextPath()%>";
 
-  /* ==============================
-   * 2) 검색
-   * ============================== */
-  function performSearch() {
-    const keyword = (document.querySelector('#keyword')?.value || '').trim();
-    if (keyword) {
-      location.href = CONTEXT_PATH + '/postList?keyword=' + encodeURIComponent(keyword);
-    } else {
-      location.href = CONTEXT_PATH + '/postList';
-    }
-  }
+        function getWritePageUrl() {
+            return CONTEXT_PATH + '/postWrite';
+        }
 
-  /* ==============================
-   * 3) 게시판 페이지네이션 (10행/페이지)
-   *    - tbody의 모든 tr을 기준으로 페이징
-   *    - "게시글이 없습니다." 단일 행이면 페이저 숨김
-   * ============================== */
-  function paginateBoard(tbodyId, pagerId, rowsPerPage) {
-    const tbody = document.getElementById(tbodyId);
-    const pager = document.getElementById(pagerId);
-    if (!tbody || !pager) return;
+        function getReadPageUrl(id) {
+            return CONTEXT_PATH + '/postInfo?postId=' + encodeURIComponent(id);
+        }
 
-    const allRows = Array.from(tbody.querySelectorAll('tr'));
+        function initializeSideMenu() {
+            const menuBtn  = document.querySelector('.menu-btn');
+            const sideMenu = document.getElementById('sideMenu');
+            if (!menuBtn || !sideMenu) return;
 
-    // 빈 목록 감지: 1행이고 colspan 가진 셀만 있는 경우
-    const isEmptyList =
-      allRows.length === 1 &&
-      allRows[0].querySelector('td[colspan]');
+            menuBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                sideMenu.classList.toggle('open');
+            });
 
-    if (isEmptyList || allRows.length === 0) {
-      pager.style.display = 'none';
-      return;
-    }
+            document.addEventListener('click', (e) => {
+                if (!sideMenu.contains(e.target) && !menuBtn.contains(e.target)) {
+                    sideMenu.classList.remove('open');
+                }
+            });
+        }
 
-    let currentPage = 1;
-    const totalPages = Math.ceil(allRows.length / rowsPerPage);
+        function performSearch() {
+            const keyword = (document.querySelector('#keyword')?.value || '').trim();
+            if (keyword) {
+                location.href = CONTEXT_PATH + '/postList?keyword=' + encodeURIComponent(keyword);
+            } else {
+                location.href = CONTEXT_PATH + '/postList';
+            }
+        }
 
-    // 1페이지면 페이저 숨김
-    if (totalPages <= 1) {
-      pager.style.display = 'none';
-      return;
-    } else {
-      pager.style.display = '';
-    }
+        function paginateBoard(tbodyId, pagerId, rowsPerPage) {
+            const tbody = document.getElementById(tbodyId);
+            const pager = document.getElementById(pagerId);
+            if (!tbody || !pager) return;
 
-    function renderPage() {
-      // 1) 일단 모두 숨김
-      allRows.forEach(tr => (tr.style.display = 'none'));
+            const allRows = Array.from(tbody.querySelectorAll('tr'));
 
-      // 2) 해당 페이지의 범위만 노출
-      const start = (currentPage - 1) * rowsPerPage;
-      const end   = Math.min(start + rowsPerPage, allRows.length);
-      for (let i = start; i < end; i++) {
-        allRows[i].style.display = '';
-      }
+            const isEmptyList =
+                allRows.length === 1 &&
+                allRows[0].querySelector('td[colspan]');
 
-      // 3) 페이저 다시 그림
-      drawPager();
-    }
+            if (isEmptyList || allRows.length === 0) {
+                pager.style.display = 'none';
+                return;
+            }
 
-    function button(label, page, { disabled = false, current = false } = {}) {
-      const b = document.createElement('button');
-      b.type = 'button';
-      b.textContent = label;
-      if (disabled) b.disabled = true;
-      if (current)  b.setAttribute('aria-current', 'true');
-      b.addEventListener('click', () => {
-        if (page < 1 || page > totalPages) return;
-        currentPage = page;
-        renderPage();
-      });
-      return b;
-    }
+            let currentPage = 1;
+            const totalPages = Math.ceil(allRows.length / rowsPerPage);
 
-    function drawPager() {
-      pager.innerHTML = '';
+            if (totalPages <= 1) {
+                pager.style.display = 'none';
+                return;
+            } else {
+                pager.style.display = '';
+            }
 
-      // 처음/이전
-      pager.appendChild(button('≪', 1, { disabled: currentPage === 1 }));
-      pager.appendChild(button('〈', currentPage - 1, { disabled: currentPage === 1 }));
+            function renderPage() {
+                allRows.forEach(tr => (tr.style.display = 'none'));
 
-      // 숫자(최대 7칸 윈도우)
-      const windowSize = 7;
-      let start = Math.max(1, currentPage - Math.floor(windowSize / 2));
-      let end   = start + windowSize - 1;
-      if (end > totalPages) {
-        end = totalPages;
-        start = Math.max(1, end - windowSize + 1);
-      }
-      for (let p = start; p <= end; p++) {
-        pager.appendChild(button(String(p), p, { current: p === currentPage }));
-      }
+                const start = (currentPage - 1) * rowsPerPage;
+                const end   = Math.min(start + rowsPerPage, allRows.length);
+                for (let i = start; i < end; i++) {
+                    allRows[i].style.display = '';
+                }
 
-      // 다음/마지막
-      pager.appendChild(button('〉', currentPage + 1, { disabled: currentPage === totalPages }));
-      pager.appendChild(button('≫', totalPages, { disabled: currentPage === totalPages }));
-    }
+                drawPager();
+            }
 
-    // 최초 렌더링
-    renderPage();
-  }
+            function button(label, page, { disabled = false, current = false } = {}) {
+                const b = document.createElement('button');
+                b.type = 'button';
+                b.textContent = label;
+                if (disabled) b.disabled = true;
+                if (current)  b.setAttribute('aria-current', 'true');
+                b.addEventListener('click', () => {
+                    if (page < 1 || page > totalPages) return;
+                    currentPage = page;
+                    renderPage();
+                });
+                return b;
+            }
 
-  /* ==============================
-   * 4) 이벤트 바인딩 & 초기화
-   * ============================== */
-  document.addEventListener('DOMContentLoaded', () => {
-    // 사이드 메뉴
-    initializeSideMenu();
+            function drawPager() {
+                pager.innerHTML = '';
 
-    // 검색/초기화/글쓰기 버튼
-    document.getElementById('btnSearch')?.addEventListener('click', performSearch);
-    document.getElementById('keyword')?.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') performSearch();
-    });
-    document.getElementById('btnReset')?.addEventListener('click', () => {
-      const $kw = document.getElementById('keyword');
-      if ($kw) $kw.value = '';
-      location.href = CONTEXT_PATH + '/postList';
-    });
-    document.getElementById('btnWrite')?.addEventListener('click', () => {
-      location.href = getWritePageUrl();
-    });
+                pager.appendChild(button('≪', 1, { disabled: currentPage === 1 }));
+                pager.appendChild(button('〈', currentPage - 1, { disabled: currentPage === 1 }));
 
-    // URL 검색어 유지 표시
-    const urlParams = new URLSearchParams(window.location.search);
-    const keyword = urlParams.get('keyword');
-    if (keyword && document.getElementById('keyword')) {
-      document.getElementById('keyword').value = keyword;
-    }
+                const windowSize = 7;
+                let start = Math.max(1, currentPage - Math.floor(windowSize / 2));
+                let end   = start + windowSize - 1;
+                if (end > totalPages) {
+                    end = totalPages;
+                    start = Math.max(1, end - windowSize + 1);
+                }
+                for (let p = start; p <= end; p++) {
+                    pager.appendChild(button(String(p), p, { current: p === currentPage }));
+                }
 
-    // ✨ 게시판 페이징 적용: 10개/페이지
-    paginateBoard('tbody', 'pager', 10);
-  });
-</script>
+                pager.appendChild(button('〉', currentPage + 1, { disabled: currentPage === totalPages }));
+                pager.appendChild(button('≫', totalPages, { disabled: currentPage === totalPages }));
+            }
 
+            renderPage();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeSideMenu();
+
+            document.getElementById('btnSearch')?.addEventListener('click', performSearch);
+            document.getElementById('keyword')?.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') performSearch();
+            });
+            document.getElementById('btnReset')?.addEventListener('click', () => {
+                const $kw = document.getElementById('keyword');
+                if ($kw) $kw.value = '';
+                location.href = CONTEXT_PATH + '/postList';
+            });
+            document.getElementById('btnWrite')?.addEventListener('click', () => {
+                location.href = getWritePageUrl();
+            });
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const keyword = urlParams.get('keyword');
+            if (keyword && document.getElementById('keyword')) {
+                document.getElementById('keyword').value = keyword;
+            }
+
+            paginateBoard('tbody', 'pager', 10);
+        });
+    </script>
 </body>
 </html>

@@ -11,11 +11,6 @@
     <meta name="referrer" content="no-referrer">
     <title>Landmark Info</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js" defer></script>
-    <!-- 지도 마커 데이터 파일들 추가 -->
-    <script src="<%=request.getContextPath()%>/mapmark/photospots.js" defer></script>
-    <script src="<%=request.getContextPath()%>/mapmark/restaurants.js" defer></script>
-    <script src="<%=request.getContextPath()%>/mapmark/attractions.js" defer></script>
     <style>
         :root{ --ink:#111; --muted:#f6f7f9; --line:#e6e6e8; --brand:#57ACCB; --shadow:0 10px 30px rgba(0,0,0,.08); }
         *{box-sizing:border-box}
@@ -114,12 +109,46 @@
 		    left: 50%;
 		    transform: translate(-50%, -50%);
 		}
+        /* Google 번역 위젯 숨기기 */
+        #google_translate_element { display: none; }
+        /* 커스텀 언어 선택 링크 스타일 */
+        .translation-links {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            position: fixed;
+            top: 30px;
+            right: 120px;
+            z-index: 1003;
+            gap: 10px;
+        }
+        .translation-links li a {
+            display: block;
+            width: 30px;
+            height: 30px;
+            background-size: cover;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .flag { display: block; width: 100%; height: 100%; background-size: cover; border-radius: 5px; }
+        .flag.ko { background-image: url('https://flagicons.lipis.dev/flags/4x3/kr.svg'); }
+        .flag.en { background-image: url('https://flagicons.lipis.dev/flags/4x3/gb.svg'); }
+        .flag.ja { background-image: url('https://flagicons.lipis.dev/flags/4x3/jp.svg'); }
+        .flag.zh-CN { background-image: url('https://flagicons.lipis.dev/flags/4x3/cn.svg'); }
     </style>
 </head>
 <body>
     <header>
         <h2><a href="<%=request.getContextPath()%>/main.jsp">Landmark Search</a></h2>
         <img src="./image/headerImage.png" alt="MySite Logo" id="headerImage">
+        <div id="google_translate_element"></div>
+        <ul class="translation-links">
+            <li><a href="javascript:void(0)" data-lang="ko" title="한국어"><span class="flag ko"></span></a></li>
+            <li><a href="javascript:void(0)" data-lang="en" title="English"><span class="flag en"></span></a></li>
+            <li><a href="javascript:void(0)" data-lang="ja" title="日本語"><span class="flag ja"></span></a></li>
+            <li><a href="javascript:void(0)" data-lang="zh-CN" title="中文(简体)"><span class="flag zh-CN"></span></a></li>
+        </ul>
     </header>
         <button class="menu-btn" aria-label="메뉴">≡</button>
 
@@ -207,7 +236,6 @@
 			    
 			    <%-- 세션에 로그인 정보가 있는지 확인 --%>
 			    <% if (session.getAttribute("loginUser") != null) { %>
-			        <!-- 로그인한 사용자: 댓글 작성 폼 표시 -->
 			        <form id="commentForm" class="comment-form">
 			            <input type="hidden" name="referenceId" id="referenceId">
 			            <input type="hidden" name="replyType" value="landmark">
@@ -215,15 +243,10 @@
 			            <button type="submit">댓글 작성</button>
 			        </form>
 			    <% } else { %>
-			        <!-- 로그인하지 않은 사용자: 로그인 안내 -->
 			        <div class="login-required">
-			            <%-- 👇 [수정] 돌아올 주소에서 프로젝트 이름(ContextPath)을 제거합니다. --%>
 			            <%
-			                // 1. 현재 페이지의 경로만 가져옵니다. (예: /landmarkInfo.jsp)
 			                String pagePath = request.getServletPath();
-			                // 2. 현재 페이지의 쿼리 스트링을 가져옵니다. (예: name=Eiffel_Tower)
 			                String queryString = request.getQueryString();
-			                // 3. 두 정보를 합쳐서 최종 돌아올 주소를 만듭니다.
 			                String redirectUrl = pagePath + (queryString != null ? "?" + queryString : "");
 			            %>
 			            댓글을 작성하려면 <a href="<%=request.getContextPath()%>/login.jsp?redirect=<%=redirectUrl%>">로그인</a>이 필요합니다.
@@ -240,7 +263,45 @@
         </section>
     </main>
 
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js" defer></script>
+    <script src="<%=request.getContextPath()%>/mapmark/photospots.js" defer></script>
+    <script src="<%=request.getContextPath()%>/mapmark/restaurants.js" defer></script>
+    <script src="<%=request.getContextPath()%>/mapmark/attractions.js" defer></script>
+    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
     <script>
+        // Google 번역 위젯 초기화 함수를 먼저 정의합니다.
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+                pageLanguage: 'ko',
+                autoDisplay: false
+            }, 'google_translate_element');
+        }
+
+        // 페이지 로드 후 플래그 클릭 이벤트 리스너 등록
+        document.addEventListener('DOMContentLoaded', () => {
+            const translationLinks = document.querySelector('.translation-links');
+            if (translationLinks) {
+                translationLinks.addEventListener('click', function (event) {
+                    let el = event.target;
+                    while (el && el.nodeName !== 'A' && el.parentElement) {
+                        el = el.parentElement;
+                    }
+                    if (el && el.dataset.lang) {
+                        const tolang = el.dataset.lang;
+                        const gtcombo = document.querySelector('.goog-te-combo');
+
+                        if (gtcombo == null) {
+                            alert("Error: Could not find Google translate Combolist.");
+                            return false;
+                        }
+                        gtcombo.value = tolang;
+                        gtcombo.dispatchEvent(new Event('change'));
+                    }
+                    return false;
+                });
+            }
+        });
+
         /* ===========================================================
          * 1. 전역 변수 및 설정
          * =========================================================== */
@@ -266,7 +327,6 @@
         let map;
         let landmarkMarker; // 랜드마크 메인 마커
         
-        /* 👇 여기 아래에 로그인 상태 변수를 추가합니다. 👇 */
         const IS_LOGGED_IN = <%= session.getAttribute("memberId") != null ? "true" : "false" %>;
         const LOGIN_MEMBER_ID = "<%= session.getAttribute("memberId") != null ? session.getAttribute("memberId").toString() : "" %>";
 
@@ -274,9 +334,8 @@
          * 2. 유틸리티 함수들
          * =========================================================== */
         function showMessage(message, type) {
-            // 간단한 메시지 표시 (필요시 더 정교한 UI로 개선 가능)
             const messageDiv = document.createElement('div');
-            let backgroundColor = '#4CAF50'; // 기본값
+            let backgroundColor = '#4CAF50';
             if (type ==='success'){
             	backgroundColor = '#6DC5FC'
             }
@@ -319,17 +378,10 @@
                 console.log('검색할 랜드마크명:', nameParam);
                 console.log('전체 랜드마크 개수:', allLandmarks.length);
                 
-                // 랜드마크 검색 로직 개선
-                // landmarkInfo.jsp의 find() 함수를 아래와 같이 수정하세요.
-					const targetLandmark = allLandmarks.find(lm => {
-					    // URL에서 받은 name 값을 정리 (공백, 괄호, 언더바 제거)
+                const targetLandmark = allLandmarks.find(lm => {
 					    const cleanParam = nameParam.replace(/[()_ ]/g, '').toLowerCase();
-					
-					    // 데이터베이스의 한글 이름과 영어 이름을 정리
 					    const dbNameKr = (lm.landmark_name || lm.LANDMARK_NAME || '').replace(/[()_ ]/g, '').toLowerCase();
 					    const dbNameEn = (lm.landmark_name_en || lm.LANDMARK_NAME_EN || '').replace(/[()_ ]/g, '').toLowerCase();
-					
-					    // 정리된 이름 중 하나라도 일치하면 true 반환
 					    return cleanParam === dbNameKr || cleanParam === dbNameEn;
 					});
                 
@@ -344,7 +396,6 @@
 
                 landmarkId = targetLandmark.landmark_id || targetLandmark.LANDMARK_ID;
                 
-                // referenceId 요소가 존재하는지 확인 후 값 설정
                 const referenceIdElement = $('#referenceId');
                 if (referenceIdElement) {
                     referenceIdElement.value = landmarkId;
@@ -402,7 +453,7 @@
             if (tagsString) {
                 tagsString.split(',')
                           .map(tag => tag.trim())
-                          .filter(tag => tag) // 빈 태그 제거
+                          .filter(tag => tag)
                           .forEach(tag => {
                               const link = document.createElement('a');
                               link.href = CONTEXT_PATH + '/tag.jsp?name=' + encodeURIComponent(tag);
@@ -574,10 +625,7 @@
                 map.setView([lat, lng], 15);
             }
             
-            // 기존 랜드마크 마커 제거
             if (landmarkMarker) map.removeLayer(landmarkMarker);
-            
-            // 랜드마크 메인 마커 추가
             landmarkMarker = L.marker([lat, lng]).addTo(map).bindPopup($('#title').textContent).openPopup();
             
             setTimeout(() => map.invalidateSize(), 50);
@@ -587,9 +635,9 @@
         function showDummyNotice() {
             $('#warn').hidden = false;
         }
-        
+
         /* ===========================================================
-         * 7. 탭 기능 및 핫스팟 표시 (수정된 버전)
+         * 7. 탭 기능 및 핫스팟 표시
          * =========================================================== */
         function initializeTabEvents() {
             const tabBtns = document.querySelectorAll('.tab-btn');
@@ -605,10 +653,9 @@
         }
         
         function updateHotspotsOnMap() {
-            // 1. 사용할 마커 아이콘들을 미리 정의합니다.
-            const iconSize = [30, 30]; // 아이콘 크기
-            const iconAnchor = [16, 32]; // 아이콘의 뾰족한 끝 부분
-            const popupAnchor = [0, -32]; // 팝업이 표시될 위치
+            const iconSize = [30, 30];
+            const iconAnchor = [16, 32];
+            const popupAnchor = [0, -32];
 
             const foodIcon = L.icon({
                 iconUrl: CONTEXT_PATH + '/image/foodMarker.png',
@@ -629,19 +676,16 @@
                 popupAnchor: popupAnchor
             });
             
-            // 기존 핫스팟 마커들 제거
             currentHotspotMarkers.forEach(marker => {
                 if (map && marker) map.removeLayer(marker);
             });
             currentHotspotMarkers = [];
             
-            // 현재 탭 타입에 맞는 핫스팟만 필터링
             const filteredHotspots = allHotspots.filter(hotspot => {
                 const hotspotType = hotspot.hotspot_type || hotspot.HOTSPOT_TYPE;
                 return hotspotType === currentTabType;
             });
             
-            // 필터링된 핫스팟들을 지도에 표시
             filteredHotspots.forEach(hotspot => {
                 const get = (key) => hotspot[key.toLowerCase()] || hotspot[key.toUpperCase()] || 0;
                 const lat = Number(get('HOTSPOT_LATI'));
@@ -650,15 +694,13 @@
                 const info = get('HOTSPOT_INFO') || '';
                 
                 if (lat && lng && map) {
-                    // 2. 현재 탭 타입에 따라 사용할 아이콘을 선택합니다.
-                    let selectedIcon = photospotIcon; // 기본값
+                    let selectedIcon = photospotIcon;
                     if (currentTabType === 'FOOD') {
                         selectedIcon = foodIcon;
                     } else if (currentTabType === 'PLACE') {
                         selectedIcon = placeIcon;
                     }
                     
-                    // 3. 선택된 아이콘으로 마커를 생성합니다.
                     const marker = L.marker([lat, lng], { icon: selectedIcon })
                         .addTo(map)
                         .bindPopup(
@@ -678,13 +720,11 @@
         function initializeComments() {
             loadComments();
 
-            // 댓글 폼이 있는 경우에만 이벤트 리스너 추가
             const form = document.getElementById('commentForm');
             if (form) {
                 form.addEventListener('submit', async (e) => {
                     e.preventDefault();
                     
-                    // referenceId 요소가 존재하는지 확인
                     const referenceIdElement = $('#referenceId');
                     if (!referenceIdElement) {
                         showMessage('댓글 작성에 필요한 정보를 찾을 수 없습니다.', 'error');
@@ -713,14 +753,12 @@
                         
                         form.reset();
                         
-                        // referenceId 값 재설정
                         if (referenceIdElement) {
                             referenceIdElement.value = landmarkId;
                         }
                         
                         await loadComments();
                         
-                        // 성공 메시지 표시
                         showMessage('댓글이 성공적으로 작성되었습니다.', 'success');
                         
                     } catch (err) {
@@ -729,26 +767,23 @@
                 });
             }
         }
+        
         /* ===========================================================
          * 9. 즐겨찾기 기능
          * =========================================================== */
         function initializeFavoriteButton() {
             const favBtn = $('#fav');
             
-            // 1. 페이지 로딩 시, 현재 즐겨찾기 상태를 서버에 확인합니다.
             async function checkFavoriteStatus() {
-                if (!landmarkId) return; // 랜드마크 ID가 없으면 실행 안함
+                if (!landmarkId) return;
 
                 try {
-                    // GET 요청으로 현재 상태를 물어봅니다.
                     const res = await fetch(API.favorite() + '?landmarkId=' + landmarkId);
                     
-                    // 로그인이 필요 없는 경우 (서버가 isFavorited:false 응답)
                     if (res.ok) {
                         const data = await res.json();
                         favBtn.setAttribute('aria-pressed', data.isFavorited);
                     } else {
-                         // 로그인 안된 상태 등으로 서버가 에러를 보낸 경우 버튼 비활성화
                          console.warn('즐겨찾기 상태 확인 불가 (로그인 필요 가능성)');
                          favBtn.disabled = true;
                     }
@@ -757,12 +792,10 @@
                 }
             }
 
-            // 2. 버튼 클릭 시, 즐겨찾기 상태를 토글(추가/삭제)하도록 서버에 요청합니다.
             favBtn.addEventListener('click', async () => {
                 if (!landmarkId) return;
 
                 try {
-                    // POST 요청으로 상태 변경을 요청합니다.
                     const res = await fetch(API.favorite(), {
                         method: 'POST',
                         headers: {
@@ -771,9 +804,8 @@
                         body: 'landmarkId=' + landmarkId
                     });
 
-                    if (res.status === 401) { // 401 Unauthorized (로그인 필요)
+                    if (res.status === 401) {
                         alert('로그인이 필요한 기능입니다.');
-                        // 현재 페이지 주소를 포함하여 로그인 페이지로 이동
                         const redirectUrl = location.pathname + location.search;
                         location.href = CONTEXT_PATH + '/login.jsp?redirect=' + encodeURIComponent(redirectUrl);
                         return;
@@ -782,7 +814,6 @@
 
                     const data = await res.json();
                     if (data.success) {
-                        // 서버 응답에 따라 버튼 상태를 업데이트합니다.
                         favBtn.setAttribute('aria-pressed', data.isFavorited);
                         if (data.isFavorited) {
                             showMessage('즐겨찾기에 추가되었습니다.', 'success');
@@ -796,15 +827,13 @@
                     alert('즐겨찾기 상태를 변경하는 데 실패했습니다.');
                 }
             });
-
-            // 페이지가 열리면 바로 상태 확인 실행
             checkFavoriteStatus();
         }
+        
         async function loadComments() {
             const listEl = document.getElementById('commentsList');
             if (!listEl) return;
             
-            // landmarkId가 유효한지 확인
             if (!landmarkId) {
                 listEl.innerHTML = '<div style="color:#777">댓글을 불러올 수 없습니다.</div>';
                 return;
@@ -833,17 +862,16 @@
             listEl.innerHTML = '';
             replies.forEach(r => {
                 const get = (key) => r[key.toLowerCase()] || r[key.toUpperCase()] || '';
-                const commentId = get('REPLY_ID');              /* 이 줄을 추가합니다. */
-                const memberId = get('MEMBER_ID');              /* 이 줄을 추가합니다. */
+                const commentId = get('REPLY_ID');
+                const memberId = get('MEMBER_ID');
                 const userName = get('MEMBER_NICKNAME') || '익명';
                 const text = get('REPLY_CONTENT');
-                const createdAt = (get('REPLY_DATE') || '').split(' ')[0]; // 날짜 부분만 사용
+                const createdAt = (get('REPLY_DATE') || '').split(' ')[0];
                 
                 const item = document.createElement('div');
                 item.className = 'comment-item';
                 let html = '<div class="comment-meta">' + userName + (createdAt ? ' · <span>' + createdAt + '</span>' : '') + '</div>';
 
-                /* 👇 여기 아래에 삭제 버튼 로직을 추가합니다. 👇 */
                 if (IS_LOGGED_IN && LOGIN_MEMBER_ID === String(memberId)) {
                 	html += '<button class="comment-delete-btn" onclick="deleteComment(' + commentId + ')">삭제</button>';
                 }
@@ -854,7 +882,6 @@
             });
         }
         
-     // 댓글 삭제 요청을 보내는 함수 (새로 추가)
         async function deleteComment(commentId){
             if(!confirm('정말로 이 댓글을 삭제하시겠습니까?')) return;
             try{
@@ -881,12 +908,6 @@
         function escapeHtml(str) {
             return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
         }
-
-        $('#fav').addEventListener('click', (e) => {
-            const pressed = e.currentTarget.getAttribute('aria-pressed') === 'true';
-            e.currentTarget.setAttribute('aria-pressed', String(!pressed));
-        });
-        
     </script>
 </body>
 </html>

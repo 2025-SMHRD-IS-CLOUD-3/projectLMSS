@@ -37,13 +37,12 @@
     .row{display:grid;gap:8px}
     .row-inline{display:flex;align-items:center;justify-content:space-between;gap:12px}
     .muted{color:#6a6a6a;font-size:14px}
-    /* 수정된 부분: .error 클래스 스타일 */
     .error {
-        color: #c62828; /* 오류 메시지 색상 */
+        color: #c62828;
         font-size: 14px;
         font-weight: bold;
-        text-align: left; /* "로그인 상태 유지" 아래에 위치하므로 왼쪽 정렬 */
-        margin-top: 5px; /* "로그인 상태 유지"와의 상단 간격 */
+        text-align: left;
+        margin-top: 5px;
     }
     .btn{background:#57ACCB;color:#fff;font-weight:800;border:none;border-radius:12px;padding:14px 20px;font-size:16px;cursor:pointer}
     .btn:disabled{opacity:.6;cursor:not-allowed}
@@ -55,24 +54,71 @@
       .panel{padding:20px}
     }
     #headerImage{
-			height: 80%;
-			width: auto;
-			display: flex;
-		    justify-content: center;
-		    position: absolute;
-		    top: 50%;
-		    left: 50%;
-		    transform: translate(-50%, -50%);
-		}
+		height: 80%;
+		width: auto;
+		display: flex;
+	    justify-content: center;
+	    position: absolute;
+	    top: 50%;
+	    left: 50%;
+	    transform: translate(-50%, -50%);
+	}
+
+    /* Google 번역 위젯 숨기기 */
+    #google_translate_element { display: none; }
+
+    /* 커스텀 언어 선택 드롭다운 */
+    .language-selector {
+        position: fixed;
+        top: 30px;
+        right: 120px;
+        z-index: 1003;
+    }
+    .custom-select {
+        padding: 10px 15px;
+        font-size: 16px;
+        border: 2px solid #57ACCB;
+        border-radius: 8px;
+        background-color: white;
+        color: #333;
+        font-weight: bold;
+        outline: none;
+        cursor: pointer;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%2357ACCB"><path d="M4 6l4 4 4-4z"/></svg>');
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        background-size: 16px;
+        transition: all 0.3s ease;
+    }
+    .custom-select:hover {
+        border-color: #3d94b8;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .custom-select:focus {
+        border-color: #2a82a1;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
   </style>
 </head>
 <body>
-  <!-- ===== 헤더 ===== -->
   <header>
       <h2><a href="<%=request.getContextPath()%>/main.jsp">Landmark Search</a></h2>
-      <img src="./image/headerImage.png" alt="MySite Logo" id="headerImage">
+      <img src="<%=request.getContextPath()%>/image/headerImage.png" alt="MySite Logo" id="headerImage">
+      <div id="google_translate_element"></div>
+
+      <div class="language-selector">
+          <select id="languageSelect" class="custom-select">
+              <option value="ko">한국어</option>
+              <option value="en">English</option>
+              <option value="ja">日本語</option>
+              <option value="zh-CN">中文(简体)</option>
+          </select>
+      </div>
   </header>
-          <button class="menu-btn" aria-label="open side menu">≡</button>
+  <button class="menu-btn" aria-label="open side menu">≡</button>
 
   <div class="side-menu" id="sideMenu">
       <ul>
@@ -85,29 +131,24 @@
       </ul>
   </div>
 
-  <!-- Body -->
   <main class="board">
     <section class="panel">
       <h2 class="title">로그인</h2>
 
-      <!-- context path 포함 -->
       <form action="${pageContext.request.contextPath}/login" method="post">
         <div class="row">
           <label for="uid">계정 입력</label>
-          <!-- DB 컬럼명(ID)에 맞춰 name 변경 -->
           <input id="uid" name="ID" class="input" autocomplete="username" placeholder="이메일 또는 아이디" required/>
         </div>
 
         <div class="row">
           <label for="pwd">비밀번호 입력</label>
           <div class="pwd-wrap">
-            <!-- DB 컬럼명(PWD)에 맞춰 name 변경 -->
             <input id="pwd" name="PWD" class="input" type="password" autocomplete="current-password" placeholder="••••••••" required/>
             <button type="button" id="togglePwd" class="toggle">표시</button>
           </div>
         </div>
 
-        <!-- ✅ redirect 파라미터 전달 -->
         <input type="hidden" name="redirect" value="${param.redirect}" />
 
         <div class="row-inline">
@@ -116,7 +157,6 @@
         </div>
         
         <%
-            // 서블릿에서 설정한 loginError 메시지를 가져와 표시합니다.
             String loginError = (String) request.getAttribute("loginError");
             if (loginError != null) {
         %>
@@ -132,7 +172,39 @@
     </section>
   </main>
 
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
   <script>
+      function googleTranslateElementInit() {
+          new google.translate.TranslateElement({
+              pageLanguage: 'ko',
+              autoDisplay: false
+          }, 'google_translate_element');
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+          const select = document.getElementById('languageSelect');
+
+          function applyLanguage(lang) {
+              const combo = document.querySelector('.goog-te-combo');
+              if (combo) {
+                  combo.value = lang;
+                  combo.dispatchEvent(new Event('change'));
+              }
+          }
+
+          const interval = setInterval(() => {
+              if (document.querySelector('.goog-te-combo')) {
+                  applyLanguage(select.value);
+                  clearInterval(interval);
+              }
+          }, 500);
+
+          select.addEventListener('change', () => {
+              applyLanguage(select.value);
+          });
+      });
+
     const menuBtn=document.querySelector('.menu-btn');
     const sideMenu=document.getElementById('sideMenu');
     menuBtn.addEventListener('click', (e) => { e.stopPropagation(); sideMenu.classList.toggle('open'); });
