@@ -73,20 +73,50 @@ h2 a {text-decoration: none;color: inherit;}
 		    left: 50%;
 		    transform: translate(-50%, -50%);
 		}
-/* 번역 버튼 스타일 추가 */
-#google_translate_element {
-    position: absolute;
-    top: 30px; 
-    right: 60px;
-    z-index: 9999;
+.post-image {
+    max-width: 500px; /* 부모 요소의 가로 크기에 꽉 맞춤 */
+    max-height: 500px; /* 이미지가 너무 길어지지 않도록 최대 높이 제한 */
+    object-fit: cover; /* 비율을 유지하면서 영역을 꽉 채움 */
+    border-radius: 10px; /* 모서리를 둥글게 */
+    margin-bottom: 20px; /* 이미지 아래쪽 여백 */
 }
-		.post-image {
-		    max-width: 500px; /* 부모 요소의 가로 크기에 꽉 맞춤 */
-		    max-height: 500px; /* 이미지가 너무 길어지지 않도록 최대 높이 제한 */
-		    object-fit: cover; /* 비율을 유지하면서 영역을 꽉 채움 */
-		    border-radius: 10px; /* 모서리를 둥글게 */
-		    margin-bottom: 20px; /* 이미지 아래쪽 여백 */
-		}
+
+/* Google 번역 위젯 숨기기 */
+#google_translate_element { display: none; }
+/* 커스텀 언어 선택 드롭다운 */
+.language-selector {
+    position: fixed;
+    top: 30px;
+    right: 120px;
+    z-index: 1003;
+}
+.custom-select {
+    padding: 10px 15px;
+    font-size: 16px;
+    border: 2px solid #57ACCB;
+    border-radius: 8px;
+    background-color: white;
+    color: #333;
+    font-weight: bold;
+    outline: none;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%2357ACCB"><path d="M4 6l4 4 4-4z"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+    transition: all 0.3s ease;
+}
+.custom-select:hover {
+    border-color: #3d94b8;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+.custom-select:focus {
+    border-color: #2a82a1;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
 </style>
 </head>
 <body>
@@ -94,6 +124,14 @@ h2 a {text-decoration: none;color: inherit;}
 <h2><a href="<%=request.getContextPath()%>/main.jsp">Landmark Search</a></h2>
 <img src="./image/headerImage.png" alt="MySite Logo" id="headerImage">
 <div id="google_translate_element"></div>
+<div class="language-selector">
+    <select id="languageSelect" class="custom-select">
+        <option value="ko">한국어</option>
+        <option value="en">English</option>
+        <option value="ja">日本語</option>
+        <option value="zh-CN">中文(简体)</option>
+    </select>
+</div>
 </header>
 <button class="menu-btn" aria-label="open side menu">≡</button>
 
@@ -287,17 +325,38 @@ document.addEventListener('DOMContentLoaded',()=>{loadComments();});
 </script>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-
-<script type="text/javascript">
+<script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+<script>
     function googleTranslateElementInit() {
         new google.translate.TranslateElement({
             pageLanguage: 'ko',
-            layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
-            autoDisplay: false,
-            includedLanguages: 'ko,en,zh-CN,ja'
+            autoDisplay: false
         }, 'google_translate_element');
     }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const select = document.getElementById('languageSelect');
+
+        function applyLanguage(lang) {
+            const combo = document.querySelector('.goog-te-combo');
+            if (combo) {
+                combo.value = lang;
+                combo.dispatchEvent(new Event('change'));
+            }
+        }
+
+        const interval = setInterval(() => {
+            if (document.querySelector('.goog-te-combo')) {
+                applyLanguage(select.value);
+                clearInterval(interval);
+            }
+        }, 500);
+
+        select.addEventListener('change', () => {
+            applyLanguage(select.value);
+        });
+    });
 </script>
-<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
 </body>
 </html>

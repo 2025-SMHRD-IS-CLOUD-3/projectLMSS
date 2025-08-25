@@ -396,7 +396,6 @@
         <a class="link-danger" href="editProfile?action=delete" onclick="return confirm('정말로 회원 탈퇴를 하시겠습니까?');">회원탈퇴</a>
         <button class="btn" type="submit">정보 저장</button>
       </div>
-      <p class="hint">※ 저장 버튼 클릭 시 서버로 변경 사항을 전송합니다.</p>
     </form>
   </section>
 </main>
