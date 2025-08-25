@@ -134,7 +134,7 @@
             <li><a href="mapSearch.jsp">지도로 랜드마크 찾기</a></li>
             <li><a href="postList">게시판</a></li>
             <% if (loginUser == null) { %>
-                <li><a href="login.jsp">로그인</a></li>
+                <li><a href="login.jsp?redirect=<%= request.getRequestURI() %>">로그인</a></li>
                 <li><a href="register.jsp">회원가입</a></li>
             <% } else { %>
                 <li>

@@ -22,14 +22,7 @@ public class LoginServlet extends HttpServlet {
         System.out.println("요청 URL: " + request.getRequestURL());
         System.out.println("요청 URI: " + request.getRequestURI());
         System.out.println("Context Path: " + request.getContextPath());
-        
-        // 테스트용 코드 (필요시 주석 해제)
-        /*
-        response.setContentType("text/html;charset=UTF-8");
-        response.getWriter().write("<h1>LoginServlet이 호출되었습니다!</h1>");
-        return;
-        */
-        
+
         request.setCharacterEncoding("UTF-8");
 
         String id = request.getParameter("ID");
@@ -40,7 +33,7 @@ public class LoginServlet extends HttpServlet {
 
             try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
                  PreparedStatement pstmt = conn.prepareStatement(
-                         "SELECT MEMBER_ID, PWD FROM MEMBER WHERE ID = ?")) {
+                             "SELECT MEMBER_ID, PWD FROM MEMBER WHERE ID = ?")) {
 
                 pstmt.setString(1, id);
 
@@ -57,12 +50,14 @@ public class LoginServlet extends HttpServlet {
 
                             // ✅ 로그인 후 이동할 URL 확인 (파라미터 기반)
                             String redirect = request.getParameter("redirect");
+                            System.out.println("Redirect Parameter: " + redirect); // 디버깅용 로그 추가
 
                             if (redirect != null && !redirect.trim().isEmpty()) {
-                                // /postList 같은 서블릿 매핑 경로로 이동
-                                response.sendRedirect(request.getContextPath() + "/" + redirect);
+                                // ✨ 수정된 부분: redirect 파라미터가 이미 완전한 경로를 포함하므로 그대로 사용
+                                response.sendRedirect(redirect);
+                                System.out.println("Redirecting to: " + redirect); // 디버깅용 로그 추가
                             } else {
-                                // 기본 이동: 메인
+                                // 기본 이동: 메인 페이지로
                                 response.sendRedirect(request.getContextPath() + "/main.jsp");
                             }
 

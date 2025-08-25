@@ -130,7 +130,7 @@
                 <li><a href="<%=request.getContextPath()%>/logout?redirect=<%=request.getRequestURI()%>">로그아웃</a></li>
                 <li><a href="<%=request.getContextPath()%>/myProfile">마이페이지</a></li>
             <% } else { %>
-                <li><a href="<%=request.getContextPath()%>/login.jsp">로그인</a></li>
+                <li><a href="<%=request.getContextPath()%>/login.jsp?redirect=<%=request.getRequestURI()%>">로그인</a></li>
                 <li><a href="<%=request.getContextPath()%>/register.jsp">회원가입</a></li>
             <% } %>
         </ul>
