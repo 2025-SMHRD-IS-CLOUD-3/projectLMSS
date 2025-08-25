@@ -244,7 +244,7 @@
             const a = document.createElement('a');
             a.className = 'card';
             const linkName = encodeURIComponent(nameEn || name);
-            a.href = CONTEXT_PATH + '/landmarkInfo?name=' + linkName + (id ? '&id=' + id : '');
+            a.href = CONTEXT_PATH + '/landmarkInfo.jsp?name=' + linkName + (id ? '&id=' + id : '');
 
             const imgSrc = (id != null ? imageLookup.get(Number(id)) : null) || PLACEHOLDER;
 
