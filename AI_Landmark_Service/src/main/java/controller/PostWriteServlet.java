@@ -74,19 +74,15 @@ public class PostWriteServlet extends HttpServlet {
         String fileName = filePart.getSubmittedFileName();
         
         if (fileName != null && !fileName.isEmpty()) {
-            // 1. 지정된 외부 폴더가 있는지 확인하고, 없으면 생성합니다.
             File uploadDir = new File(UPLOAD_DIRECTORY);
             if (!uploadDir.exists()) {
-                uploadDir.mkdirs(); // mkdirs()는 중간 경로가 없어도 모두 생성해줍니다.
+                uploadDir.mkdirs();
             }
-            	
-            // 2. 파일을 외부 폴더에 저장합니다.
+            
             filePart.write(UPLOAD_DIRECTORY + File.separator + fileName);
             
-            // 3. DB에 저장할 경로는 "uploads/파일명" 형태로 유지합니다.
-            //    이 경로는 Tomcat 서버 설정을 통해 외부 폴더와 연결됩니다.
-            String imageUrl = "uploads/" + fileName;
-            post.setPostImageUrl(imageUrl);
+            // 👇 [수정] DB에는 이제 순수한 파일 이름만 저장합니다.
+            post.setPostImageUrl(fileName);
         }
 
         // DB 저장

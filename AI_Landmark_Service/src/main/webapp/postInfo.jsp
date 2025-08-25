@@ -123,10 +123,10 @@ h2 a {text-decoration: none;color: inherit;}
 <div>조회수: <%= post.getViews() %></div>
 <div>작성일: <fmt:formatDate value="<%= post.getPostDate() %>" pattern="yyyy/MM/dd HH:mm"/></div>
 </div>
-<%-- 👇 [추가] 게시글에 이미지가 있을 경우에만 img 태그를 표시합니다. --%>
-      <% if (post.getPostImageUrl() != null && !post.getPostImageUrl().isEmpty()) { %>
-        <img src="<%=request.getContextPath()%>/<%= post.getPostImageUrl() %>" alt="게시글 이미지" class="post-image">
-      <% } %>
+<%-- 👇 [수정] /uploads 대신, /image 서블릿을 호출하도록 변경합니다. --%>
+<% if (post.getPostImageUrl() != null && !post.getPostImageUrl().isEmpty()) { %>
+  <img src="<%=request.getContextPath()%>/image?name=<%= post.getPostImageUrl() %>" alt="게시글 이미지" class="post-image">
+<% } %>
 
 <div class="post-content"><%= post.getPostContent() %></div>
 
