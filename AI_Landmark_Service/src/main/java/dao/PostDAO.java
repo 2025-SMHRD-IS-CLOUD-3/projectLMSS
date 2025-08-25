@@ -261,4 +261,50 @@ public class PostDAO {
         }
         return result > 0;
     }
+    public int updatePost(Post post) {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        int result = 0;
+
+        // 이미지를 포함할지 여부에 따라 SQL을 동적으로 구성합니다.
+        String sql;
+        if (post.getPostImageUrl() != null && !post.getPostImageUrl().isEmpty()) {
+            // 새 이미지가 첨부된 경우
+            sql = "UPDATE POST SET CATEGORIES = ?, TITLE = ?, POST_CONTENT = ?, POST_IMAGE_URL = ? WHERE POST_ID = ?";
+        } else {
+            // 텍스트만 수정한 경우 (이미지는 그대로 유지)
+            sql = "UPDATE POST SET CATEGORIES = ?, TITLE = ?, POST_CONTENT = ? WHERE POST_ID = ?";
+        }
+
+        try {
+            Class.forName("oracle.jdbc.driver.OracleDriver");
+            conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+            pstmt = conn.prepareStatement(sql);
+            
+            pstmt.setString(1, post.getCategories());
+            pstmt.setString(2, post.getTitle());
+            pstmt.setString(3, post.getPostContent());
+
+            if (post.getPostImageUrl() != null && !post.getPostImageUrl().isEmpty()) {
+                pstmt.setString(4, post.getPostImageUrl());
+                pstmt.setInt(5, post.getPostId());
+            } else {
+                pstmt.setInt(4, post.getPostId());
+            }
+
+            result = pstmt.executeUpdate();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            // 자원 해제
+            try {
+                if (pstmt != null) pstmt.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return result;
+    }
 }

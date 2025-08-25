@@ -4,14 +4,18 @@ import java.io.IOException;
 import java.sql.*;
 
 import javax.servlet.ServletException;
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
+import javax.servlet.http.Part;
+import java.io.File;
+import java.util.UUID;
 
 import model.Post;
-
+@MultipartConfig(fileSizeThreshold = 1024 * 1024, maxFileSize = 1024 * 1024 * 10)
 @WebServlet("/postEdit")
 public class EditPostServlet extends HttpServlet {
-
+	
     // ===== 글 수정 페이지 열기 =====
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -20,7 +24,7 @@ public class EditPostServlet extends HttpServlet {
         String postIdStr = request.getParameter("postId");
         if (postIdStr == null) {
             response.sendRedirect(request.getContextPath() + "/postList");
-            return;
+            return;	
         }
 
         int postId = Integer.parseInt(postIdStr);
@@ -38,7 +42,7 @@ public class EditPostServlet extends HttpServlet {
                     "smhrd2"
             );
 
-            String sql = "SELECT POST_ID, TITLE, POST_CONTENT, CATEGORIES FROM POST WHERE POST_ID = ?";
+            String sql = "SELECT POST_ID, TITLE, POST_CONTENT, CATEGORIES, POST_IMAGE_URL FROM POST WHERE POST_ID = ?";
             pstmt = conn.prepareStatement(sql);
             pstmt.setInt(1, postId);
             rs = pstmt.executeQuery();
@@ -49,6 +53,7 @@ public class EditPostServlet extends HttpServlet {
                 post.setTitle(rs.getString("TITLE"));
                 post.setPostContent(rs.getString("POST_CONTENT"));
                 post.setCategories(rs.getString("CATEGORIES"));
+                post.setPostImageUrl(rs.getString("POST_IMAGE_URL"));
             }
 
         } catch (Exception e) {
@@ -117,17 +122,48 @@ public class EditPostServlet extends HttpServlet {
             String title = request.getParameter("title");
             String content = request.getParameter("content");
             String category = request.getParameter("category");
+            
+         // 👇 [추가] 새 이미지 파일 처리 로직
+            Part filePart = request.getPart("postImage");
+            String newImageUrl = null;
 
-            String sql = "UPDATE POST SET TITLE=?, POST_CONTENT=?, CATEGORIES=? WHERE POST_ID=?";
+            if (filePart != null && filePart.getSize() > 0) {
+                String originalFileName = filePart.getSubmittedFileName();
+                // ❗ PostWriteServlet과 동일한 외부 폴더 경로를 사용합니다.
+                String uploadPath = "C:/landmark_uploads"; 
+                File uploadDir = new File(uploadPath);
+                if (!uploadDir.exists()) uploadDir.mkdirs();
+                
+                String extension = originalFileName.substring(originalFileName.lastIndexOf("."));
+                String savedFileName = UUID.randomUUID().toString() + extension;
+                filePart.write(uploadPath + File.separator + savedFileName);
+                
+                newImageUrl =  savedFileName; // DB에 저장할 새 파일 경로
+            }
+
+            // 👇 [수정] 새 이미지가 있는지 여부에 따라 SQL을 동적으로 변경합니다.
+            String sql;
+            if (newImageUrl != null) {
+                sql = "UPDATE POST SET TITLE=?, POST_CONTENT=?, CATEGORIES=?, POST_IMAGE_URL=? WHERE POST_ID=?";
+            } else {
+                // 새 이미지가 없으면 이미지 URL은 업데이트하지 않습니다.
+                sql = "UPDATE POST SET TITLE=?, POST_CONTENT=?, CATEGORIES=? WHERE POST_ID=?";
+            }
+
             pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, title);
             pstmt.setString(2, content);
             pstmt.setString(3, category);
-            pstmt.setInt(4, postId);
 
+            if (newImageUrl != null) {
+                pstmt.setString(4, newImageUrl);
+                pstmt.setInt(5, postId);
+            } else {
+                pstmt.setInt(4, postId);
+            }
             result = pstmt.executeUpdate();
 
-        } catch (Exception e) {
+        } catch (Exception e) {	
             e.printStackTrace();
         } finally {
             try { if (pstmt != null) pstmt.close(); } catch (Exception e) {}

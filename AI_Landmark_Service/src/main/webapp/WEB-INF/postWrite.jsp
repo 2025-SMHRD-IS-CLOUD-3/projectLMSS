@@ -55,8 +55,31 @@
     #headerImage{ height: 80%; width: auto; display: flex; justify-content: center; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
     
     /* 👇 [추가] 파일 업로드 및 미리보기 스타일 */
-    .file-preview-wrap { margin-top: 10px; }
+    .file-preview-wrap { margin-top: 10px; border:1px}
     .file-preview { max-width: 100%; max-height: 200px; border-radius: 8px; border: 1px solid var(--line); display: none; }
+    /* 기본 input 숨김 */
+	#file-upload {
+	  display: none;
+	}
+	
+	/* 라벨을 버튼처럼 스타일링 */
+	.custom-file-upload {
+	  display: inline-block;
+	  padding: 12px 18px;
+	  border-radius: 12px;
+	  background: #57ACCB;
+	  color: white;
+	  font-weight: 800;
+	  cursor: pointer;
+	  transition: 0.3s;
+	  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+	}
+	
+	/* 클릭 시 */
+	.custom-file-upload:active {
+	  transform: translateY(0);
+	  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+	}
 </style>
 </head>
 <body>
@@ -66,20 +89,21 @@
     </header>
     <button class="menu-btn" aria-label="open side menu">≡</button>
     
-    <div class="side-menu" id="sideMenu">
-        <ul>
-            <li><a href="<%=contextPath%>/howLandmark.html">Landmark Search란?</a></li>
-            <li><a href="<%=contextPath%>/main.html">사진으로  랜드마크 찾기</a></li>
-            <li><a href="<%=contextPath%>/mapSearch.html">지도로  랜드마크 찾기</a></li>
-            <li><a href="<%=contextPath%>/postList">게시판</a></li>
-            <% if (loginUser != null) { %>
-                <li><a href="<%=contextPath%>/logout">로그아웃</a></li>
-            <% } else { %>
-                <li><a href="<%=contextPath%>/login.jsp">로그인</a></li>
-                <li><a href="<%=contextPath%>/join.jsp">회원가입</a></li>
-            <% } %>
-        </ul>
-    </div>
+    <aside class="side-menu" id="sideMenu">
+	    <ul>
+	        <li><a href="<%=request.getContextPath()%>/howLandmark.jsp">Landmark Search란?</a></li>
+	        <li><a href="<%=request.getContextPath()%>/main.jsp">사진으로 랜드마크 찾기</a></li>
+	        <li><a href="<%=request.getContextPath()%>/mapSearch.jsp">지도로 랜드마크 찾기</a></li>
+	        <li><a href="<%=request.getContextPath()%>/postList">게시판</a></li>
+	        <% if (loginUser != null) { %>
+	        <li><a href="<%=request.getContextPath()%>/logout">로그아웃</a></li>
+	        <li><a href="<%=request.getContextPath()%>/myProfile.jsp">마이페이지</a></li>
+	        <% } else { %>
+	        <li><a href="<%=request.getContextPath()%>/login.jsp">로그인</a></li>
+	        <li><a href="<%=request.getContextPath()%>/register.jsp">회원가입</a></li>
+	        <% } %>
+	    </ul>
+	</aside>
   
     <main class="board">
         <section class="panel">
@@ -115,8 +139,10 @@
 
                 <!-- 👇 [추가] 파일 첨부 필드와 미리보기 영역 -->
                 <div>
-                    <label for="postImage">이미지 첨부 (선택)</label>
-                    <input type="file" id="postImage" name="postImage" class="input" accept="image/*">
+                    <label for="file-upload" class="custom-file-upload">
+					  사진 첨부하기
+					</label>
+                    <input type="file" id="file-upload" class="input" name="postImage" accept="image/*">
                     <div class="file-preview-wrap">
                         <img id="imagePreview" class="file-preview" alt="이미지 미리보기">
                     </div>
@@ -169,7 +195,7 @@
         });
 
         // 👇 [추가] 이미지 선택 시 미리보기를 보여주는 스크립트
-        const postImageInput = document.getElementById('postImage');
+        const postImageInput = document.getElementById('file-upload');
         const imagePreview = document.getElementById('imagePreview');
         postImageInput.addEventListener('change', function() {
             const file = this.files[0];
