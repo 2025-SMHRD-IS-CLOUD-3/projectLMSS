@@ -54,118 +54,135 @@
     .btn.sub{background:#e9eef1;color:#234}
     #headerImage{ height: 80%; width: auto; display: flex; justify-content: center; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
     
-    /* 👇 [추가] 파일 업로드 및 미리보기 스타일 */
+    /* 파일 업로드 및 미리보기 스타일 */
     .file-preview-wrap { margin-top: 10px; border:1px}
     .file-preview { max-width: 100%; max-height: 200px; border-radius: 8px; border: 1px solid var(--line); display: none; }
-    /* 기본 input 숨김 */
-	#file-upload {
-	  display: none;
-	}
-	
-	/* 라벨을 버튼처럼 스타일링 */
-	.custom-file-upload {
-	  display: inline-block;
-	  padding: 12px 18px;
-	  border-radius: 12px;
-	  background: #57ACCB;
-	  color: white;
-	  font-weight: 800;
-	  cursor: pointer;
-	  transition: 0.3s;
-	  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-	}
-	
-	/* 클릭 시 */
-	.custom-file-upload:active {
-	  transform: translateY(0);
-	  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-	}
+    #file-upload { display: none; }
+    .custom-file-upload { display: inline-block; padding: 12px 18px; border-radius: 12px; background: #57ACCB; color: white; font-weight: 800; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+    .custom-file-upload:active { transform: translateY(0); box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
+
+    /* Google 번역 & 커스텀 드롭다운 */
+    #google_translate_element { display: none; }
+    .language-selector { position: fixed; top: 30px; right: 120px; z-index: 1003; }
+    .custom-select { padding: 10px 15px; font-size: 16px; border: 2px solid #57ACCB; border-radius: 8px; background-color: white; color: #333; font-weight: bold; outline: none; cursor: pointer; appearance: none; -webkit-appearance: none; -moz-appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%2357ACCB"><path d="M4 6l4 4 4-4z"/></svg>'); background-repeat: no-repeat; background-position: right 12px center; background-size: 16px; transition: all 0.3s ease; }
+    .custom-select:hover { border-color: #3d94b8; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    .custom-select:focus { border-color: #2a82a1; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
 </style>
 </head>
 <body>
-    <header>
-        <h2><a href="<%=request.getContextPath()%>/main.jsp">Landmark Search</a></h2>
-        <img src="./image/headerImage.png" alt="MySite Logo" id="headerImage">
-    </header>
-    <button class="menu-btn" aria-label="open side menu">≡</button>
-    
-    <aside class="side-menu" id="sideMenu">
-	    <ul>
-	        <li><a href="<%=request.getContextPath()%>/howLandmark.jsp">Landmark Search란?</a></li>
-	        <li><a href="<%=request.getContextPath()%>/main.jsp">사진으로 랜드마크 찾기</a></li>
-	        <li><a href="<%=request.getContextPath()%>/mapSearch.jsp">지도로 랜드마크 찾기</a></li>
-	        <li><a href="<%=request.getContextPath()%>/postList">게시판</a></li>
-	        <% if (loginUser != null) { %>
-	        <li><a href="<%=request.getContextPath()%>/logout">로그아웃</a></li>
-	        <li><a href="<%=request.getContextPath()%>/myProfile.jsp">마이페이지</a></li>
-	        <% } else { %>
-	        <li><a href="<%=request.getContextPath()%>/login.jsp">로그인</a></li>
-	        <li><a href="<%=request.getContextPath()%>/register.jsp">회원가입</a></li>
-	        <% } %>
-	    </ul>
-	</aside>
-  
-    <main class="board">
-        <section class="panel">
-            <h2 class="title">게시글 작성</h2>
+<header>
+    <h2><a href="<%=request.getContextPath()%>/main.jsp">Landmark Search</a></h2>
+    <img src="./image/headerImage.png" alt="MySite Logo" id="headerImage">
+    <div id="google_translate_element"></div>
+    <div class="language-selector">
+        <select id="languageSelect" class="custom-select">
+            <option value="ko">한국어</option>
+            <option value="en">English</option>
+            <option value="ja">日本語</option>
+            <option value="zh-CN">中文(简体)</option>
+        </select>
+    </div>
+</header>
 
-            <!-- 👇 [수정] 파일을 전송하려면 enctype="multipart/form-data"가 반드시 필요합니다. -->
-            <form class="form" id="postForm" method="post" action="<%=contextPath%>/postWrite" autocomplete="off" enctype="multipart/form-data">
-                <div class="row2">
-                    <div>
-                        <label for="postTitle">제목 입력</label>
-                        <input id="postTitle" name="title" class="input" placeholder="제목을 입력하세요" maxlength="120" value="<c:out value='${formTitle}'/>" />
-                    </div>
-                    <div>
-                        <label>카테고리</label>
-                        <div class="select-wrap" id="categoryWrap" data-init-category="<c:out value='${formCategory}'/>">
-                            <div id="postCategory" class="select-display" tabindex="0">카테고리 선택</div>
-                            <div class="select-caret" id="categoryCaret"></div>
-                            <div id="categoryOptions" class="options">
-                                <div class="option" data-value="여행 후기">여행 후기</div>
-                                <div class="option" data-value="여행 꿀팁">여행 꿀팁</div>
-                                <div class="option" data-value="랜드마크 정보">랜드마크 정보</div>
-                                <div class="option" data-value="자유게시판">자유게시판</div>
-                            </div>
+<button class="menu-btn" aria-label="open side menu">≡</button>
+
+<aside class="side-menu" id="sideMenu">
+    <ul>
+        <li><a href="<%=request.getContextPath()%>/howLandmark.jsp">Landmark Search란?</a></li>
+        <li><a href="<%=request.getContextPath()%>/main.jsp">사진으로 랜드마크 찾기</a></li>
+        <li><a href="<%=request.getContextPath()%>/mapSearch.jsp">지도로 랜드마크 찾기</a></li>
+        <li><a href="<%=request.getContextPath()%>/postList">게시판</a></li>
+        <% if (loginUser != null) { %>
+        <li><a href="<%=request.getContextPath()%>/logout">로그아웃</a></li>
+        <li><a href="<%=request.getContextPath()%>/myProfile.jsp">마이페이지</a></li>
+        <% } else { %>
+        <li><a href="<%=request.getContextPath()%>/login.jsp">로그인</a></li>
+        <li><a href="<%=request.getContextPath()%>/register.jsp">회원가입</a></li>
+        <% } %>
+    </ul>
+</aside>
+
+<main class="board">
+    <section class="panel">
+        <h2 class="title">게시글 작성</h2>
+        <form class="form" id="postForm" method="post" action="<%=contextPath%>/postWrite" autocomplete="off" enctype="multipart/form-data">
+            <div class="row2">
+                <div>
+                    <label for="postTitle">제목 입력</label>
+                    <input id="postTitle" name="title" class="input" placeholder="제목을 입력하세요" maxlength="120" value="<c:out value='${formTitle}'/>" />
+                </div>
+                <div>
+                    <label>카테고리</label>
+                    <div class="select-wrap" id="categoryWrap" data-init-category="<c:out value='${formCategory}'/>">
+                        <div id="postCategory" class="select-display" tabindex="0">카테고리 선택</div>
+                        <div class="select-caret" id="categoryCaret"></div>
+                        <div id="categoryOptions" class="options">
+                            <div class="option" data-value="여행 후기">여행 후기</div>
+                            <div class="option" data-value="여행 꿀팁">여행 꿀팁</div>
+                            <div class="option" data-value="랜드마크 정보">랜드마크 정보</div>
+                            <div class="option" data-value="자유게시판">자유게시판</div>
                         </div>
-                        <input type="hidden" id="categoryValue" name="category" value="<c:out value='${formCategory}'/>"/>
                     </div>
+                    <input type="hidden" id="categoryValue" name="category" value="<c:out value='${formCategory}'/>"/>
                 </div>
+            </div>
 
-                <div>
-                    <label for="postContent">내용 입력</label>
-                    <textarea id="postContent" name="content" class="textarea" placeholder="내용을 입력하세요"><c:out value='${formContent}'/></textarea>
+            <div>
+                <label for="postContent">내용 입력</label>
+                <textarea id="postContent" name="content" class="textarea" placeholder="내용을 입력하세요"><c:out value='${formContent}'/></textarea>
+            </div>
+
+            <div>
+                <label for="file-upload" class="custom-file-upload">
+                    사진 첨부하기
+                </label>
+                <input type="file" id="file-upload" class="input" name="postImage" accept="image/*">
+                <div class="file-preview-wrap">
+                    <img id="imagePreview" class="file-preview" alt="이미지 미리보기">
                 </div>
+            </div>
 
-                <!-- 👇 [추가] 파일 첨부 필드와 미리보기 영역 -->
-                <div>
-                    <label for="file-upload" class="custom-file-upload">
-					  사진 첨부하기
-					</label>
-                    <input type="file" id="file-upload" class="input" name="postImage" accept="image/*">
-                    <div class="file-preview-wrap">
-                        <img id="imagePreview" class="file-preview" alt="이미지 미리보기">
-                    </div>
-                </div>
+            <div class="btns">
+                <button type="button" class="btn sub" id="goList">게시글 목록</button>
+                <button type="submit" class="btn">게시글 작성</button>
+            </div>
+        </form>
+    </section>
+</main>
 
-                <div class="btns">
-                    <button type="button" class="btn sub" id="goList">게시글 목록</button>
-                    <button type="submit" class="btn">게시글 작성</button>
-                </div>
-            </form>
-        </section>
-    </main>
+<c:if test="${not empty alertMsg}">
+    <script> alert('<c:out value="${alertMsg}"/>'); </script>
+</c:if>
 
-    <c:if test="${not empty alertMsg}">
-        <script> alert('<c:out value="${alertMsg}"/>'); </script>
-    </c:if>
+<script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+<script>
+    /* ===== Google Translate 초기화 ===== */
+    function googleTranslateElementInit() {
+        new google.translate.TranslateElement({
+            pageLanguage: 'ko',
+            autoDisplay: false
+        }, 'google_translate_element');
+    }
 
-    <script>
-        /* ===== 사이드메뉴 ===== */
-        const menuBtn=document.querySelector('.menu-btn');
-        const sideMenu=document.getElementById('sideMenu');
-        menuBtn.addEventListener('click',e=>{ e.stopPropagation(); sideMenu.classList.toggle('open'); });
-        document.addEventListener('click',e=>{ if(!sideMenu.contains(e.target) && !menuBtn.contains(e.target)){ sideMenu.classList.remove('open'); } });
+    document.addEventListener('DOMContentLoaded', () => {
+        const select = document.getElementById('languageSelect');
+
+        function applyLanguage(lang) {
+            const combo = document.querySelector('.goog-te-combo');
+            if (combo) {
+                combo.value = lang;
+                combo.dispatchEvent(new Event('change'));
+            }
+        }
+
+        const interval = setInterval(() => {
+            if (document.querySelector('.goog-te-combo')) {
+                applyLanguage(select.value);
+                clearInterval(interval);
+            }
+        }, 500);
+
+        select.addEventListener('change', () => { applyLanguage(select.value); });
 
         /* ===== 카테고리 선택 ===== */
         const wrap = document.getElementById('categoryWrap');
@@ -179,22 +196,12 @@
         caret.addEventListener('click', (e)=>{ e.stopPropagation(); openOptions(!options.classList.contains('open')); });
         document.addEventListener('click', (e)=> { if(!wrap.contains(e.target)) openOptions(false); });
         options.addEventListener('click', (e)=>{ const opt = e.target.closest('.option'); if(!opt) return; selectCategory(opt.dataset.value); });
-        document.addEventListener('DOMContentLoaded', () => { const initCat = (wrap.dataset.initCategory || '').trim(); if (initCat) { selectCategory(initCat); } });
+        const initCat = (wrap.dataset.initCategory || '').trim(); if (initCat) { selectCategory(initCat); }
 
         /* ===== 목록 버튼 ===== */
         document.getElementById('goList').addEventListener('click', ()=> { location.href = '<%=contextPath%>/postList'; });
 
-        /* ===== 클라이언트 측 제출 전 검증 ===== */
-        document.getElementById('postForm').addEventListener('submit', function(e) {
-            const title = this.title.value.trim();
-            const category = this.category.value.trim();
-            const content = this.content.value.trim();
-            if (!title)   { alert('제목을 입력하세요.');     e.preventDefault(); return; }
-            if (!category){ alert('카테고리를 선택하세요.'); e.preventDefault(); return; }
-            if (!content) { alert('내용을 입력하세요.');     e.preventDefault(); return; }
-        });
-
-        // 👇 [추가] 이미지 선택 시 미리보기를 보여주는 스크립트
+        /* ===== 이미지 미리보기 ===== */
         const postImageInput = document.getElementById('file-upload');
         const imagePreview = document.getElementById('imagePreview');
         postImageInput.addEventListener('change', function() {
@@ -211,6 +218,23 @@
                 imagePreview.style.display = 'none';
             }
         });
-    </script>
+
+        /* ===== 클라이언트 측 제출 전 검증 ===== */
+        document.getElementById('postForm').addEventListener('submit', function(e) {
+            const title = this.title.value.trim();
+            const category = this.category.value.trim();
+            const content = this.content.value.trim();
+            if (!title)   { alert('제목을 입력하세요.');     e.preventDefault(); return; }
+            if (!category){ alert('카테고리를 선택하세요.'); e.preventDefault(); return; }
+            if (!content) { alert('내용을 입력하세요.');     e.preventDefault(); return; }
+        });
+
+        /* ===== 사이드메뉴 ===== */
+        const menuBtn=document.querySelector('.menu-btn');
+        const sideMenu=document.getElementById('sideMenu');
+        menuBtn.addEventListener('click',e=>{ e.stopPropagation(); sideMenu.classList.toggle('open'); });
+        document.addEventListener('click',e=>{ if(!sideMenu.contains(e.target) && !menuBtn.contains(e.target)){ sideMenu.classList.remove('open'); } });
+    });
+</script>
 </body>
 </html>
