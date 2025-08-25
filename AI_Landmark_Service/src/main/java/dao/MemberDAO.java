@@ -52,19 +52,20 @@ public class MemberDAO {
         return member;
     }
 
-    // 비밀번호 + 이메일 수정
-    public int updateMemberPasswordAndEmail(String id, String newPassword, String newEmail) {
+    // ===== 비밀번호, 이메일, 닉네임 수정 (새로 추가) =====
+    public int updateMemberPasswordAndEmailAndNickname(String id, String newPassword, String newNickname, String newEmail) {
         Connection conn = null;
         PreparedStatement pstmt = null;
         int result = 0;
 
         try {
             conn = getConnection();
-            String sql = "UPDATE MEMBER SET PWD=?, EMAIL=? WHERE ID=?";
+            String sql = "UPDATE MEMBER SET PWD=?, NICKNAME=?, EMAIL=? WHERE ID=?";
             pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, newPassword);
-            pstmt.setString(2, newEmail);
-            pstmt.setString(3, id);
+            pstmt.setString(2, newNickname);
+            pstmt.setString(3, newEmail);
+            pstmt.setString(4, id);
 
             result = pstmt.executeUpdate();
         } catch (SQLException | ClassNotFoundException e) {
@@ -74,4 +75,28 @@ public class MemberDAO {
         }
         return result;
     }
+
+    // 기존의 updateMemberPasswordAndEmail 메서드는 더 이상 필요하지 않으므로 삭제하거나 주석 처리
+    /*
+    public int updateMemberPasswordAndEmail(String id, String newPassword, String newEmail) {
+        // 이 메서드는 새로운 메서드로 대체됩니다.
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        int result = 0;
+        try {
+            conn = getConnection();
+            String sql = "UPDATE MEMBER SET PWD=?, EMAIL=? WHERE ID=?";
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, newPassword);
+            pstmt.setString(2, newEmail);
+            pstmt.setString(3, id);
+            result = pstmt.executeUpdate();
+        } catch (SQLException | ClassNotFoundException e) {
+            e.printStackTrace();
+        } finally {
+            closeResources(conn, pstmt, null);
+        }
+        return result;
+    }
+    */
 }

@@ -1,76 +1,21 @@
-<%@ page contentType="text/html; charset=UTF-8" language="java" pageEncoding="UTF-8"%>
+<%@ page contentType="text/html; charset=UTF-8" language="java" %>
 <%@ page import="java.sql.*, java.util.*, java.text.SimpleDateFormat" %>
 <%
-    // -------------------------------------------------------
-    // 0) 로그인 체크 및 회원탈퇴 처리
-    // -------------------------------------------------------
+    /* -------------------------------------------------------
+     * 0) 로그인 체크
+     * ----------------------------------------------------- */
     String loginUser = (String) session.getAttribute("loginUser");
     if (loginUser == null) {
         response.sendRedirect("login.jsp");
         return;
     }
 
-    String action = request.getParameter("action");
-    if ("delete".equals(action)) {
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-        try {
-            Class.forName("oracle.jdbc.driver.OracleDriver");
-            conn = DriverManager.getConnection(
-                "jdbc:oracle:thin:@project-db-campus.smhrd.com:1524:xe",
-                "campus_24IS_CLOUD3_p2_2",
-                "smhrd2"
-            );
-
-            // 중요: 외래 키 제약 조건(Foreign Key Constraint) 해결
-            // MEMBER 테이블을 삭제하기 전에 해당 회원의 모든 데이터를 먼저 삭제해야 합니다.
-            String sqlDeleteFavorites = "DELETE FROM FAVORITES WHERE MEMBER_ID = (SELECT MEMBER_ID FROM MEMBER WHERE ID = ?)";
-            pstmt = conn.prepareStatement(sqlDeleteFavorites);
-            pstmt.setString(1, loginUser);
-            pstmt.executeUpdate();
-            pstmt.close();
-
-            String sqlDeleteReplies = "DELETE FROM REPLY WHERE MEMBER_ID = (SELECT MEMBER_ID FROM MEMBER WHERE ID = ?)";
-            pstmt = conn.prepareStatement(sqlDeleteReplies);
-            pstmt.setString(1, loginUser);
-            pstmt.executeUpdate();
-            pstmt.close();
-
-            String sqlDeletePosts = "DELETE FROM POST WHERE MEMBER_ID = (SELECT MEMBER_ID FROM MEMBER WHERE ID = ?)";
-            pstmt = conn.prepareStatement(sqlDeletePosts);
-            pstmt.setString(1, loginUser);
-            pstmt.executeUpdate();
-            pstmt.close();
-
-            // 마지막으로 회원 정보 삭제
-            String sqlDeleteMember = "DELETE FROM MEMBER WHERE ID = ?";
-            pstmt = conn.prepareStatement(sqlDeleteMember);
-            pstmt.setString(1, loginUser);
-            pstmt.executeUpdate();
-
-            // 세션 무효화 (로그아웃 처리)
-            session.invalidate();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            // 오류 발생 시에도 메시지를 보여주기 위해 스크립트를 출력
-            out.println("<script>alert('회원탈퇴 중 오류가 발생했습니다.'); history.back();</script>");
-            return;
-        } finally {
-            if (pstmt != null) try { pstmt.close(); } catch (Exception e) {}
-            if (conn != null) try { conn.close(); } catch (Exception e) {}
-        }
-        
-        // 성공 시 메시지 출력 후 리디렉션
-        out.println("<script>alert('회원탈퇴가 완료되었습니다.'); location.href='main.jsp';</script>");
-        return;
-    }
-
-    // -------------------------------------------------------
-    // 1) DB 조회 준비 (기존 코드)
-    // -------------------------------------------------------
+    /* -------------------------------------------------------
+     * 1) DB 조회 준비
+     * ----------------------------------------------------- */
     Integer loginMemberId = null;
     String userEmail = "";
+    String userNickname = "";
     List<Map<String, Object>> postList = new ArrayList<>();
     List<Map<String, Object>> replyList = new ArrayList<>();
     List<Map<String, Object>> favoriteList = new ArrayList<>();
@@ -87,18 +32,20 @@
             "smhrd2"
         );
 
-        // 1-1) 회원 기본정보
-        String sqlMember = "SELECT MEMBER_ID, EMAIL FROM MEMBER WHERE ID = ?";
+        /* 1-1) 회원 기본정보 */
+        String sqlMember = "SELECT MEMBER_ID, EMAIL, NICKNAME FROM MEMBER WHERE ID = ?";
         pstmt = conn.prepareStatement(sqlMember);
         pstmt.setString(1, loginUser);
         rs = pstmt.executeQuery();
         if (rs.next()) {
             loginMemberId = rs.getInt("MEMBER_ID");
             userEmail = rs.getString("EMAIL");
+            userNickname = rs.getString("NICKNAME");
         }
         rs.close(); pstmt.close();
 
-        // 1-2) 내 게시글 (카테고리 포함) ※ CATEGORIES 컬럼명은 환경에 맞게 변경
+        /* 1-2) 내 게시글 (작성자 대신 카테고리를 보여줄 것이므로 CATEGORIES 포함)
+           ※ 컬럼명이 다르면 CATEGORIES → 실제 컬럼명으로 변경 */
         if (loginMemberId != null) {
             String sqlPosts =
                 "SELECT POST_ID, TITLE, VIEWS, POST_DATE, CATEGORIES " +
@@ -118,7 +65,7 @@
             rs.close(); pstmt.close();
         }
 
-        // 1-3) 내 댓글 (게시판 + 랜드마크)
+        /* 1-3) 내 댓글 (게시판 + 랜드마크) */
         if (loginMemberId != null) {
             String sqlReplies =
                 "SELECT * FROM ( " +
@@ -144,7 +91,7 @@
                 row.put("reply_content", rs.getString("REPLY_CONTENT"));
                 row.put("reply_date", rs.getTimestamp("REPLY_DATE"));
                 row.put("post_title", rs.getString("TARGET_TITLE"));
-                row.put("post_id", rs.getObject("TARGET_ID"));
+                row.put("post_id", rs.getObject("TARGET_ID"));  // null 가능성 대비
                 row.put("post_type", rs.getString("TARGET_TYPE"));
                 row.put("landmark_name", rs.getString("LANDMARK_NAME"));
                 replyList.add(row);
@@ -152,7 +99,7 @@
             rs.close(); pstmt.close();
         }
 
-        // 1-4) 즐겨찾기 (썸네일 1장)
+        /* 1-4) 즐겨찾기 (썸네일 1장만 선정) */
         if (loginMemberId != null) {
             String sqlFavorites =
                 "SELECT * FROM (" +
@@ -185,7 +132,7 @@
         if (conn != null) try { conn.close(); } catch (Exception e) {}
     }
 
-    // 2) 날짜 포맷
+    /* 2) 날짜 포맷 */
     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 %>
 <!DOCTYPE html>
@@ -202,7 +149,7 @@
            display:flex; justify-content:space-between; align-items:center; padding:0 20px;
            z-index:1000; box-shadow:0 1px 0 rgba(0,0,0,.04); }
   h2 a { text-decoration:none; color:inherit; }
-  .menu-btn { position: fixed; top: 20px; right: 20px; font-size: 50px; background:none; border:none; color:#000; cursor:pointer; z-index:1002; }
+  .menu-btn { position: fixed; top:20px; right:20px; font-size:50px; background:none; border:none; color:#000; cursor:pointer; z-index:1002; }
   .side-menu{ position: fixed; top:0; right:-500px; width:500px; height:100%; background:#57ACCB; color:#fff;
               padding:20px; padding-top:100px; transition:right .3s ease; font-size:30px; z-index:1001; }
   .side-menu.open{ right:0; }
@@ -210,17 +157,18 @@
   .side-menu a{ color:#fff; text-decoration:none; font-weight:700; display:block; margin:14px 0; }
   @media (max-width:920px){ .side-menu{ width:85vw; right:-85vw; } }
 
+  /* 페이지 래퍼 */
   .paper{ max-width:1080px; margin:140px auto 60px; background:var(--muted); border-radius:28px; padding:28px; }
   .blk{ background:#fff; border:1px solid var(--line); border-radius:16px; padding:22px; margin-bottom:20px; box-shadow:0 4px 14px rgba(0,0,0,.06); }
+
+  /* 상단 탭 */
   .tabs{ display:flex; gap:14px; margin-bottom:16px; }
   .tabs button{ border:0; background:var(--tab); color:#456; padding:12px 18px; border-radius:999px; font-weight:900; cursor:pointer; }
   .tabs button[aria-selected="true"]{ background:var(--tab-active); color:#fff; }
 
-  /* =========================
-     표 공통 스타일
-     ========================= */
+  /* ===== 표 공통 ===== */
   .table-wrap{ overflow:auto; border:1px solid var(--line); border-radius:12px; }
-  table.table-fixed{ width:100%; border-collapse:collapse; table-layout:fixed; } /* 폭 고정 + ellipsis 안정화 */
+  table.table-fixed{ width:100%; border-collapse:collapse; table-layout:fixed; } /* 폭 고정 */
   thead th{
     background:#eef7fb; border-bottom:1px solid var(--line);
     padding:12px 10px; white-space:nowrap; font-size:14px; font-weight:700; color:#1f2937;
@@ -231,21 +179,21 @@
   }
   tbody tr:hover{ background:#f9fbfc; cursor:pointer; }
 
-  /* 긴 텍스트 말줄임: TD 자체가 아니라 '안쪽 요소'에 적용 */
+  /* 긴 텍스트 말줄임: TD가 아니라 안쪽 요소에 적용 */
   .cell-ellipsis{ display:block; max-width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
   /* ── 표별 열폭(%) ───────────────────────── */
   /* ▶ 내 게시글 */
   #tbl-posts .col-no    { width: 8%;  text-align:center; color:#444; }
-  #tbl-posts .col-cat   { width:14%;  text-align:center; color:#444; }
-  #tbl-posts .col-title { width:48%; }
+  #tbl-posts .col-cat   { width:14%;  text-align:center; color:#444; }  /* 카테고리 고정폭 */
+  #tbl-posts .col-title { width:48%; }  /* 제목 넓게 */
   #tbl-posts .col-views { width:10%;  text-align:right; color:#444; }
   #tbl-posts .col-date  { width:20%;  text-align:center; color:#444; }
 
-  /* ▶ 내 댓글 (제목 폭 = 14%) */
+  /* ▶ 내 댓글 (제목 폭 = 카테고리 폭과 동일 14%) */
   #tbl-comments .col-no    { width: 8%;  text-align:center; color:#444; }
-  #tbl-comments .col-title { width:14%; }
-  #tbl-comments .col-reply { width:48%; }
+  #tbl-comments .col-title { width:14%; }             /* 제목 */
+  #tbl-comments .col-reply { width:48%; }             /* 댓글 내용 크게 */
   #tbl-comments .col-kind  { width:14%; text-align:center; color:#444; }
   #tbl-comments .col-date  { width:16%; text-align:center; color:#444; }
 
@@ -262,65 +210,27 @@
   .pager button[aria-current="true"]{ background:var(--brand); color:#fff; border-color:var(--brand); font-weight:800; }
   .pager button:disabled{ opacity:.55; cursor:not-allowed; }
 
+  /* ===== 폼(회원 정보 수정) ===== */
+  .form{ max-width:680px; margin:4px auto 0; }
+  .form-row{ margin:18px 0; }
+  .label{ display:block; margin-bottom:8px; font-weight:800; color:#1f2937; }
+  .input{ width:100%; height:48px; border:1px solid var(--line); border-radius:999px; padding:0 16px; font-size:15px; }
+  .actions{ display:flex; align-items:center; justify-content:space-between; margin-top:18px; }
+  .btn{ border:0; background:var(--brand); color:#fff; padding:12px 18px; border-radius:999px; font-weight:900; cursor:pointer; }
+  .link-danger{ color:#e14a4a; text-decoration:none; font-weight:800; }
+  .hint{ font-size:12px; color:#666; margin-top:6px; }
+
   @media (max-width: 680px){
     #tbl-posts .col-views, #tbl-comments .col-kind { display:none; }
   }
 
   #headerImage{ height:80%; width:auto; display:flex; justify-content:center; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); }
-
-  /* Google 번역 위젯 숨기기 */
-  #google_translate_element { display: none; }
-
-  /* 커스텀 언어 선택 드롭다운 */
-  .language-selector {
-      position: fixed;
-      top: 30px;
-      right: 120px;
-      z-index: 1003;
-  }
-  .custom-select {
-      padding: 10px 15px;
-      font-size: 16px;
-      border: 2px solid #57ACCB;
-      border-radius: 8px;
-      background-color: white;
-      color: #333;
-      font-weight: bold;
-      outline: none;
-      cursor: pointer;
-      appearance: none;
-      -webkit-appearance: none;
-      -moz-appearance: none;
-      background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%2357ACCB"><path d="M4 6l4 4 4-4z"/></svg>');
-      background-repeat: no-repeat;
-      background-position: right 12px center;
-      background-size: 16px;
-      transition: all 0.3s ease;
-  }
-  .custom-select:hover {
-      border-color: #3d94b8;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  }
-  .custom-select:focus {
-      border-color: #2a82a1;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-  }
 </style>
 </head>
 <body>
 <header>
   <h2><a href="<%=request.getContextPath()%>/main.jsp">Landmark Search</a></h2>
-  <img src="<%=request.getContextPath()%>/image/headerImage.png" alt="MySite Logo" id="headerImage">
-  <div id="google_translate_element"></div>
-
-  <div class="language-selector">
-      <select id="languageSelect" class="custom-select">
-          <option value="ko">한국어</option>
-          <option value="en">English</option>
-          <option value="ja">日本語</option>
-          <option value="zh-CN">中文(简体)</option>
-      </select>
-  </div>
+  <img src="./image/headerImage.png" alt="MySite Logo" id="headerImage">
 </header>
 <button class="menu-btn" aria-label="메뉴">≡</button>
 
@@ -338,29 +248,27 @@
 <main class="paper">
   <nav class="tabs" role="tablist" aria-label="마이페이지 상단 탭">
     <button id="tab-activity" role="tab" aria-selected="true">활동 내역</button>
-    <button id="tab-profile" role="tab" aria-selected="false">회원 정보 수정</button>
+    <button id="tab-profile"  role="tab" aria-selected="false">회원 정보 수정</button>
   </nav>
 
   <section id="panel-activity" role="tabpanel" aria-labelledby="tab-activity" class="blk">
-
     <h3>내 게시글</h3>
     <div class="table-wrap">
       <table id="tbl-posts" class="table-fixed">
         <thead>
           <tr>
             <th class="col-no">목록</th>
-            <th class="col-cat">카테고리</th>
-            <th class="col-title">제목</th>
+            <th class="col-cat">카테고리</th> <th class="col-title">제목</th>
             <th class="col-views">조회수</th>
             <th class="col-date">작성일자</th>
           </tr>
         </thead>
         <tbody>
-          <%
-            int idx = 1;
-            for (Map<String, Object> post : postList) {
+        <%
+          int idx = 1;
+          for (Map<String, Object> post : postList) {
               String category = (String) post.get("category");
-          %>
+        %>
           <tr onclick="location.href='postInfo?postId=<%= post.get("id") %>&source=mypage'">
             <td class="col-no"><%= idx++ %></td>
             <td class="col-cat"><%= category == null ? "-" : category %></td>
@@ -368,12 +276,12 @@
             <td class="col-views"><%= post.get("views") %></td>
             <td class="col-date"><%= sdf.format(post.get("post_date")) %></td>
           </tr>
-          <%
-            }
-            if (postList.size() == 0) {
-          %>
+        <%
+          }
+          if (postList.size() == 0) {
+        %>
           <tr class="is-empty"><td colspan="5" style="text-align:center; color:var(--ink2); padding:22px;">작성한 게시글이 없습니다.</td></tr>
-          <% } %>
+        <% } %>
         </tbody>
       </table>
     </div>
@@ -385,15 +293,15 @@
         <thead>
           <tr>
             <th class="col-no">목록</th>
-            <th class="col-title">제목</th>   <th class="col-reply">댓글 내용</th>
+            <th class="col-title">제목</th>  <th class="col-reply">댓글 내용</th>
             <th class="col-kind">분류</th>
             <th class="col-date">작성일자</th>
           </tr>
         </thead>
         <tbody>
-          <%
-            int cidx = 1;
-            for (Map<String, Object> reply : replyList) {
+        <%
+          int cidx = 1;
+          for (Map<String, Object> reply : replyList) {
               Object postIdObj = reply.get("post_id");
               Integer postId = (postIdObj instanceof Integer) ? (Integer) postIdObj : null;
               String postTitle = (String) reply.get("post_title");
@@ -404,7 +312,7 @@
               String linkUrl = "랜드마크".equals(postType)
                               ? "landmarkInfo.jsp?name=" + java.net.URLEncoder.encode(landmarkName, "UTF-8")
                               : (postId == null ? "#" : "postInfo?postId=" + postId + "&source=mypage");
-          %>
+        %>
           <tr onclick="location.href='<%= linkUrl %>'">
             <td class="col-no"><%= cidx++ %></td>
             <td class="col-title"><span class="cell-ellipsis"><%= postTitle %></span></td>
@@ -412,12 +320,12 @@
             <td class="col-kind"><%= postType %></td>
             <td class="col-date"><%= sdf.format(reply.get("reply_date")) %></td>
           </tr>
-          <%
-            }
-            if (cidx == 1) {
-          %>
+        <%
+          }
+          if (cidx == 1) {
+        %>
           <tr class="is-empty"><td colspan="5" style="text-align:center; color:var(--ink2); padding:22px;">작성한 댓글이 없습니다.</td></tr>
-          <% } %>
+        <% } %>
         </tbody>
       </table>
     </div>
@@ -434,38 +342,38 @@
           </tr>
         </thead>
         <tbody>
-          <%
-            int favIdx = 1;
-            if (favoriteList == null || favoriteList.isEmpty()) {
-          %>
-            <tr class="is-empty"><td colspan="3" style="text-align:center; color:var(--ink2); padding:22px;">즐겨찾기한 랜드마크가 없습니다.</td></tr>
-          <%
-            } else {
-              for (Map<String, Object> fav : favoriteList) {
-                Integer landmarkId = (Integer) fav.get("id");
-                String landmarkName = (String) fav.get("name");
-                String thumbnail = (String) fav.get("thumbnail");
-                if (landmarkId != null && landmarkName != null && thumbnail != null) {
-                  String fixedUrl = thumbnail.replace("https://imgur.com/", "https://i.imgur.com/") + ".jpg";
-          %>
-            <tr onclick="location.href='landmarkInfo.jsp?name=<%= java.net.URLEncoder.encode(landmarkName, "UTF-8") %>'">
-              <td class="col-no"><%= favIdx++ %></td>
-              <td class="col-title"><span class="cell-ellipsis"><%= landmarkName %></span></td>
-              <td class="col-thumb"><img src="<%= fixedUrl %>" alt="<%= landmarkName %>" class="table-thumb"></td>
-            </tr>
-          <%
-                }
+        <%
+          int favIdx = 1;
+          if (favoriteList == null || favoriteList.isEmpty()) {
+        %>
+          <tr class="is-empty"><td colspan="3" style="text-align:center; color:var(--ink2); padding:22px;">즐겨찾기한 랜드마크가 없습니다.</td></tr>
+        <%
+          } else {
+            for (Map<String, Object> fav : favoriteList) {
+              Integer landmarkId = (Integer) fav.get("id");
+              String landmarkName = (String) fav.get("name");
+              String thumbnail = (String) fav.get("thumbnail");
+              if (landmarkId != null && landmarkName != null && thumbnail != null) {
+                String fixedUrl = thumbnail.replace("https://imgur.com/", "https://i.imgur.com/") + ".jpg";
+        %>
+          <tr onclick="location.href='landmarkInfo.jsp?name=<%= java.net.URLEncoder.encode(landmarkName, "UTF-8") %>'">
+            <td class="col-no"><%= favIdx++ %></td>
+            <td class="col-title"><span class="cell-ellipsis"><%= landmarkName %></span></td>
+            <td class="col-thumb"><img src="<%= fixedUrl %>" alt="<%= landmarkName %>" class="table-thumb"></td>
+          </tr>
+        <%
               }
             }
-          %>
+          }
+        %>
         </tbody>
       </table>
     </div>
     <div class="pager" id="pager-favorites" aria-label="즐겨찾기 페이지네이션"></div>
-
   </section>
 
   <section id="panel-profile" role="tabpanel" aria-labelledby="tab-profile" class="blk" hidden>
+    <h3>회원 정보 수정</h3>
     <form class="form" action="editProfile" method="post">
       <div class="form-row">
         <label class="label" for="pwd">새 비밀번호 입력</label>
@@ -476,11 +384,16 @@
         <input id="pwd2" name="pwd2" type="password" class="input" autocomplete="new-password" />
       </div>
       <div class="form-row">
+  <label class="label" for="nickname">닉네임</label>
+  <input id="nickname" name="nickname"  type="text" class="input" value="<%= userNickname %>" />
+  
+</div>
+      <div class="form-row">
         <label class="label" for="email">이메일</label>
         <input id="email" name="email" type="email" class="input" value="<%= userEmail %>" />
       </div>
       <div class="actions">
-        <a class="link-danger" href="myProfile.jsp?action=delete" onclick="return confirm('정말로 회원 탈퇴를 하시겠습니까?');">회원탈퇴</a>
+        <a class="link-danger" href="editProfile?action=delete" onclick="return confirm('정말로 회원 탈퇴를 하시겠습니까?');">회원탈퇴</a>
         <button class="btn" type="submit">정보 저장</button>
       </div>
       <p class="hint">※ 저장 버튼 클릭 시 서버로 변경 사항을 전송합니다.</p>
@@ -488,42 +401,10 @@
   </section>
 </main>
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-<script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 <script>
-    function googleTranslateElementInit() {
-        new google.translate.TranslateElement({
-            pageLanguage: 'ko',
-            autoDisplay: false
-        }, 'google_translate_element');
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-        const select = document.getElementById('languageSelect');
-
-        function applyLanguage(lang) {
-            const combo = document.querySelector('.goog-te-combo');
-            if (combo) {
-                combo.value = lang;
-                combo.dispatchEvent(new Event('change'));
-            }
-        }
-
-        const interval = setInterval(() => {
-            if (document.querySelector('.goog-te-combo')) {
-                applyLanguage(select.value);
-                clearInterval(interval);
-            }
-        }, 500);
-
-        select.addEventListener('change', () => {
-            applyLanguage(select.value);
-        });
-    });
-
-  // -------------------------------------------------------
-  // 사이드 메뉴 토글 (ES5)
-  // -------------------------------------------------------
+  /* -------------------------------------------------------
+   * 사이드 메뉴 토글 (ES5)
+   * ----------------------------------------------------- */
   (function(){
     var menuBtn = document.querySelector('.menu-btn');
     var sideMenu = document.getElementById('sideMenu');
@@ -541,9 +422,9 @@
     }
   })();
 
-  // -------------------------------------------------------
-  // 탭 전환 (ES5)
-  // -------------------------------------------------------
+  /* -------------------------------------------------------
+   * 탭 전환 (ES5) — 숨김/노출만, 스타일은 CSS로 통일
+   * ----------------------------------------------------- */
   (function(){
     var tabActivity = document.getElementById('tab-activity');
     var tabProfile  = document.getElementById('tab-profile');
@@ -557,37 +438,41 @@
       pnlActivity.hidden = !isActivity;
       pnlProfile.hidden  = isActivity;
     }
-
     tabActivity.addEventListener('click', function(){ selectTab('activity'); });
     tabProfile.addEventListener('click', function(){ selectTab('profile'); });
   })();
 
-  // -------------------------------------------------------
-  // 표별 페이지네이션 (ES5 / 5행/페이지)
-  //  - 데이터 없으면 페이저 숨김
-  //  - 처음/이전/숫자(가변 7칸)/다음/마지막
-  // -------------------------------------------------------
+  /* -------------------------------------------------------
+   * 표별 페이지네이션 (ES5 / 5행/페이지)
+   * - 데이터 없으면 페이저 숨김
+   * - 처음/이전/숫자(가변 7칸)/다음/마지막
+   * ----------------------------------------------------- */
   function paginateTable(tableId, pagerId, rowsPerPage){
     var tbody = document.querySelector('#' + tableId + ' tbody');
     var pager = document.getElementById(pagerId);
     if(!tbody || !pager) return;
 
     var allRows = Array.prototype.slice.call(tbody.getElementsByTagName('tr'));
+    // "데이터 없음" 안내 행은 .is-empty 로 표기되어 있으므로 제외
     var dataRows = [];
     for (var i=0; i<allRows.length; i++){
       if ((' ' + allRows[i].className + ' ').indexOf(' is-empty ') === -1){
         dataRows.push(allRows[i]);
       }
     }
+
     if(dataRows.length === 0){ pager.style.display = 'none'; return; }
 
     var currentPage = 1;
     var totalPages = Math.ceil(dataRows.length / rowsPerPage);
 
+    // 1페이지 뿐이면 페이저 숨김
+    if (totalPages <= 1){ pager.style.display = 'none'; }
+
     function render(){
-      // 모두 감춤
+      // 모든 행 숨김
       for (var i=0; i<allRows.length; i++) allRows[i].style.display = 'none';
-      // 현재 페이지만 표시
+      // 현재 페이지의 행만 노출
       var start = (currentPage - 1) * rowsPerPage;
       var end   = Math.min(start + rowsPerPage, dataRows.length);
       for (var i=start; i<end; i++) dataRows[i].style.display = '';
@@ -609,13 +494,17 @@
     }
 
     function buildPager(){
+      // 페이저 초기화
       while (pager.firstChild) pager.removeChild(pager.firstChild);
+
+      if (totalPages <= 1){ pager.style.display = 'none'; return; }
+      pager.style.display = '';
 
       // 처음/이전
       pager.appendChild(makeBtn('≪', 1, currentPage===1, false));
       pager.appendChild(makeBtn('〈', currentPage-1, currentPage===1, false));
 
-      // 숫자 창(최대 7칸, 현재 중심)
+      // 숫자창(최대 7칸)
       var windowSize = 7;
       var start = Math.max(1, currentPage - Math.floor(windowSize/2));
       var end   = start + windowSize - 1;
@@ -629,10 +518,10 @@
       pager.appendChild(makeBtn('≫', totalPages, currentPage===totalPages, false));
     }
 
-    render();
+    render(); // 최초 렌더링
   }
 
-  // DOM 준비 상태에 상관없이 안전하게 초기화
+  // DOM 준비 후 각 표에 페이징(5행/페이지) 적용
   function initPagination(){
     paginateTable('tbl-posts',     'pager-posts',     5);
     paginateTable('tbl-comments',  'pager-comments',  5);
