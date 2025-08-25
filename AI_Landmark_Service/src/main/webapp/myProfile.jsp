@@ -67,20 +67,26 @@
 
         /* 1-3) 내 댓글 (게시판 + 랜드마크) */
         if (loginMemberId != null) {
-            String sqlReplies =
-                "SELECT * FROM ( " +
-                "  SELECT R.REPLY_ID, R.REPLY_CONTENT, R.REPLY_DATE, " +
-                "         P.TITLE AS TARGET_TITLE, R.POST_ID AS TARGET_ID, " +
-                "         '게시판' AS TARGET_TYPE, NULL AS LANDMARK_NAME " +
-                "  FROM REPLY R JOIN POST P ON R.POST_ID = P.POST_ID " +
-                "  WHERE R.MEMBER_ID = ? " +
-                "  UNION ALL " +
-                "  SELECT R.REPLY_ID, R.REPLY_CONTENT, R.REPLY_DATE, " +
-                "         L.LANDMARK_NAME AS TARGET_TITLE, R.LANDMARK_ID AS TARGET_ID, " +
-                "         '랜드마크' AS TARGET_TYPE, L.LANDMARK_NAME AS LANDMARK_NAME " +
-                "  FROM REPLY R JOIN LANDMARK L ON R.LANDMARK_ID = L.LANDMARK_ID " +
-                "  WHERE R.MEMBER_ID = ? " +
-                ") ORDER BY REPLY_DATE DESC";
+        	String sqlReplies =
+        	        "SELECT * FROM ( " +
+        	        "   SELECT R.REPLY_ID, R.REPLY_CONTENT, R.REPLY_DATE, " +
+        	        "          P.TITLE AS TARGET_TITLE, " +
+        	        "          R.POST_ID, " +           // POST_ID를 명시적으로 선택
+        	        "          NULL AS LANDMARK_ID, " +  // LANDMARK_ID는 NULL로 채움
+        	        "          NULL AS LANDMARK_NAME, " +
+        	        "          '게시판' AS TARGET_TYPE " +
+        	        "   FROM REPLY R JOIN POST P ON R.POST_ID = P.POST_ID " +
+        	        "   WHERE R.MEMBER_ID = ? " +
+        	        "   UNION ALL " +
+        	        "   SELECT R.REPLY_ID, R.REPLY_CONTENT, R.REPLY_DATE, " +
+        	        "          L.LANDMARK_NAME AS TARGET_TITLE, " +
+        	        "          NULL AS POST_ID, " +      // POST_ID는 NULL로 채움
+        	        "          R.LANDMARK_ID, " +        // LANDMARK_ID를 명시적으로 선택
+        	        "          L.LANDMARK_NAME, " +
+        	        "          '정보페이지' AS TARGET_TYPE " +
+        	        "   FROM REPLY R JOIN LANDMARK L ON R.LANDMARK_ID = L.LANDMARK_ID " +
+        	        "   WHERE R.MEMBER_ID = ? " +
+        	        ") ORDER BY REPLY_DATE DESC";
             pstmt = conn.prepareStatement(sqlReplies);
             pstmt.setInt(1, loginMemberId);
             pstmt.setInt(2, loginMemberId);
@@ -91,7 +97,8 @@
                 row.put("reply_content", rs.getString("REPLY_CONTENT"));
                 row.put("reply_date", rs.getTimestamp("REPLY_DATE"));
                 row.put("post_title", rs.getString("TARGET_TITLE"));
-                row.put("post_id", rs.getObject("TARGET_ID"));  // null 가능성 대비
+                row.put("post_id", rs.getObject("POST_ID"));
+                row.put("landmark_id", rs.getObject("LANDMARK_ID"));
                 row.put("post_type", rs.getString("TARGET_TYPE"));
                 row.put("landmark_name", rs.getString("LANDMARK_NAME"));
                 replyList.add(row);
@@ -348,24 +355,29 @@
         <%
           int cidx = 1;
           for (Map<String, Object> reply : replyList) {
-              Object postIdObj = reply.get("post_id");
-              Integer postId = (postIdObj instanceof Integer) ? (Integer) postIdObj : null;
-              String postTitle = (String) reply.get("post_title");
+        	  // 👇 [수정] 이 부분을 통째로 교체하세요.
               String postType = (String) reply.get("post_type");
               String landmarkName = (String) reply.get("landmark_name");
-              if (postTitle == null) continue;
-
-              String linkUrl = "랜드마크".equals(postType)
-                              ? "landmarkInfo.jsp?name=" + java.net.URLEncoder.encode(landmarkName, "UTF-8")
-                              : (postId == null ? "#" : "postInfo?postId=" + postId + "&source=mypage");
+              Object postIdObj = reply.get("post_id"); // post_id를 Object로 받음
+              
+              String linkUrl;
+              if ("정보페이지".equals(postType)) {
+                  // 랜드마크 댓글일 경우
+                  linkUrl = "landmarkInfo.jsp?name=" + java.net.URLEncoder.encode(landmarkName, "UTF-8");
+              } else {
+                  // 게시판 댓글일 경우
+                  linkUrl = (postIdObj != null) 
+                            ? "postInfo?postId=" + postIdObj.toString() + "&source=mypage" 
+                            : "#"; // 만약을 위한 기본값
+              }
         %>
           <tr onclick="location.href='<%= linkUrl %>'">
-            <td class="col-no"><%= cidx++ %></td>
-            <td class="col-title"><span class="cell-ellipsis"><%= postTitle %></span></td>
-            <td class="col-reply"><span class="cell-ellipsis"><%= reply.get("reply_content") %></span></td>
-            <td class="col-kind"><%= postType %></td>
-            <td class="col-date"><%= sdf.format(reply.get("reply_date")) %></td>
-          </tr>
+	        <td class="col-no"><%= cidx++ %></td>
+	        <td class="col-title"><span class="cell-ellipsis"><%= reply.get("post_title") %></span></td>
+	        <td class="col-reply"><span class="cell-ellipsis"><%= reply.get("reply_content") %></span></td>
+	        <td class="col-kind"><%= postType %></td>
+	        <td class="col-date"><%= sdf.format(reply.get("reply_date")) %></td>
+	    </tr>
         <%
           }
           if (cidx == 1) {
