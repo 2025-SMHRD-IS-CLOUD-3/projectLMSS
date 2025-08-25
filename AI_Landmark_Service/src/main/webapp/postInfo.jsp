@@ -74,11 +74,11 @@ h2 a {text-decoration: none;color: inherit;}
 		    transform: translate(-50%, -50%);
 		}
 .post-image {
-    max-width: 500px; /* 부모 요소의 가로 크기에 꽉 맞춤 */
-    max-height: 500px; /* 이미지가 너무 길어지지 않도록 최대 높이 제한 */
-    object-fit: cover; /* 비율을 유지하면서 영역을 꽉 채움 */
-    border-radius: 10px; /* 모서리를 둥글게 */
-    margin-bottom: 20px; /* 이미지 아래쪽 여백 */
+    width: auto; 
+    max-height: 500px;
+    object-fit: cover;
+    border-radius: 10px;
+    margin-bottom: 20px;
 }
 
 /* Google 번역 위젯 숨기기 */
