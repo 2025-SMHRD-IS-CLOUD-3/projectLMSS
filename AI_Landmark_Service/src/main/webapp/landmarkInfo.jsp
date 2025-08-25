@@ -111,44 +111,55 @@
 		}
         /* Google 번역 위젯 숨기기 */
         #google_translate_element { display: none; }
-        /* 커스텀 언어 선택 링크 스타일 */
-        .translation-links {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            display: flex;
+        /* 커스텀 언어 선택 드롭다운 */
+        .language-selector {
             position: fixed;
             top: 30px;
             right: 120px;
             z-index: 1003;
-            gap: 10px;
         }
-        .translation-links li a {
-            display: block;
-            width: 30px;
-            height: 30px;
-            background-size: cover;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        .custom-select {
+            padding: 10px 15px;
+            font-size: 16px;
+            border: 2px solid #57ACCB;
+            border-radius: 8px;
+            background-color: white;
+            color: #333;
+            font-weight: bold;
+            outline: none;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%2357ACCB"><path d="M4 6l4 4 4-4z"/></svg>');
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 16px;
+            transition: all 0.3s ease;
         }
-        .flag { display: block; width: 100%; height: 100%; background-size: cover; border-radius: 5px; }
-        .flag.ko { background-image: url('https://flagicons.lipis.dev/flags/4x3/kr.svg'); }
-        .flag.en { background-image: url('https://flagicons.lipis.dev/flags/4x3/gb.svg'); }
-        .flag.ja { background-image: url('https://flagicons.lipis.dev/flags/4x3/jp.svg'); }
-        .flag.zh-CN { background-image: url('https://flagicons.lipis.dev/flags/4x3/cn.svg'); }
+        .custom-select:hover {
+            border-color: #3d94b8;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .custom-select:focus {
+            border-color: #2a82a1;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
     </style>
 </head>
 <body>
     <header>
         <h2><a href="<%=request.getContextPath()%>/main.jsp">Landmark Search</a></h2>
-        <img src="./image/headerImage.png" alt="MySite Logo" id="headerImage">
+        <img src="<%=request.getContextPath()%>/image/headerImage.png" alt="MySite Logo" id="headerImage">
         <div id="google_translate_element"></div>
-        <ul class="translation-links">
-            <li><a href="javascript:void(0)" data-lang="ko" title="한국어"><span class="flag ko"></span></a></li>
-            <li><a href="javascript:void(0)" data-lang="en" title="English"><span class="flag en"></span></a></li>
-            <li><a href="javascript:void(0)" data-lang="ja" title="日本語"><span class="flag ja"></span></a></li>
-            <li><a href="javascript:void(0)" data-lang="zh-CN" title="中文(简体)"><span class="flag zh-CN"></span></a></li>
-        </ul>
+        <div class="language-selector">
+            <select id="languageSelect" class="custom-select">
+                <option value="ko">한국어</option>
+                <option value="en">English</option>
+                <option value="ja">日本語</option>
+                <option value="zh-CN">中文(简体)</option>
+            </select>
+        </div>
     </header>
         <button class="menu-btn" aria-label="메뉴">≡</button>
 
@@ -267,41 +278,8 @@
     <script src="<%=request.getContextPath()%>/mapmark/photospots.js" defer></script>
     <script src="<%=request.getContextPath()%>/mapmark/restaurants.js" defer></script>
     <script src="<%=request.getContextPath()%>/mapmark/attractions.js" defer></script>
-    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+    <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
     <script>
-        // Google 번역 위젯 초기화 함수를 먼저 정의합니다.
-        function googleTranslateElementInit() {
-            new google.translate.TranslateElement({
-                pageLanguage: 'ko',
-                autoDisplay: false
-            }, 'google_translate_element');
-        }
-
-        // 페이지 로드 후 플래그 클릭 이벤트 리스너 등록
-        document.addEventListener('DOMContentLoaded', () => {
-            const translationLinks = document.querySelector('.translation-links');
-            if (translationLinks) {
-                translationLinks.addEventListener('click', function (event) {
-                    let el = event.target;
-                    while (el && el.nodeName !== 'A' && el.parentElement) {
-                        el = el.parentElement;
-                    }
-                    if (el && el.dataset.lang) {
-                        const tolang = el.dataset.lang;
-                        const gtcombo = document.querySelector('.goog-te-combo');
-
-                        if (gtcombo == null) {
-                            alert("Error: Could not find Google translate Combolist.");
-                            return false;
-                        }
-                        gtcombo.value = tolang;
-                        gtcombo.dispatchEvent(new Event('change'));
-                    }
-                    return false;
-                });
-            }
-        });
-
         /* ===========================================================
          * 1. 전역 변수 및 설정
          * =========================================================== */
@@ -364,6 +342,7 @@
          * =========================================================== */
         document.addEventListener('DOMContentLoaded', async () => {
             initializeSideMenu();
+            initializeTranslation();
 
             if (!nameParam) {
                 $('#warn').hidden = false;
@@ -423,7 +402,39 @@
         });
         
         /* ===========================================================
-         * 4. 데이터 렌더링 함수
+         * 4. 번역 기능 관련 스크립트
+         * =========================================================== */
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+                pageLanguage: 'ko',
+                autoDisplay: false
+            }, 'google_translate_element');
+        }
+
+        function initializeTranslation() {
+            const select = document.getElementById('languageSelect');
+            function applyLanguage(lang) {
+                const combo = document.querySelector('.goog-te-combo');
+                if (combo) {
+                    combo.value = lang;
+                    combo.dispatchEvent(new Event('change'));
+                }
+            }
+
+            const interval = setInterval(() => {
+                if (document.querySelector('.goog-te-combo')) {
+                    applyLanguage(select.value);
+                    clearInterval(interval);
+                }
+            }, 500);
+
+            select.addEventListener('change', () => {
+                applyLanguage(select.value);
+            });
+        }
+        
+        /* ===========================================================
+         * 5. 데이터 렌더링 함수
          * =========================================================== */
         function renderPage(d, images) {
             const get = (key) => d[key.toLowerCase()] || d[key.toUpperCase()] || '';
@@ -469,7 +480,7 @@
         }
 
         /* ===========================================================
-         * 5. 갤러리 및 지도 기능
+         * 6. 갤러리 및 지도 기능
          * =========================================================== */
         let currentSlide = 0;
         let isMoving = false;
@@ -556,7 +567,7 @@
         }
 
         /* ===========================================================
-         * 6. 기타 유틸리티 및 부가 기능
+         * 7. 기타 유틸리티 및 부가 기능
          * =========================================================== */
         async function getValidImageUrl(imgData) {
             if (!imgData) return null;
@@ -637,7 +648,7 @@
         }
 
         /* ===========================================================
-         * 7. 탭 기능 및 핫스팟 표시
+         * 8. 탭 기능 및 핫스팟 표시
          * =========================================================== */
         function initializeTabEvents() {
             const tabBtns = document.querySelectorAll('.tab-btn');
@@ -715,7 +726,7 @@
         }
         
         /* ===========================================================
-         * 8. 댓글 기능 (개선된 버전)
+         * 9. 댓글 기능 (개선된 버전)
          * =========================================================== */
         function initializeComments() {
             loadComments();
@@ -769,7 +780,7 @@
         }
         
         /* ===========================================================
-         * 9. 즐겨찾기 기능
+         * 10. 즐겨찾기 기능
          * =========================================================== */
         function initializeFavoriteButton() {
             const favBtn = $('#fav');

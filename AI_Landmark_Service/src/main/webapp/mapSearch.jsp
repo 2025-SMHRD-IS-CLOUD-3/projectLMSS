@@ -64,14 +64,62 @@
 		    left: 50%;
 		    transform: translate(-50%, -50%);
 		}
+
+        /* Google 번역 위젯 숨기기 */
+        #google_translate_element { display: none; }
+
+        /* 커스텀 언어 선택 드롭다운 */
+        .language-selector {
+            position: fixed;
+            top: 30px;
+            right: 120px;
+            z-index: 1003;
+        }
+        .custom-select {
+            padding: 10px 15px;
+            font-size: 16px;
+            border: 2px solid #57ACCB;
+            border-radius: 8px;
+            background-color: white;
+            color: #333;
+            font-weight: bold;
+            outline: none;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%2357ACCB"><path d="M4 6l4 4 4-4z"/></svg>');
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 16px;
+            transition: all 0.3s ease;
+        }
+        .custom-select:hover {
+            border-color: #3d94b8;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .custom-select:focus {
+            border-color: #2a82a1;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
     </style>
 </head>
 <body>
     <header>
         <h2><a href="<%=request.getContextPath()%>/main.jsp">Landmark Search</a></h2>
-        <img src="./image/headerImage.png" alt="MySite Logo" id="headerImage">
+        <img src="<%=request.getContextPath()%>/image/headerImage.png" alt="MySite Logo" id="headerImage">
+        <div id="google_translate_element"></div>
+
+        <div class="language-selector">
+            <select id="languageSelect" class="custom-select">
+                <option value="ko">한국어</option>
+                <option value="en">English</option>
+                <option value="ja">日本語</option>
+                <option value="zh-CN">中文(简体)</option>
+            </select>
+        </div>
     </header>
-        <button class="menu-btn" aria-label="메뉴 열기">≡</button>
+    <button class="menu-btn" aria-label="메뉴 열기">≡</button>
     <aside class="side-menu" id="sideMenu" aria-hidden="true">
         <ul>
             <li><a href="<%=request.getContextPath()%>/howLandmark.jsp">Landmark Search란?</a></li>
@@ -96,7 +144,39 @@
         </div>
     </section>
 
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
     <script>
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+                pageLanguage: 'ko',
+                autoDisplay: false
+            }, 'google_translate_element');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const select = document.getElementById('languageSelect');
+
+            function applyLanguage(lang) {
+                const combo = document.querySelector('.goog-te-combo');
+                if (combo) {
+                    combo.value = lang;
+                    combo.dispatchEvent(new Event('change'));
+                }
+            }
+
+            const interval = setInterval(() => {
+                if (document.querySelector('.goog-te-combo')) {
+                    applyLanguage(select.value);
+                    clearInterval(interval);
+                }
+            }, 500);
+
+            select.addEventListener('change', () => {
+                applyLanguage(select.value);
+            });
+        });
+        
         // 사이드 메뉴 토글
         const menuBtn = document.querySelector('.menu-btn');
         const sideMenu = document.getElementById('sideMenu');
@@ -127,7 +207,6 @@
 
         const getData = (item, key) => item[key.toLowerCase()] || item[key.toUpperCase()] || '';
 
-        // 👇 [추가] landmarkInfo.html에서 가져온 이미지 처리 함수들
         function convertImgurUrl(url) {
             if (!url) return url;
             const imgurPattern = /https?:\/\/imgur\.com\/([a-zA-Z0-9]+)/;
@@ -164,7 +243,6 @@
             let convertedUrl = convertImgurUrl(originalUrl);
             return await tryMultipleImageFormats(convertedUrl);
         }
-        // 👆 [추가] 여기까지
 
         async function buildMainImageLookup() {
             try {
@@ -179,7 +257,6 @@
                     const url = getData(img, 'IMAGE_URL');
 
                     if (type === 'main' && lid != null && url && !lookup.has(lid)) {
-                        // ❗ [수정] URL을 바로 저장하는 대신, 유효성 검사를 거친 URL을 저장합니다.
                         lookup.set(lid, await getValidImageUrl(url));
                     }
                 }
