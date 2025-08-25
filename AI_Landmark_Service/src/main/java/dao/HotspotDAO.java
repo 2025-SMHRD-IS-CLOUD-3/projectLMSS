@@ -53,4 +53,57 @@ public class HotspotDAO {
 	        }
 	        return hotspotList;
 	    }
+	    public boolean addHotspot(int landmarkId, String hotspotType, String hotspotName, String hotspotInfo, double latitude, double longitude) {
+	        String sql = "INSERT INTO HOTSPOT " +
+	                     "(HOTSPOT_ID, LANDMARK_ID, HOTSPOT_TYPE, HOTSPOT_NAME, HOTSPOT_INFO, HOTSPOT_LATI, HOTSPOT_LONG) " +
+	                     "VALUES (HOTSPOT_SEQ.NEXTVAL, ?, ?, ?, ?, ?, ?)";
+	        
+	        Connection conn = null;
+	        PreparedStatement pstmt = null;
+	        boolean success = false;
+
+	        try {
+	            Class.forName("oracle.jdbc.driver.OracleDriver");
+	            conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+	            // 👇 [추가] 수동으로 트랜잭션을 관리하기 위해 auto-commit을 끕니다.
+	            conn.setAutoCommit(false); 
+	            
+	            pstmt = conn.prepareStatement(sql);
+	            pstmt.setInt(1, landmarkId);
+	            pstmt.setString(2, hotspotType);
+	            pstmt.setString(3, hotspotName);
+	            pstmt.setString(4, hotspotInfo);
+	            pstmt.setDouble(5, latitude);
+	            pstmt.setDouble(6, longitude);
+
+	            int result = pstmt.executeUpdate();
+	            if (result > 0) {
+	                conn.commit(); // 👇 [추가] 변경사항을 DB에 최종 확정합니다.
+	                success = true;
+	            } else {
+	                conn.rollback(); // 실패 시 원상 복구
+	            }
+
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	            // 오류 발생 시 롤백
+	            if (conn != null) {
+	                try {
+	                    conn.rollback();
+	                } catch (SQLException ex) {
+	                    ex.printStackTrace();
+	                }
+	            }
+	        } finally {
+	            // 자원 해제
+	            try {
+	                if (pstmt != null) pstmt.close();
+	                if (conn != null) conn.close();
+	            } catch (SQLException e) {
+	                e.printStackTrace();
+	            }
+	        }
+	        return success;
+	    }
+	    
 }

@@ -176,7 +176,7 @@
                 <li><a href="<%=request.getContextPath()%>/myProfile.jsp">마이페이지</a></li>
             <% } else { %>
                 <li><a href="<%=request.getContextPath()%>/login.jsp">로그인</a></li>
-                <li><a href="<%=request.getContextPath()%>/join.jsp">회원가입</a></li>
+                <li><a href="<%=request.getContextPath()%>/register.jsp">회원가입</a></li>
             <% } %>
         </ul>
     </aside>
@@ -238,6 +238,7 @@
                     <button class="tab-btn active" data-type="PHOTOSPOT">포토 스팟</button>
                     <button class="tab-btn" data-type="FOOD">주변 맛집</button>
                     <button class="tab-btn" data-type="PLACE">주변 명소</button>
+                    <button class="tab-btn" id="suggestBtn" style="margin-left: auto; background: #4CAF50;">핫스팟 제안하기</button>
                 </div>
                 <div id="map"></div>
             </div>
@@ -392,6 +393,7 @@
                 renderPage(targetLandmark, filteredImages);
                 initMap(targetLandmark);
                 initializeTabEvents();
+                initializeSuggestButton(targetLandmark);
                 initializeComments();
                 initializeFavoriteButton();
 
@@ -400,7 +402,25 @@
                 showMessage("데이터를 불러오는데 실패했습니다: " + err.message, 'error');
             }
         });
-        
+        function initializeSuggestButton(landmarkData) {
+            const suggestBtn = document.getElementById('suggestBtn');
+            if (!suggestBtn) return;
+
+            suggestBtn.addEventListener('click', () => {
+                if (!landmarkId || !map) {
+                    alert('지도 정보가 아직 로드되지 않았습니다.');
+                    return;
+                }
+                
+                // DB에서 직접 가져온 데이터에서 위도와 경도를 사용합니다.
+                const get = (key) => landmarkData[key.toLowerCase()] || landmarkData[key.toUpperCase()] || 0;
+                const lat = Number(get('LATITUDE'));
+                const lng = Number(get('LONGITUDE'));
+
+                // 랜드마크 ID와 정확한 좌표를 URL 파라미터로 넘겨줍니다.
+                location.href = "suggestion.jsp?landmarkId=" + landmarkId + "&lat=" + lat + "&lng=" + lng;
+            });
+        }
         /* ===========================================================
          * 4. 번역 기능 관련 스크립트
          * =========================================================== */
@@ -919,6 +939,20 @@
         function escapeHtml(str) {
             return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
         }
+        document.getElementById('suggestBtn').addEventListener('click', () => {
+            // 현재 페이지의 랜드마크 ID가 없으면 중단
+            if (!landmarkId) {
+                alert('랜드마크 정보가 로드되지 않았습니다.');
+                return;
+            }
+            // 현재 지도의 중심 좌표를 가져옵니다.
+            const center = map.getCenter();
+            const lat = center.lat;
+            const lng = center.lng;
+            
+            // 랜드마크 ID와 좌표를 URL 파라미터로 넘겨주면서 suggestion.jsp로 이동합니다.
+            location.href = `suggestion.jsp?landmarkId=${landmarkId}&lat=${lat}&lng=${lng}`;
+        });
     </script>
 </body>
 </html>

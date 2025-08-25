@@ -33,7 +33,7 @@ public class LoginServlet extends HttpServlet {
 
             try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
                  PreparedStatement pstmt = conn.prepareStatement(
-                             "SELECT MEMBER_ID, PWD FROM MEMBER WHERE ID = ?")) {
+                             "SELECT MEMBER_ID, PWD, ROLE FROM MEMBER WHERE ID = ?")) {
 
                 pstmt.setString(1, id);
 
@@ -41,12 +41,14 @@ public class LoginServlet extends HttpServlet {
                     if (rs.next()) {
                         int memberId = rs.getInt("MEMBER_ID"); // PK
                         String dbPassword = rs.getString("PWD");
-
+                        String role = rs.getString("ROLE");
+                        
                         if (password.equals(dbPassword)) {
                             // ✅ 로그인 성공 → 세션에 로그인 정보 저장
                             HttpSession session = request.getSession();
                             session.setAttribute("loginUser", id);       // 로그인 아이디
                             session.setAttribute("memberId", memberId); // 숫자 PK
+                            session.setAttribute("role", role);
 
                             // ✅ 로그인 후 이동할 URL 확인 (파라미터 기반)
                             String redirect = request.getParameter("redirect");
