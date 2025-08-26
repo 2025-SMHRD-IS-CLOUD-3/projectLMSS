@@ -39,7 +39,6 @@
         .footspace { height: 24px; }
         @media (max-width: 920px) { .side-menu { width: 85vw; right: -85vw; } }
         @media (max-width: 720px) { .paper { border-radius: 20px; } }
-
     </style>
 </head>
 <body>
@@ -94,67 +93,24 @@
             </div>
             <div class="blk">
                 <p><b>주요 기능</b></p>
-                <p>① 사진/이미지 링크 업로드 → AI가 랜드마크 후보를 추출</p>
-                <p>② 지도 탐색 → 국가/도시 클릭 시 대표 랜드마크 출력</p>
-                <p>③ 커뮤니티 → 게시글·댓글·리스트 공유</p>
-                <p>④ 마이페이지 → 작성한 게시글·댓글·즐겨찾기 기능, 회원정보수정 기능</p>
+                <p>1️⃣ <b>이미지 분석</b>: YOLOv8 기반 딥러닝 모델로 사진을 분석해 랜드마크를 정확히 식별합니다.</p>
+                <p>2️⃣ <b>정보 제공</b>: 이름, 역사, 건축 양식, 다각도 이미지, 지도 위치 등 풍부한 정보를 제공합니다.</p>
+                <p>3️⃣ <b>기반 탐색</b>: 지도에서 랜드마크 위치와 함께 주변 맛집, 포토 스팟, 명소 정보를 시각적으로 탐색할 수 있습니다.</p>
+                <p>4️⃣ <b>커뮤니티</b>: 게시판과 댓글 기능으로 여행 정보를 공유하고 소통할 수 있습니다.</p>
+                <p>5️⃣ <b>개인화 서비스</b>: 회원가입/로그인 후 즐겨찾기, 내가 쓴 글과 댓글을 관리할 수 있는 마이페이지 기능을 제공합니다.</p>
+                <p>6️⃣ <b>핫스팟 제안 기능</b>: 사용자는 랜드마크 주변의 '포토 스팟','주변 명소','주변 맛집'을 제안하고 운영자가 수락 시에 지도에 반영합니다.</p>
             </div>
             <div class="blk">
                 <p><b>기술 스택</b></p>
-                <p>• 프론트엔드: HTML/CSS/JavaScript + Leaflet(지도)</p>
-                <p>• 백엔드/AI: 추후 확장</p>
-                <p>• 데이터: 국가/도시/랜드마크 기본 데이터셋</p>
+                <p>• 프론트엔드: JSP/CSS/JavaScript + Leaflet(지도)</p>
+                <p>• 백엔드/서버: Java, Servlet, Apache Tomcat 9.0, Python, Flask</p>
+                <p>• AI 모델: YOLOv8</p>
+                <p>• 데이터베이스: Oracle Database</p>
             </div>
         </section>
         <div class="footspace"></div>
     </main>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-    <script>
-        function googleTranslateElementInit() {
-            new google.translate.TranslateElement({
-                pageLanguage: 'ko',
-                autoDisplay: false
-            }, 'google_translate_element');
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const select = document.getElementById('languageSelect');
-
-            function applyLanguage(lang) {
-                const combo = document.querySelector('.goog-te-combo');
-                if (combo) {
-                    combo.value = lang;
-                    combo.dispatchEvent(new Event('change'));
-                }
-            }
-
-            const interval = setInterval(() => {
-                if (document.querySelector('.goog-te-combo')) {
-                    applyLanguage(select.value);
-                    clearInterval(interval);
-                }
-            }, 500);
-
-            select.addEventListener('change', () => {
-                applyLanguage(select.value);
-            });
-        });
-
-        const menuBtn = document.querySelector('.menu-btn');
-        const sideMenu = document.getElementById('sideMenu');
-        if (menuBtn && sideMenu) {
-            menuBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                sideMenu.classList.toggle('open');
-            });
-            document.addEventListener('click', (e) => {
-                if (!sideMenu.contains(e.target) && !menuBtn.contains(e.target)) {
-                    sideMenu.classList.remove('open');
-                }
-            });
-        }
-    </script>
 </body>
 </html>

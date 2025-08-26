@@ -52,13 +52,6 @@
             <input type="file" id="fileUpload" hidden accept="image/*"/>
         </div>
 
-        <div class="divider"><span>또는</span></div>
-
-        <div class="url-search">
-            <input type="text" id="imageUrl" placeholder="이미지 링크 붙여넣기"/>
-            <button id="urlSearchBtn">검색</button>
-        </div>
-
         <div class="preview">
             <img id="previewImg" alt="미리보기"/>
             <p id="previewName" class="preview-name"></p>
@@ -74,7 +67,6 @@
     const uploadModal = document.getElementById('uploadModal');
     const dropZone = document.getElementById('dropZone');
     const fileInput = document.getElementById('fileUpload');
-    const urlSearchBtn = document.getElementById('urlSearchBtn');
     const imageUrlInput = document.getElementById('imageUrl');
     const previewWrap = document.querySelector('.preview');
     const previewImg = document.getElementById('previewImg');
@@ -139,7 +131,6 @@
     ['dragleave','drop'].forEach(evt => dropZone.addEventListener(evt, (e) => { e.preventDefault(); e.stopPropagation(); dropZone.classList.remove('dragover'); }));
     dropZone.addEventListener('drop', (e) => { const files = e.dataTransfer?.files; if (files && files.length) handleFile(files[0]); });
     fileInput.addEventListener('change', () => { if (fileInput.files && fileInput.files.length) handleFile(fileInput.files[0]); });
-    urlSearchBtn.addEventListener('click', () => handleUrl(imageUrlInput.value));
     imageUrlInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleUrl(imageUrlInput.value); });
 </script>
 </body>
