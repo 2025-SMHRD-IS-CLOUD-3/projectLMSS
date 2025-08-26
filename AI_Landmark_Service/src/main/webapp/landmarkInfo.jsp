@@ -1,8 +1,4 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%
-    // 현재 로그인 상태 확인
-    String loginUser = (String) session.getAttribute("loginUser");
-%>
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -15,25 +11,6 @@
         :root{ --ink:#111; --muted:#f6f7f9; --line:#e6e6e8; --brand:#57ACCB; --shadow:0 10px 30px rgba(0,0,0,.08); }
         *{box-sizing:border-box}
         body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--ink);background:#fff}
-        header {
-            position:fixed; top:0; left:0; width:100%; height:100px; background:#fff;
-            display:flex; justify-content:space-between; align-items:center; padding:0 20px;
-            z-index:1000; box-shadow:0 1px 0 rgba(0,0,0,.04);
-        }
-        h2 a {
-		  text-decoration: none;
-		  color: inherit;
-		}
-        .menu-btn { position: fixed; top: 20px; right: 20px; font-size: 50px; background: none; border: none; color: black; cursor: pointer; z-index: 1002; }
-        .side{ 
-        	position: fixed; top: 0; right: -500px; width: 500px;
-        	height: 100%; background-color: #57ACCB; color: white; 
-        	padding: 20px; padding-top: 100px; box-sizing: border-box; 
-        	transition: right 0.3s ease; font-size: 30px; z-index: 1001; }
-        .side li { list-style-type: none; margin-top: 20px; }
-        .side a { color: white; text-decoration: none; font-weight: bold; }
-        .side.open { right: 0; }
-        .side a{color:#fff;text-decoration:none;font-weight:700;display:block;margin:14px 0}
         .board{max-width:1100px;margin:120px auto 48px;background:var(--muted);border-radius:28px;padding:22px}
         .card{background:var(--soft);border:1px solid var(--line);border-radius:22px;padding:22px}
         .title-row{position:relative;display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:10px}
@@ -99,88 +76,10 @@
 		.tag-link:hover {
 		    text-decoration: underline;
 		}
-		#headerImage{
-			height: 80%;
-			width: auto;
-			display: flex;
-		    justify-content: center;
-		    position: absolute;
-		    top: 50%;
-		    left: 50%;
-		    transform: translate(-50%, -50%);
-		}
-        /* Google 번역 위젯 숨기기 */
-        #google_translate_element { display: none; }
-        /* 커스텀 언어 선택 드롭다운 */
-        .language-selector {
-            position: fixed;
-            top: 30px;
-            right: 120px;
-            z-index: 1003;
-        }
-        .custom-select {
-            padding: 10px 15px;
-            font-size: 16px;
-            border: 2px solid #57ACCB;
-            border-radius: 8px;
-            background-color: white;
-            color: #333;
-            font-weight: bold;
-            outline: none;
-            cursor: pointer;
-            appearance: none;
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%2357ACCB"><path d="M4 6l4 4 4-4z"/></svg>');
-            background-repeat: no-repeat;
-            background-position: right 12px center;
-            background-size: 16px;
-            transition: all 0.3s ease;
-        }
-        .custom-select:hover {
-            border-color: #3d94b8;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-        .custom-select:focus {
-            border-color: #2a82a1;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        }
     </style>
 </head>
 <body>
-    <header>
-        <h2><a href="<%=request.getContextPath()%>/main.jsp">Landmark Search</a></h2>
-        <img src="<%=request.getContextPath()%>/image/headerImage.png" alt="MySite Logo" id="headerImage">
-        <div id="google_translate_element"></div>
-        <div class="language-selector">
-            <select id="languageSelect" class="custom-select">
-                <option value="ko">한국어</option>
-                <option value="en">English</option>
-                <option value="ja">日本語</option>
-                <option value="zh-CN">中文(简体)</option>
-            </select>
-        </div>
-    </header>
-        <button class="menu-btn" aria-label="메뉴">≡</button>
-
-    <aside class="side" id="side">
-        <ul>
-            <li><a href="<%=request.getContextPath()%>/howLandmark.jsp">Landmark Search란?</a></li>
-            <li><a href="<%=request.getContextPath()%>/main.jsp">사진으로 랜드마크 찾기</a></li>
-            <li><a href="<%=request.getContextPath()%>/mapSearch.jsp">지도로 랜드마크 찾기</a></li>
-            <li><a href="<%=request.getContextPath()%>/postList">게시판</a></li>
-            <% if (loginUser != null) { %>
-                <li>
-                    <a href="<%=request.getContextPath()%>/logout">로그아웃</a>
-                </li>
-                <li><a href="<%=request.getContextPath()%>/myProfile.jsp">마이페이지</a></li>
-            <% } else { %>
-                <li><a href="<%=request.getContextPath()%>/login.jsp">로그인</a></li>
-                <li><a href="<%=request.getContextPath()%>/register.jsp">회원가입</a></li>
-            <% } %>
-        </ul>
-    </aside>
-
+	<%@ include file="header.jsp" %>
     <main class="board">
         <section class="card">
             <div class="title-row">
@@ -279,7 +178,6 @@
     <script src="<%=request.getContextPath()%>/mapmark/photospots.js" defer></script>
     <script src="<%=request.getContextPath()%>/mapmark/restaurants.js" defer></script>
     <script src="<%=request.getContextPath()%>/mapmark/attractions.js" defer></script>
-    <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
     <script>
         /* ===========================================================
          * 1. 전역 변수 및 설정
@@ -343,8 +241,8 @@
          * =========================================================== */
         document.addEventListener('DOMContentLoaded', async () => {
             initializeSideMenu();
-            initializeTranslation();
 
+            
             if (!nameParam) {
                 $('#warn').hidden = false;
                 return;
@@ -407,49 +305,26 @@
             if (!suggestBtn) return;
 
             suggestBtn.addEventListener('click', () => {
+                // 👇 [추가] 로그인 상태를 먼저 확인합니다.
+                if (!IS_LOGGED_IN) {
+                    alert('로그인이 필요한 기능입니다.');
+                    // 현재 페이지 주소를 포함하여 로그인 페이지로 이동
+                    const redirectUrl = location.pathname + location.search;
+                    location.href = CONTEXT_PATH + '/login.jsp?redirect=' + encodeURIComponent(redirectUrl);
+                    return; // 여기서 함수 실행을 중단합니다.
+                }
+                
+                // --- 기존 로직 (로그인 상태일 때만 실행됨) ---
                 if (!landmarkId || !map) {
                     alert('지도 정보가 아직 로드되지 않았습니다.');
                     return;
                 }
                 
-                // DB에서 직접 가져온 데이터에서 위도와 경도를 사용합니다.
                 const get = (key) => landmarkData[key.toLowerCase()] || landmarkData[key.toUpperCase()] || 0;
                 const lat = Number(get('LATITUDE'));
                 const lng = Number(get('LONGITUDE'));
 
-                // 랜드마크 ID와 정확한 좌표를 URL 파라미터로 넘겨줍니다.
                 location.href = "suggestion.jsp?landmarkId=" + landmarkId + "&lat=" + lat + "&lng=" + lng;
-            });
-        }
-        /* ===========================================================
-         * 4. 번역 기능 관련 스크립트
-         * =========================================================== */
-        function googleTranslateElementInit() {
-            new google.translate.TranslateElement({
-                pageLanguage: 'ko',
-                autoDisplay: false
-            }, 'google_translate_element');
-        }
-
-        function initializeTranslation() {
-            const select = document.getElementById('languageSelect');
-            function applyLanguage(lang) {
-                const combo = document.querySelector('.goog-te-combo');
-                if (combo) {
-                    combo.value = lang;
-                    combo.dispatchEvent(new Event('change'));
-                }
-            }
-
-            const interval = setInterval(() => {
-                if (document.querySelector('.goog-te-combo')) {
-                    applyLanguage(select.value);
-                    clearInterval(interval);
-                }
-            }, 500);
-
-            select.addEventListener('change', () => {
-                applyLanguage(select.value);
             });
         }
         

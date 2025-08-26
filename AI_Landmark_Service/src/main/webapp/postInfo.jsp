@@ -23,6 +23,7 @@
     }
     
     String loginUser = (String) session.getAttribute("loginUser");
+    String userRole = (String) session.getAttribute("role");
 %>
 <!DOCTYPE html>
 <html lang="ko">
@@ -137,18 +138,21 @@ h2 a {text-decoration: none;color: inherit;}
 
 <div class="side-menu" id="sideMenu">
 <ul>
-<li><a href="<%=request.getContextPath()%>/howLandmark.jsp">Landmark Search란?</a></li>
-<li><a href="<%=request.getContextPath()%>/main.jsp">사진으로 랜드마크 찾기</a></li>
-<li><a href="<%=request.getContextPath()%>/mapSearch.jsp">지도로 랜드마크 찾기</a></li>
-<li><a href="<%=request.getContextPath()%>/postList">게시판</a></li>
-<% if (loginUser != null) { %>
-<li><a href="<%=request.getContextPath()%>/logout">로그아웃</a></li>
-<li><a href="<%=request.getContextPath()%>/myProfile.jsp">마이페이지</a></li>
-<% } else { %>
-<li><a href="<%=request.getContextPath()%>/login.jsp">로그인</a></li>
-<li><a href="<%=request.getContextPath()%>/register.jsp">회원가입</a></li>
-<% } %>
-</ul>
+	<li><a href="<%=request.getContextPath()%>/howLandmark.jsp">Landmark Search란?</a></li>
+	<li><a href="<%=request.getContextPath()%>/main.jsp">사진으로 랜드마크 찾기</a></li>
+	<li><a href="<%=request.getContextPath()%>/mapSearch.jsp">지도로 랜드마크 찾기</a></li>
+	<li><a href="<%=request.getContextPath()%>/postList">게시판</a></li>
+	<% if (loginUser != null) { %>
+	<li><a href="<%=request.getContextPath()%>/logout">로그아웃</a></li>
+	<li><a href="<%=request.getContextPath()%>/myProfile.jsp">마이페이지</a></li>
+	<% if ("ADMIN".equals(userRole)) { %>
+	                    <li><a href="<%=request.getContextPath()%>/admin" style="color: #ffd24d;">👑 관리자 페이지</a></li>
+	                <% } %>
+	<% } else { %>
+	<li><a href="<%=request.getContextPath()%>/login.jsp">로그인</a></li>
+	<li><a href="<%=request.getContextPath()%>/register.jsp">회원가입</a></li>
+	<% } %>
+	</ul>
 </div>
 
 <main class="board">

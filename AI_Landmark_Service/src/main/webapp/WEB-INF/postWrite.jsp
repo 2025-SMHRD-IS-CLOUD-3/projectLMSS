@@ -2,6 +2,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%
     String loginUser = (String) session.getAttribute("loginUser");
+	String userRole = (String) session.getAttribute("role");
     String contextPath = request.getContextPath();
 %>
 <!DOCTYPE html>
@@ -95,6 +96,9 @@
         <% if (loginUser != null) { %>
         <li><a href="<%=request.getContextPath()%>/logout">로그아웃</a></li>
         <li><a href="<%=request.getContextPath()%>/myProfile.jsp">마이페이지</a></li>
+        		<% if ("ADMIN".equals(userRole)) { %>
+                    <li><a href="<%=request.getContextPath()%>/admin" style="color: #ffd24d;">👑 관리자 페이지</a></li>
+                <% } %>
         <% } else { %>
         <li><a href="<%=request.getContextPath()%>/login.jsp">로그인</a></li>
         <li><a href="<%=request.getContextPath()%>/register.jsp">회원가입</a></li>

@@ -1,7 +1,4 @@
 <%@ page contentType="text/html; charset=UTF-8" language="java" pageEncoding="UTF-8"%>
-<%
-    String loginUser = (String) session.getAttribute("loginUser");
-%>
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -14,28 +11,9 @@
     <script src="https://unpkg.com/@turf/turf@6.5.0/turf.min.js" defer></script>
     
     <style>
-    	h2 a {
-		  text-decoration: none;
-		  color: inherit;
-		}
         :root { --ink:#111; --muted:#f4f4f4; --line:#e5e5e5; --brand:#57ACCB; }
         * { box-sizing:border-box; }
         body { margin:0; font-family:system-ui,-apple-system, Segoe UI, Roboto, Arial, sans-serif; color:var(--ink); background:#fff; }
-        header { 
-        	position:fixed; top:0; left:0; width:100%; 
-        	height:100px; background:#fff; display:flex; 
-        	justify-content:space-between; align-items:center; 
-        	padding:0 20px; z-index:1000; box-shadow:0 1px 0 rgba(0,0,0,.04);
-        	}
-        .menu-btn {
-        	position:fixed; top:20px; right:20px; 
-        	font-size:50px; background:none; border:none; 
-        	color:#000; cursor:pointer; z-index:1002; }
-        .side-menu { position:fixed; top:0; right:-500px; width:500px; height:100%; background:var(--brand); color:#fff; padding:20px; padding-top:100px; transition:right .3s ease; z-index:1001; font-size:30px; }
-        .side-menu.open { right:0; }
-        .side-menu ul { margin:0; padding:0; }
-        .side-menu li { list-style:none; margin-top:20px; }
-        .side-menu a { color:#fff; text-decoration:none; font-weight:bold; }
         .board { max-width:1200px; margin:140px auto 40px; background:var(--muted); border-radius:28px; padding:28px; }
         .title { margin:0 0 18px; text-align:center; font-weight:900; font-size:32px; }
         .map-wrap { border-radius:18px; overflow:hidden; background:#e9eef3; padding:24px; }
@@ -54,88 +32,10 @@
         .sw{ width:14px; height:10px; border:2px solid #ff2d20; background:#9fbfff33; }
         .sw.off{ border-color:#9aa3aa; background:transparent; }
         @media (max-width:960px){ #map { height:420px; } .card { grid-template-columns:100px 1fr; } .thumb { width:100px; height:76px; } }
-        #headerImage{
-			height: 80%;
-			width: auto;
-			display: flex;
-		    justify-content: center;
-		    position: absolute;
-		    top: 50%;
-		    left: 50%;
-		    transform: translate(-50%, -50%);
-		}
-
-        /* Google 번역 위젯 숨기기 */
-        #google_translate_element { display: none; }
-
-        /* 커스텀 언어 선택 드롭다운 */
-        .language-selector {
-            position: fixed;
-            top: 30px;
-            right: 120px;
-            z-index: 1003;
-        }
-        .custom-select {
-            padding: 10px 15px;
-            font-size: 16px;
-            border: 2px solid #57ACCB;
-            border-radius: 8px;
-            background-color: white;
-            color: #333;
-            font-weight: bold;
-            outline: none;
-            cursor: pointer;
-            appearance: none;
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%2357ACCB"><path d="M4 6l4 4 4-4z"/></svg>');
-            background-repeat: no-repeat;
-            background-position: right 12px center;
-            background-size: 16px;
-            transition: all 0.3s ease;
-        }
-        .custom-select:hover {
-            border-color: #3d94b8;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-        .custom-select:focus {
-            border-color: #2a82a1;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        }
     </style>
 </head>
 <body>
-    <header>
-        <h2><a href="<%=request.getContextPath()%>/main.jsp">Landmark Search</a></h2>
-        <img src="<%=request.getContextPath()%>/image/headerImage.png" alt="MySite Logo" id="headerImage">
-        <div id="google_translate_element"></div>
-
-        <div class="language-selector">
-            <select id="languageSelect" class="custom-select">
-                <option value="ko">한국어</option>
-                <option value="en">English</option>
-                <option value="ja">日本語</option>
-                <option value="zh-CN">中文(简体)</option>
-            </select>
-        </div>
-    </header>
-    <button class="menu-btn" aria-label="메뉴 열기">≡</button>
-    <aside class="side-menu" id="sideMenu" aria-hidden="true">
-        <ul>
-            <li><a href="<%=request.getContextPath()%>/howLandmark.jsp">Landmark Search란?</a></li>
-            <li><a href="<%=request.getContextPath()%>/main.jsp">사진으로 랜드마크 찾기</a></li>
-            <li><a href="<%=request.getContextPath()%>/mapSearch.jsp">지도로 랜드마크 찾기</a></li>
-            <li><a href="<%=request.getContextPath()%>/postList">게시판</a></li>
-            <% if (loginUser != null) { %>
-                <li><a href="<%=request.getContextPath()%>/logout?redirect=<%=request.getRequestURI()%>">로그아웃</a></li>
-                <li><a href="<%=request.getContextPath()%>/myProfile.jsp">마이페이지</a></li>
-            <% } else { %>
-                <li><a href="<%=request.getContextPath()%>/login.jsp?redirect=<%=request.getRequestURI()%>">로그인</a></li>
-                <li><a href="<%=request.getContextPath()%>/register.jsp">회원가입</a></li>
-            <% } %>
-        </ul>
-    </aside>
-
+	<%@ include file="header.jsp" %>
     <section class="board">
         <h1 class="title">지도에서 랜드마크 찾기</h1>
         <div class="map-wrap">
@@ -145,55 +45,6 @@
     </section>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-    <script>
-        function googleTranslateElementInit() {
-            new google.translate.TranslateElement({
-                pageLanguage: 'ko',
-                autoDisplay: false
-            }, 'google_translate_element');
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const select = document.getElementById('languageSelect');
-
-            function applyLanguage(lang) {
-                const combo = document.querySelector('.goog-te-combo');
-                if (combo) {
-                    combo.value = lang;
-                    combo.dispatchEvent(new Event('change'));
-                }
-            }
-
-            const interval = setInterval(() => {
-                if (document.querySelector('.goog-te-combo')) {
-                    applyLanguage(select.value);
-                    clearInterval(interval);
-                }
-            }, 500);
-
-            select.addEventListener('change', () => {
-                applyLanguage(select.value);
-            });
-        });
-        
-        // 사이드 메뉴 토글
-        const menuBtn = document.querySelector('.menu-btn');
-        const sideMenu = document.getElementById('sideMenu');
-        if (menuBtn && sideMenu) {
-            menuBtn.addEventListener('click', e => {
-                e.stopPropagation();
-                sideMenu.classList.toggle('open');
-                sideMenu.setAttribute('aria-hidden', sideMenu.classList.contains('open') ? 'false' : 'true');
-            });
-            document.addEventListener('click', e => {
-                if (!sideMenu.contains(e.target) && !menuBtn.contains(e.target)) {
-                    sideMenu.classList.remove('open');
-                    sideMenu.setAttribute('aria-hidden', 'true');
-                }
-            });
-        }
-    </script>
 
     <script>
         const CTX = '<%=request.getContextPath()%>';

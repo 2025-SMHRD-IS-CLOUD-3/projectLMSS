@@ -1,6 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8" language="java" %>
 <%
     String loginUser = (String) session.getAttribute("loginUser");
+	String userRole = (String) session.getAttribute("role");
 %>
 <!DOCTYPE html>
 <html lang="ko">
@@ -117,6 +118,9 @@
             <% if (loginUser != null) { %>
                 <li><a href="<%=request.getContextPath()%>/logout?redirect=<%=request.getRequestURI()%>">로그아웃</a></li>
                 <li><a href="<%=request.getContextPath()%>/myProfile">마이페이지</a></li>
+                <% if ("ADMIN".equals(userRole)) { %>
+                    <li><a href="<%=request.getContextPath()%>/admin" style="color: #ffd24d;">👑 관리자 페이지</a></li>
+                <% } %>
             <% } else { %>
                 <li><a href="<%=request.getContextPath()%>/login.jsp">로그인</a></li>
                 <li><a href="<%=request.getContextPath()%>/register.jsp">회원가입</a></li>

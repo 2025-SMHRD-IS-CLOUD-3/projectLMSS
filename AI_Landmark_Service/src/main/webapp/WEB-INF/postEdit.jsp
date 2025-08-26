@@ -5,6 +5,7 @@
     String contextPath = request.getContextPath();
     String redirect = request.getParameter("redirect") != null ? request.getParameter("redirect") : "postInfo";
     String loginUser = (String) session.getAttribute("loginUser");
+    String userRole = (String) session.getAttribute("role");
 %>
 <!DOCTYPE html>
 <html lang="ko">
@@ -120,6 +121,9 @@ label{font-weight:800}
         <% if (loginUser != null) { %>
         <li><a href="<%=contextPath%>/logout">로그아웃</a></li>
         <li><a href="<%=contextPath%>/myProfile.jsp">마이페이지</a></li>
+        		<% if ("ADMIN".equals(userRole)) { %>
+                    <li><a href="<%=request.getContextPath()%>/admin" style="color: #ffd24d;">👑 관리자 페이지</a></li>
+                <% } %>
         <% } else { %>
         <li><a href="<%=contextPath%>/login.jsp">로그인</a></li>
         <li><a href="<%=contextPath%>/register.jsp">회원가입</a></li>

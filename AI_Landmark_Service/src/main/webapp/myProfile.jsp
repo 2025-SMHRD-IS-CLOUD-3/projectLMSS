@@ -9,6 +9,7 @@
         response.sendRedirect("login.jsp");
         return;
     }
+    String userRole = (String) session.getAttribute("role");
 
     /* -------------------------------------------------------
      * 1) DB 조회 준비
@@ -288,14 +289,17 @@
 <button class="menu-btn" aria-label="메뉴">≡</button>
 
 <aside class="side-menu" id="sideMenu">
-  <ul>
-    <li><a href="<%=request.getContextPath()%>/howLandmark.jsp">Landmark Search란?</a></li>
-    <li><a href="<%=request.getContextPath()%>/main.jsp">사진으로 랜드마크 찾기</a></li>
-    <li><a href="<%=request.getContextPath()%>/mapSearch.jsp">지도로 랜드마크 찾기</a></li>
-    <li><a href="<%=request.getContextPath()%>/postList">게시판</a></li>
-    <li><a href="<%=request.getContextPath()%>/logout">로그아웃</a></li>
-    <li><a href="<%=request.getContextPath()%>/myProfile.jsp">마이페이지</a></li>
-  </ul>
+  	<ul>
+	    <li><a href="<%=request.getContextPath()%>/howLandmark.jsp">Landmark Search란?</a></li>
+	    <li><a href="<%=request.getContextPath()%>/main.jsp">사진으로 랜드마크 찾기</a></li>
+	    <li><a href="<%=request.getContextPath()%>/mapSearch.jsp">지도로 랜드마크 찾기</a></li>
+	    <li><a href="<%=request.getContextPath()%>/postList">게시판</a></li>
+	    <li><a href="<%=request.getContextPath()%>/logout">로그아웃</a></li>
+	    <li><a href="<%=request.getContextPath()%>/myProfile.jsp">마이페이지</a></li>
+    			<% if ("ADMIN".equals(userRole)) { %>
+                    <li><a href="<%=request.getContextPath()%>/admin" style="color: #ffd24d;">👑 관리자 페이지</a></li>
+                <% } %>
+  	</ul>
 </aside>
 
 <main class="paper">

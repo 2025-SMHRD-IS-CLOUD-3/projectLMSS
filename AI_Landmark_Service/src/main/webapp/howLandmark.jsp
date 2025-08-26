@@ -1,7 +1,4 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-<%
-    String loginUser = (String) session.getAttribute("loginUser");
-%>
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -18,34 +15,6 @@
         }
         * { box-sizing: border-box; }
         html, body { height: 100%; margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color: var(--ink); background: #fff; }
-
-        header {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100px;
-            background-color: white; display: flex; justify-content: space-between; align-items: center;
-            padding: 0 20px; z-index: 1000; box-shadow: 0 1px 0 rgba(0,0,0,.04);
-        }
-        h2 a { text-decoration: none; color: inherit; }
-        #headerImage {
-            height: 80%;
-            width: auto;
-            display: flex;
-            justify-content: center;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
-
-        .side-menu {
-            position: fixed; top: 0; right: -500px; width: 500px; height: 100%;
-            background-color: #57ACCB; color: white; padding: 20px; padding-top: 100px;
-            transition: right 0.3s ease; font-size: 30px; z-index: 1001;
-        }
-        .side-menu li { list-style-type: none; margin-top: 20px; }
-        .side-menu a { color: white; text-decoration: none; font-weight: bold; }
-        .side-menu.open { right: 0; }
-        .menu-btn { position: fixed; top: 20px; right: 20px; font-size: 50px; background: none; border: none; color: black; cursor: pointer; z-index: 1002; }
-
         .paper { max-width: 760px; margin: 120px auto 60px; background: var(--muted); border-radius: 28px; padding: 28px; }
         .paper h1 { text-align: center; margin: 0 0 18px; font-size: 28px; font-weight: 900; }
         .paper p { line-height: 1.7; margin: 10px 2px; }
@@ -71,84 +40,10 @@
         @media (max-width: 920px) { .side-menu { width: 85vw; right: -85vw; } }
         @media (max-width: 720px) { .paper { border-radius: 20px; } }
 
-        /* Google 번역 위젯 숨기기 */
-        #google_translate_element { display: none; }
-
-        /* 커스텀 언어 선택 드롭다운 */
-        .language-selector {
-            position: fixed;
-            top: 30px;
-            right: 120px;
-            z-index: 1003;
-        }
-        .custom-select {
-            padding: 10px 15px;
-            font-size: 16px;
-            border: 2px solid #57ACCB;
-            border-radius: 8px;
-            background-color: white;
-            color: #333;
-            font-weight: bold;
-            outline: none;
-            cursor: pointer;
-            appearance: none;
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%2357ACCB"><path d="M4 6l4 4 4-4z"/></svg>');
-            background-repeat: no-repeat;
-            background-position: right 12px center;
-            background-size: 16px;
-            transition: all 0.3s ease;
-        }
-        .custom-select:hover {
-            border-color: #3d94b8;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-        .custom-select:focus {
-            border-color: #2a82a1;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        }
     </style>
 </head>
 <body>
-    <header>
-        <h2><a href="<%=request.getContextPath()%>/main.jsp">Landmark Search</a></h2>
-        <img src="<%=request.getContextPath()%>/image/headerImage.png" alt="MySite Logo" id="headerImage">
-        <div id="google_translate_element"></div>
-
-        <div class="language-selector">
-            <select id="languageSelect" class="custom-select">
-                <option value="ko">한국어</option>
-                <option value="en">English</option>
-                <option value="ja">日本語</option>
-                <option value="zh-CN">中文(简体)</option>
-            </select>
-        </div>
-    </header>
-    <button class="menu-btn" aria-label="open side menu">≡</button>
-
-    <div class="side-menu" id="sideMenu">
-        <ul>
-            <li><a href="<%= request.getContextPath() %>/howLandmark.jsp">Landmark Search란?</a></li>
-            <li><a href="main.jsp">사진으로 랜드마크 찾기</a></li>
-            <li><a href="mapSearch.jsp">지도로 랜드마크 찾기</a></li>
-            <li><a href="postList">게시판</a></li>
-            <% if (loginUser == null) { %>
-                <li><a href="login.jsp?redirect=<%= request.getRequestURI() %>">로그인</a></li>
-                <li><a href="register.jsp">회원가입</a></li>
-            <% } else { %>
-                <li>
-                    <a href="<%= request.getContextPath() %>/logout?redirect=<%= request.getRequestURI() %>">
-                        로그아웃
-                    </a>
-                </li>
-                <li>
-                    <a href="<%=request.getContextPath()%>/myProfile.jsp">마이페이지</a></li>
-                </li>
-            <% } %>
-        </ul>
-    </div>
-
+	<%@ include file="header.jsp" %>
     <main class="paper" role="main">
         <h1>랜드마크란?</h1>
         <div class="blk">
