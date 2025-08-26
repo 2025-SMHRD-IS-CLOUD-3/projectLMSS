@@ -35,8 +35,8 @@
 
 | 구분        | 기술 |
 |-------------|--------------------------------|
-| **Frontend** | HTML, CSS, JavaScript |
-| **Backend (Main)** | Java, JSP & Servlet, Apache Tomcat 9.0 |
+| **Frontend** | JSP, CSS, JavaScript |
+| **Backend (Main)** | Java, Servlet, Apache Tomcat 9.0 |
 | **Backend (AI)** | Python, Flask|
 | **AI Model** | YOLOv8 |
 | **Database** | Oracle Database |
@@ -56,7 +56,7 @@
 | **즐겨찾기**    | FAVORITES       | 회원 즐겨찾기 랜드마크       |
 | **태그**        | LANDMARK_TAG    | 랜드마크 태그 정보           |
 | **핫스팟**      | HOTSPOT         | 랜드마크 주변 핫플 정보      |
-
+| **제안**      | HOTSPOT_SUGGESTIONS | 랜드마크 주변 핫플 제안    |
 ---
 
 ## 🏷️ 테이블 정의
@@ -69,7 +69,8 @@ CREATE TABLE MEMBER(
     PWD VARCHAR2(100) NOT NULL,
     EMAIL VARCHAR2(50) UNIQUE NOT NULL,
     NAME VARCHAR2(50) NOT NULL,
-    NICKNAME VARCHAR2(30) UNIQUE NOT NULL
+    NICKNAME VARCHAR2(30) UNIQUE NOT NULL,
+    ROLL VARCHAR2(20) DEFAULT 'USER' NOT NULL
 );
 ```
 
@@ -180,7 +181,28 @@ CREATE TABLE HOTSPOT(
     HOTSPOT_LONG FLOAT,
     HOTSPOT_LATI FLOAT,
     HOTSPOT_TYPE VARCHAR2(100),
-    HOTSPOT_INFO VARCHAR2(4000)
+    HOTSPOT_INFO VARCHAR2(4000),
+    LANDMARK_ID NUMBER(10)
+);
+```
+
+---
+
+### 9. 제안 (HOTSPOT_SUGGESTIONS)
+``sql
+CREATE TABLE HOTSPOT_SUGGESTIONS (
+    SUGGESTION_ID NUMBER(10) PRIMARY KEY NOT NULL,
+    MEMBER_ID NUMBER(10) NOT NULL,
+    LANDMARK_ID NUMBER(10) NOT NULL,
+    HOTSPOT_TYPE VARCHAR2(100) NOT NULL,
+    HOTSPOT_NAME VARCHAR2(100) NOT NULL,
+    HOTSPOT_INFO VARCHAR2(4000),
+    HOTSPOT_LATI FLOAT NOT NULL,
+    HOTSPOT_LONG FLOAT NOT NULL,
+    STATUS VARCHAR2(20) DEFAULT 'pending' NOT NULL,
+    SUGGESTED_AT DATE DEFAULT SYSDATE,
+    FOREIGN KEY (MEMBER_ID) REFERENCES MEMBER(MEMBER_ID),
+    FOREIGN KEY (LANDMARK_ID) REFERENCES LANDMARK(LANDMARK_ID)
 );
 ```
 
