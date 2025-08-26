@@ -238,7 +238,7 @@
                     <button class="tab-btn active" data-type="PHOTOSPOT">포토 스팟</button>
                     <button class="tab-btn" data-type="FOOD">주변 맛집</button>
                     <button class="tab-btn" data-type="PLACE">주변 명소</button>
-                    <button class="tab-btn" id="suggestBtn" style="margin-left: auto; background: #4CAF50;">핫스팟 제안하기</button>
+                    <button class="tab-btn" id="suggestBtn" style="margin-left: auto; background: #5dd762; color:#f6f6f6">핫스팟 제안하기</button>
                 </div>
                 <div id="map"></div>
             </div>
