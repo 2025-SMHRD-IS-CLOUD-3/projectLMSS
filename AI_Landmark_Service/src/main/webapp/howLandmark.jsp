@@ -92,7 +92,7 @@
                 <p><b>Landmark Search</b>는 사용자가 입력한 텍스트·사진·지도 상의 위치를 분석해 해당 지역의 랜드마크 정보를 <b>한눈에</b> 보여주는 서비스입니다.</p>
             </div>
             <div class="blk">
-                <p><b>주요 기능</b></p>
+                <p><b style="font-size: larger">주요 기능</b></p>
                 <p>1️⃣ <b>이미지 분석</b>: YOLOv8 기반 딥러닝 모델로 사진을 분석해 랜드마크를 정확히 식별합니다.</p>
                 <p>2️⃣ <b>정보 제공</b>: 이름, 역사, 건축 양식, 다각도 이미지, 지도 위치 등 풍부한 정보를 제공합니다.</p>
                 <p>3️⃣ <b>기반 탐색</b>: 지도에서 랜드마크 위치와 함께 주변 맛집, 포토 스팟, 명소 정보를 시각적으로 탐색할 수 있습니다.</p>
@@ -101,11 +101,11 @@
                 <p>6️⃣ <b>핫스팟 제안 기능</b>: 사용자는 랜드마크 주변의 '포토 스팟','주변 명소','주변 맛집'을 제안하고 운영자가 수락 시에 지도에 반영합니다.</p>
             </div>
             <div class="blk">
-                <p><b>기술 스택</b></p>
-                <p>• 프론트엔드: JSP/CSS/JavaScript + Leaflet(지도)</p>
-                <p>• 백엔드/서버: Java, Servlet, Apache Tomcat 9.0, Python, Flask</p>
-                <p>• AI 모델: YOLOv8</p>
-                <p>• 데이터베이스: Oracle Database</p>
+                <p><b style="font-size: larger">기술 스택</b></p>
+                <p>• <b>프론트엔드</b>: JSP/CSS/JavaScript + Leaflet(지도)</p>
+                <p>• <b>백엔드/서버</b>: Java, Servlet, Apache Tomcat 9.0, Python, Flask</p>
+                <p>• <b>AI 모델</b>: YOLOv8</p>
+                <p>• <b>데이터베이스</b>: Oracle Database</p>
             </div>
         </section>
         <div class="footspace"></div>
