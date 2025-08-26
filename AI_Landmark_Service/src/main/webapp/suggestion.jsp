@@ -10,7 +10,9 @@
     <style>
         :root { --brand:#57ACCB; --line:#e5e5e5; }
         body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; padding: 20px; background-color: #f4f4f4; }
-        .container { max-width: 800px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .container { max-width: 850px; margin: auto; margin-top: 100px; 
+        			background: #fff; padding: 20px; border-radius: 12px; 
+        			box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
         h1 { text-align: center; color: var(--brand); }
         #map { height: 400px; width: 100%; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--line); }
         .form-grid { display: grid; gap: 16px; }
@@ -28,6 +30,7 @@
     </style>
 </head>
 <body>
+	<%@ include file="header.jsp" %>
     <div class="container">
         <h1>핫스팟 제안하기</h1>
         <p>지도에서 제안할 위치를 클릭한 후, 아래 정보를 입력해주세요.</p>

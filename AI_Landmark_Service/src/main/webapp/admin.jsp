@@ -13,7 +13,9 @@
     <style>
         :root { --brand:#57ACCB; --line:#e5e5e5; --ink:#333; }
         body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; color: var(--ink); }
-        .container { max-width: 1200px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .container { max-width: 1200px; margin: auto; margin-top: 100px;
+        			background: #fff; padding: 20px; border-radius: 12px; 
+        			box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
         h1 { color: var(--brand); text-align: center; }
         .table-wrap { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
@@ -27,6 +29,7 @@
     </style>
 </head>
 <body>
+	<%@ include file="header.jsp" %>
     <div class="container">
         <h1>핫스팟 제안 관리</h1>
         <p>사용자들이 제안한 핫스팟 목록입니다. 각 항목을 검토하고 승인 또는 거절할 수 있습니다.</p>
