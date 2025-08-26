@@ -9,6 +9,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import dao.SuggestionDAO;
+import dao.LandmarkDAO;
+import model.Landmark;
 
 @WebServlet("/submitSuggestion")
 public class SubmitSuggestionServlet extends HttpServlet {
@@ -60,8 +62,21 @@ public class SubmitSuggestionServlet extends HttpServlet {
 
             // 4. 성공 여부에 따라 응답을 보냅니다.
             if (success) {
-                System.out.println("✅ 제안 DB 저장 성공");
-                response.sendRedirect(request.getContextPath() + "/landmarkInfo.jsp?id=" + landmarkId + "&msg=suggestion_success");
+            	System.out.println("✅ 제안 DB 저장 성공");
+
+                // 1. LandmarkDAO를 사용해 ID로 랜드마크 정보를 다시 조회합니다.
+                LandmarkDAO landmarkDAO = new LandmarkDAO();
+                Landmark landmark = landmarkDAO.getLandmarkById(landmarkId);
+
+                if (landmark != null) {
+                    // 2. 조회된 랜드마크의 영문 이름을 가져옵니다.
+                    String landmarkNameEn = landmark.getLandmark_name_en();
+                    // 3. 영문 이름을 URL에 담아 정보 페이지로 이동합니다.
+                    response.sendRedirect(request.getContextPath() + "/landmarkInfo.jsp?name=" + landmarkNameEn);
+                } else {
+                    // 혹시 모를 경우를 대비해 메인 페이지로 이동
+                    response.sendRedirect(request.getContextPath() + "/main.jsp");
+                }
             } else {
                 throw new Exception("DAO에서 제안 추가 실패");
             }

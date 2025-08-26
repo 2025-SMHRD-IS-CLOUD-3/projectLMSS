@@ -64,5 +64,46 @@ public class LandmarkDAO {
         }
         return landmarkList;
     }
+    /**
+     * 👇 [추가] ID로 특정 랜드마크 하나의 정보를 조회하는 메소드
+     * @param landmarkId 조회할 랜드마크의 ID
+     * @return Landmark 객체 (찾지 못하면 null)
+     */
+    public Landmark getLandmarkById(int landmarkId) {
+        Landmark landmark = null;
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try {
+            Class.forName("oracle.jdbc.driver.OracleDriver");
+            conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+
+            // 태그 정보는 이 메소드에서는 필요 없으므로, LANDMARK 테이블만 간단히 조회합니다.
+            String sql = "SELECT * FROM LANDMARK WHERE LANDMARK_ID = ?";
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setInt(1, landmarkId);
+            rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                landmark = new Landmark();
+                landmark.setLandmark_id(rs.getInt("LANDMARK_ID"));
+                landmark.setLandmark_name(rs.getString("LANDMARK_NAME"));
+                landmark.setLandmark_name_en(rs.getString("LANDMARK_NAME_EN"));
+                // (필요하다면 다른 정보도 담을 수 있습니다)
+            }
+        } catch (SQLException | ClassNotFoundException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (pstmt != null) pstmt.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return landmark;
+    }
     
 }
