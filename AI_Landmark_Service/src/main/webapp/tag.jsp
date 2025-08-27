@@ -117,7 +117,7 @@
             <li><a href="<%=request.getContextPath()%>/postList">게시판</a></li>
             <% if (loginUser != null) { %>
                 <li><a href="<%=request.getContextPath()%>/logout?redirect=<%=request.getRequestURI()%>">로그아웃</a></li>
-                <li><a href="<%=request.getContextPath()%>/myProfile">마이페이지</a></li>
+                <li><a href="<%=request.getContextPath()%>/myProfile.jsp">마이페이지</a></li>
                 <% if ("ADMIN".equals(userRole)) { %>
                     <li><a href="<%=request.getContextPath()%>/admin" style="color: #ffd24d;">👑 관리자 페이지</a></li>
                 <% } %>
