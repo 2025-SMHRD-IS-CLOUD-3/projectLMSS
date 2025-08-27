@@ -41,7 +41,7 @@
 | **Backend (AI)** | Python, Flask|
 | **AI Model** | YOLOv8 |
 | **Database** | Oracle Database |
-| **IDE & Tools** | Eclipse, Jupyter Notebook, VSCode, Git, GitHub |
+| **IDE & Tools** | Eclipse, Jupyter Notebook, GitHub, Figma |
 
 ---
 
