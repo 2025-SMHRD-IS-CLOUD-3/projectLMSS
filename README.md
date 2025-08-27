@@ -36,8 +36,8 @@
 
 | 구분        | 기술 |
 |-------------|--------------------------------|
-| **Frontend** | JSP, CSS, JavaScript |
-| **Backend (Main)** | Java, Servlet, Apache Tomcat 9.0 |
+| **Frontend** | HTML, CSS, JavaScript |
+| **Backend (Main)** | Java, JSP&Servlet, Apache Tomcat 9.0 |
 | **Backend (AI)** | Python, Flask|
 | **AI Model** | YOLOv8 |
 | **Database** | Oracle Database |
