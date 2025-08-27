@@ -75,7 +75,7 @@ h2 a {text-decoration: none;color: inherit;}
 		    transform: translate(-50%, -50%);
 		}
 .post-image {
-    width: 100%; 
+    width: auto; 
     max-height: 500px;
     object-fit: cover;
     border-radius: 10px;
