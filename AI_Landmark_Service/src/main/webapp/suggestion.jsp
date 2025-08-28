@@ -52,12 +52,12 @@
 
                 <div class="form-group">
                     <label for="hotspotName">장소 이름</label>
-                    <input type="text" id="hotspotName" name="hotspotName" placeholder="예: 에펠탑이 잘 보이는 카페" required>
+                    <input type="text" id="hotspotName" name="hotspotName" placeholder="가게, 지명, 장소 이름을 적어주세요!" required>
                 </div>
 
                 <div class="form-group">
                     <label for="hotspotInfo">간단한 설명 (선택)</label>
-                    <textarea id="hotspotInfo" name="hotspotInfo" rows="3" placeholder="예: 2층 창가 자리가 명당이에요!"></textarea>
+                    <textarea id="hotspotInfo" name="hotspotInfo" rows="3" placeholder="장소에 대한 한 줄 설명을 적어주세요!"></textarea>
                 </div>
 
                 <div class="form-group">
